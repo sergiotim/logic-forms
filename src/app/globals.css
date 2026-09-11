@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-base: #0A0A0A;
+  --color-surface: #171717;
+  --color-surface-hover: #262626;
+  
+  --color-primary: #3B82F6;
+  --color-primary-hover: #2563EB;
+  --color-primary-light: #60A5FA;
+  
+  --color-text-main: #F9FAFB;
+  --color-text-muted: #9CA3AF;
+  
+  --color-border-subtle: #374151;
+  
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* Animations from brand kit */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+.shake-error {
+  animation: shake 0.4s ease-in-out;
+  border-color: var(--color-error) !important;
+}
+
+.success-glow {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+  border-color: var(--color-success) !important;
+}

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVP - Formulário Dinâmico de Lógica</title>
+    
+    <!-- Tailwind CSS para Estilização Rápida e Responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#0A0A0A',
+                        surface: '#171717',
+                        primary: '#3B82F6',
+                        primaryHover: '#2563EB',
+                        textMain: '#EDEDED',
+                        textMuted: '#A3A3A3',
+                        borderSubtle: '#262626',
+                        success: '#10B981',
+                        error: '#EF4444',
+                        warning: '#F59E0B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0A0A0A;
+            color: #EDEDED;
+        }
+
+        /* Estilos para a Tabela-Verdade */
+        .truth-table th, .truth-table td {
+            border: 1px solid #262626;
+            text-align: center;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .truth-table th {
+            background-color: #171717;
+            color: #3B82F6;
+        }
+        
+        /* Botão Toggable da Tabela Verdade */
+        .btn-toggle-vf {
+            width: 100%;
+            height: 100%;
+            min-height: 40px;
+            background-color: #0A0A0A;
+            border: 1px solid #262626;
+            border-radius: 4px;
+            color: #A3A3A3;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-toggle-vf:hover { border-color: #3B82F6; }
+        .btn-toggle-vf.val-v { color: #10B981; border-color: #10B981; background-color: rgba(16, 185, 129, 0.1); }
+        .btn-toggle-vf.val-f { color: #EF4444; border-color: #EF4444; background-color: rgba(239, 68, 68, 0.1); }
+
+        /* Animações de Feedback */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .shake-error { animation: shake 0.4s ease-in-out; border-color: #EF4444 !important; }
+        .success-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); border-color: #10B981 !important; }
+    </style>
+</head>
+<body class="font-sans antialiased h-screen flex flex-col selection:bg-primary selection:text-white overflow-hidden">
+
+    <!-- Header / Navbar -->
+    <nav class="w-full bg-surface border-b border-borderSubtle py-4 px-6 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3 font-bold text-xl tracking-tight">
+            <i class="fa-solid fa-cube text-primary"></i>
+            <span>Lógica<span class="text-primary">Dinâmica</span></span>
+        </div>
+        <div id="progress-indicator" class="text-sm font-mono text-textMuted bg-base px-3 py-1 rounded-full border border-borderSubtle">
+            Questão 1 de 6
+        </div>
+    </nav>
+
+    <!-- Área de Exibição Dinâmica (Onde a mágica acontece) -->
+    <main class="flex-1 overflow-y-auto p-6 flex justify-center items-start pt-12">
+        <div class="w-full max-w-3xl">
+            
+            <!-- Container que será reescrito pelo JS -->
+            <div id="form-container" class="bg-surface border border-borderSubtle rounded-xl p-8 shadow-2xl transition-all duration-300">
+                <!-- Conteúdo Injetado via JS -->
+            </div>
+
+            <!-- Botões de Ação (Validar / Próxima) -->
+            <div class="mt-6 flex justify-between items-center">
+                <div id="feedback-message" class="text-sm font-medium flex items-center gap-2 opacity-0 transition-opacity">
+                    <!-- Mensagem de erro/sucesso injetada aqui -->
+                </div>
+                <div class="flex gap-4">
+                    <button id="btn-validar" class="bg-primary hover:bg-primaryHover text-white px-6 py-2 rounded-md font-semibold transition-all">
+                        Validar Resposta
+                    </button>
+                    <button id="btn-proxima" class="bg-base border border-borderSubtle hover:border-primary text-textMain px-6 py-2 rounded-md font-semibold transition-all hidden">
+                        Próxima Questão <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        /**
+         * BANCO DE DADOS EM JSON (Simulando o Backend)
+         * Aqui definimos as 6 questões, 2 de cada pilar.
+         */
+        const bancoDeQuestoes = [
+            // --- TIPO 1: DIAGRAMAÇÃO DE ARGUMENTOS ---
+            {
+                id: "q1",
+                tipo: "diagramacao",
+                topico: "Estrutura de um Argumento (Cap 1)",
+                enunciado: "Analise o argumento disjuntivo abaixo e classifique suas partes estruturais (Premissas e Conclusão):",
+                frases: [
+                    { id: "f1", texto: "Hoje é segunda-feira ou terça-feira." },
+                    { id: "f2", texto: "Hoje não é segunda-feira." },
+                    { id: "f3", texto: "Portanto, hoje é terça-feira." }
+                ],
+                resposta_esperada: { "f1": "P", "f2": "P", "f3": "C" }
+            },
+            {
+                id: "q2",
+                tipo: "diagramacao",
+                topico: "Argumentos Indutivos (Cap 2)",
+                enunciado: "Identifique as premissas e a conclusão no seguinte argumento hipotético:",
+                frases: [
+                    { id: "f1", texto: "Todos os marcianos são bons beijadores." },
+                    { id: "f2", texto: "Algumas coisas com várias bocas são bons beijadores." },
+                    { id: "f3", texto: "Alguns marcianos têm várias bocas." }
+                ],
+                // A ordem correta lógica: f1 (Premissa), f3 (Premissa) -> f2 (Conclusão)
+                resposta_esperada: { "f1": "P", "f3": "P", "f2": "C" }
+            },
+
+            // --- TIPO 2: TABELA-VERDADE ---
+            {
+                id: "q3",
+                tipo: "tabela_verdade",
+                topico: "Cálculo Proposicional - Conjunção (Cap 3)",
+                enunciado: "Preencha a coluna final para a tabela-verdade da Conjunção (P ∧ Q):",
+                variaveis: ["P", "Q"],
+                linhas: [
+                    { valores: ["V", "V"], id: "l1" },
+                    { valores: ["V", "F"], id: "l2" },
+                    { valores: ["F", "V"], id: "l3" },
+                    { valores: ["F", "F"], id: "l4" }
+                ],
+                expressao: "P ∧ Q",
+                resposta_esperada: ["V", "F", "F", "F"]
+            },
+            {
+                id: "q4",
+                tipo: "tabela_verdade",
+                topico: "Cálculo Proposicional - Condicional (Cap 3)",
+                enunciado: "Resolva a tabela-verdade para o Condicional Modificado (P → ~Q):",
+                variaveis: ["P", "Q", "~Q"],
+                linhas: [
+                    { valores: ["V", "V", "F"], id: "l1" },
+                    { valores: ["V", "F", "V"], id: "l2" },
+                    { valores: ["F", "V", "F"], id: "l3" },
+                    { valores: ["F", "F", "V"], id: "l4" }
+                ],
+                expressao: "P → ~Q",
+                resposta_esperada: ["F", "V", "V", "V"] // V->F=F, V->V=V, F->F=V, F->V=V
+            },
+
+            // --- TIPO 3: FORMALIZAÇÃO ---
+            {
+                id: "q5",
+                tipo: "formalizacao",
+                topico: "Formalização Proposicional (Cap 4)",
+                enunciado: "Traduza o raciocínio: 'Se abril precede maio, então abril precede maio e maio segue abril.'",
+                dicas: ["A: Abril precede maio", "S: Maio segue abril"],
+                teclado_virtual: ["~", "∧", "∨", "→", "↔"],
+                resposta_esperada: "A → (A ∧ S)"
+            },
+            {
+                id: "q6",
+                tipo: "formalizacao",
+                topico: "Lógica de Predicados (Cap 7)",
+                enunciado: "Usando quantificadores, formalize a proposição categórica Universal Afirmativa: 'Todo peculatário é repulsivo.'",
+                dicas: ["P: é peculatário", "R: é repulsivo", "x: variável individual"],
+                teclado_virtual: ["∀", "∃", "~", "∧", "∨", "→"],
+                resposta_esperada: "∀x(Px → Rx)"
+            }
+        ];
+
+        let questaoAtualIndex = 0;
+        let respostaUsuario = {}; // Armazena a resposta baseada no tipo da questão
+
+        const DOM = {
+            container: document.getElementById('form-container'),
+            progresso: document.getElementById('progress-indicator'),
+            btnValidar: document.getElementById('btn-validar'),
+            btnProxima: document.getElementById('btn-proxima'),
+            feedback: document.getElementById('feedback-message')
+        };
+
+        // Iniciar aplicação
+        window.onload = () => {
+            renderizarQuestao();
+        };
+
+        function renderizarQuestao() {
+            const q = bancoDeQuestoes[questaoAtualIndex];
+            
+            // Resetar estados
+            respostaUsuario = {};
+            DOM.progresso.innerText = `Questão ${questaoAtualIndex + 1} de ${bancoDeQuestoes.length}`;
+            DOM.btnProxima.classList.add('hidden');
+            DOM.btnValidar.classList.remove('hidden');
+            DOM.btnValidar.disabled = false;
+            esconderFeedback();
+            DOM.container.className = "bg-surface border border-borderSubtle rounded-xl p-8 shadow-2xl transition-all duration-300"; // Reset bordas
+
+            // Header comum a todas as questões
+            let htmlHTML = `
+                <div class="mb-6">
+                    <span class="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20 uppercase">${q.tipo}</span>
+                    <span class="text-xs font-mono text-textMuted ml-2">${q.topico}</span>
+                    <h2 class="text-2xl font-semibold text-white mt-4">${q.enunciado}</h2>
+                </div>
+                <div class="quest-body">
+            `;
+
+            // Roteamento baseado no tipo
+            if (q.tipo === "diagramacao") {
+                htmlHTML += renderHTMLDiagramacao(q);
+                respostaUsuario = {}; // será um objeto { f1: "P", f2: "C" }
+            } else if (q.tipo === "tabela_verdade") {
+                htmlHTML += renderHTMLTabelaVerdade(q);
+                respostaUsuario = []; // array de strings ["V", "F"]
+                for(let i=0; i<q.linhas.length; i++) respostaUsuario.push("");
+            } else if (q.tipo === "formalizacao") {
+                htmlHTML += renderHTMLFormalizacao(q);
+                respostaUsuario = ""; // string literal
+            }
+
+            htmlHTML += `</div>`;
+            DOM.container.innerHTML = htmlHTML;
+
+            // Bind Event Listeners pós-renderização
+            bindEventos(q);
+        }
+
+        function renderHTMLDiagramacao(q) {
+            let html = `<div class="space-y-4">`;
+            q.frases.forEach((frase, index) => {
+                html += `
+                    <div class="p-4 bg-base border border-borderSubtle rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-borderSubtle transition-colors">
+                        <span class="text-textMain">${index + 1}. ${frase.texto}</span>
+                        <div class="flex bg-surface rounded-md p-1 border border-borderSubtle shrink-0">
+                            <button data-id="${frase.id}" data-val="P" class="btn-diag px-4 py-1 text-sm rounded font-medium text-textMuted hover:text-white transition-colors">Premissa</button>
+                            <button data-id="${frase.id}" data-val="C" class="btn-diag px-4 py-1 text-sm rounded font-medium text-textMuted hover:text-white transition-colors">Conclusão</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            return html;
+        }
+
+        function renderHTMLTabelaVerdade(q) {
+            let html = `
+                <div class="overflow-x-auto rounded-lg border border-borderSubtle">
+                    <table class="truth-table w-full border-collapse bg-base">
+                        <thead>
+                            <tr>
+                                ${q.variaveis.map(v => `<th>${v}</th>`).join('')}
+                                <th class="bg-primary/10 border-l-2 border-primary">${q.expressao}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            q.linhas.forEach((linha, rowIndex) => {
+                html += `<tr>`;
+                linha.valores.forEach(val => {
+                    html += `<td class="text-textMuted">${val}</td>`;
+                });
+                // Célula interativa
+                html += `<td class="p-2 w-32 border-l-2 border-borderSubtle">
+                            <button class="btn-toggle-vf" data-row="${rowIndex}">-</button>
+                         </td></tr>`;
+            });
+            html += `</tbody></table></div>`;
+            return html;
+        }
+
+        function renderHTMLFormalizacao(q) {
+            let html = `
+                <div class="mb-4 flex flex-wrap gap-2">
+                    ${q.dicas.map(dica => `<span class="text-xs bg-surface border border-borderSubtle text-textMuted px-2 py-1 rounded font-mono">${dica}</span>`).join('')}
+                </div>
+                
+                <div class="bg-base p-2 rounded-t-lg border border-borderSubtle border-b-0 flex gap-2 overflow-x-auto">
+                    ${q.teclado_virtual.map(tecla => `
+                        <button class="btn-teclado bg-surface hover:bg-primary hover:border-primary text-textMain border border-borderSubtle rounded px-4 py-2 font-mono text-lg transition-colors shadow-sm">
+                            ${tecla}
+                        </button>
+                    `).join('')}
+                    <!-- Botões extras úteis -->
+                    <div class="w-px bg-borderSubtle mx-1"></div>
+                    <button class="btn-teclado bg-surface hover:bg-surface text-textMain border border-borderSubtle rounded px-4 py-2 font-mono text-lg transition-colors shadow-sm">(</button>
+                    <button class="btn-teclado bg-surface hover:bg-surface text-textMain border border-borderSubtle rounded px-4 py-2 font-mono text-lg transition-colors shadow-sm">)</button>
+                </div>
+                
+                <input type="text" id="input-formalizacao" 
+                       class="w-full bg-base border border-borderSubtle text-textMain text-xl p-4 rounded-b-lg font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-borderSubtle" 
+                       placeholder="Digite ou use os botões acima..." autocomplete="off" spellcheck="false">
+            `;
+            return html;
+        }
+
+        function bindEventos(q) {
+            // Diagramação
+            if (q.tipo === "diagramacao") {
+                const btns = document.querySelectorAll('.btn-diag');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        const val = e.target.getAttribute('data-val');
+                        
+                        // Atualiza estado
+                        respostaUsuario[id] = val;
+                        
+                        // Atualiza UI visual (Toggle active class nos botões do mesmo grupo)
+                        const grupoBtns = document.querySelectorAll(`.btn-diag[data-id="${id}"]`);
+                        grupoBtns.forEach(b => {
+                            b.classList.remove('bg-primary', 'text-white');
+                            b.classList.add('text-textMuted');
+                        });
+                        e.target.classList.add('bg-primary', 'text-white');
+                        e.target.classList.remove('text-textMuted');
+                    });
+                });
+            }
+            
+            // Tabela Verdade
+            if (q.tipo === "tabela_verdade") {
+                const btns = document.querySelectorAll('.btn-toggle-vf');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const row = e.target.getAttribute('data-row');
+                        let currentVal = respostaUsuario[row];
+                        
+                        // Ciclo de estados: vazio -> V -> F -> vazio
+                        if (currentVal === "") currentVal = "V";
+                        else if (currentVal === "V") currentVal = "F";
+                        else currentVal = "";
+
+                        respostaUsuario[row] = currentVal;
+                        
+                        // Atualiza UI Visual
+                        e.target.innerText = currentVal === "" ? "-" : currentVal;
+                        e.target.className = "btn-toggle-vf"; // Reset classes
+                        if (currentVal === "V") e.target.classList.add("val-v");
+                        if (currentVal === "F") e.target.classList.add("val-f");
+                    });
+                });
+            }
+
+            // Formalização
+            if (q.tipo === "formalizacao") {
+                const input = document.getElementById('input-formalizacao');
+                const btns = document.querySelectorAll('.btn-teclado');
+                
+                // Teclado virtual insere no cursor
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const char = e.target.innerText;
+                        const start = input.selectionStart;
+                        const end = input.selectionEnd;
+                        const text = input.value;
+                        
+                        // Insere e atualiza cursor
+                        input.value = text.substring(0, start) + char + text.substring(end);
+                        input.focus();
+                        input.selectionStart = input.selectionEnd = start + char.length;
+                    });
+                });
+            }
+        }
+
+        DOM.btnValidar.addEventListener('click', () => {
+            const q = bancoDeQuestoes[questaoAtualIndex];
+            let isCorrect = false;
+            let missingData = false;
+
+            // Extrair resposta de Formalização no momento da validação
+            if (q.tipo === "formalizacao") {
+                // Remover espaços extras para facilitar validação
+                respostaUsuario = document.getElementById('input-formalizacao').value.replace(/\s+/g, '');
+                const esperadoFormatado = q.resposta_esperada.replace(/\s+/g, '');
+                
+                if(respostaUsuario === "") missingData = true;
+                else isCorrect = (respostaUsuario === esperadoFormatado);
+            }
+            
+            else if (q.tipo === "diagramacao") {
+                // Verificar se todas as chaves esperadas foram preenchidas
+                const keys = Object.keys(q.resposta_esperada);
+                missingData = keys.some(k => !respostaUsuario[k]);
+                
+                if (!missingData) {
+                    isCorrect = keys.every(k => respostaUsuario[k] === q.resposta_esperada[k]);
+                }
+            }
+
+            else if (q.tipo === "tabela_verdade") {
+                missingData = respostaUsuario.some(val => val === "");
+                if (!missingData) {
+                    isCorrect = respostaUsuario.every((val, idx) => val === q.resposta_esperada[idx]);
+                }
+            }
+
+            // Aplicar Feedback Visual
+            if (missingData) {
+                mostrarFeedback("Preencha todos os campos antes de validar.", "warning");
+                animarContainer('shake-error');
+            } else if (isCorrect) {
+                mostrarFeedback("Correto! Muito bem.", "success");
+                animarContainer('success-glow');
+                DOM.btnValidar.classList.add('hidden');
+                DOM.btnProxima.classList.remove('hidden');
+            } else {
+                mostrarFeedback("Resposta incorreta. Tente novamente.", "error");
+                animarContainer('shake-error');
+            }
+        });
+
+        DOM.btnProxima.addEventListener('click', () => {
+            questaoAtualIndex++;
+            if (questaoAtualIndex < bancoDeQuestoes.length) {
+                renderizarQuestao();
+            } else {
+                // Fim do fluxo
+                DOM.container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fa-solid fa-trophy text-6xl text-success mb-6 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"></i>
+                        <h2 class="text-3xl font-bold text-white mb-4">Você concluiu o MVP!</h2>
+                        <p class="text-textMuted max-w-md mx-auto mb-8">Todas as estruturas dinâmicas foram testadas com sucesso. A plataforma está pronta para receber o backend real.</p>
+                        <button onclick="location.reload()" class="bg-primary hover:bg-primaryHover text-white px-6 py-2 rounded-md font-semibold transition-all">Reiniciar Demonstração</button>
+                    </div>
+                `;
+                DOM.btnProxima.classList.add('hidden');
+                DOM.progresso.innerText = "Concluído";
+            }
+        });
+
+        function mostrarFeedback(msg, tipo) {
+            DOM.feedback.innerHTML = '';
+            DOM.feedback.className = 'text-sm font-medium flex items-center gap-2 opacity-100 transition-opacity';
+            
+            let icon = '';
+            if(tipo === 'success') {
+                icon = '<i class="fa-solid fa-circle-check"></i>';
+                DOM.feedback.classList.add('text-success');
+            } else if (tipo === 'error') {
+                icon = '<i class="fa-solid fa-circle-xmark"></i>';
+                DOM.feedback.classList.add('text-error');
+            } else {
+                icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+                DOM.feedback.classList.add('text-warning');
+            }
+            
+            DOM.feedback.innerHTML = `${icon} <span>${msg}</span>`;
+        }
+
+        function esconderFeedback() {
+            DOM.feedback.classList.remove('opacity-100');
+            DOM.feedback.classList.add('opacity-0');
+        }
+
+        function animarContainer(animationClass) {
+            DOM.container.classList.add(animationClass);
+            // Remover a classe após a animação terminar para poder engatilhar de novo
+            setTimeout(() => {
+                // Apenas removemos o shake. O glow de sucesso permanece
+                if(animationClass !== 'success-glow') {
+                    DOM.container.classList.remove(animationClass);
+                }
+            }, 400); 
+        }
+    </script>
+</body>
+</html>
