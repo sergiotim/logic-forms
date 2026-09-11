@@ -1,11 +1,9 @@
-# 🧠 Lógica Dinâmica — Plataforma Interativa de Lógica Formal
 # Lógica Dinâmica — Plataforma Interativa de Lógica Formal
 
 O **Lógica Dinâmica** é uma plataforma educacional interativa projetada para desmistificar o aprendizado de Lógica Formal e Cálculo de Predicados para estudantes de Ciência da Computação. O sistema transforma exercícios acadêmicos tradicionais em experiências visuais, gamificadas e totalmente responsivas.
 
 ---
 
-## 📌 Sobre o Projeto
 ## Sobre o Projeto
 
 O aprendizado de Lógica de Predicados e Tabelas-Verdade costuma ser um processo árido. O **Lógica Dinâmica** resolve essa dor ao oferecer uma interface moderna em **Dark Mode**, com validação em tempo real, teclado virtual com símbolos lógicos, gerenciamento completo de conteúdo via interface visual e uma experiência de estudo limpa e focada.
@@ -16,22 +14,18 @@ A aplicação divide-se em duas rotas principais:
 
 ---
 
-## ✨ Funcionalidades Principais
 ## Funcionalidades Principais
 
-### 🎮 Modo Estudo (`/`)
 ### Modo Estudo (`/`)
 - **Lobby & Trilha de Fases:**
   - Visualização ordenada de fases com status de conclusão ("Concluído" / "0/2 concluídas").
   - Acesso direto para iniciar ou refazer qualquer fase concluída.
   - Tratamento inteligente de fases vazias e persistência no navegador via `localStorage`.
-- **🚨 Modal de Saída Protegida:**
 - **Modal de Saída Protegida:**
   - Confirmação de abandono ao clicar no ícone de saída durante uma fase para evitar perda inadvertida de progresso.
 - **Feedback Imediato & Gamificação:**
   - Alertas visuais semânticos para acertos (Tautologia), erros (Contradição) e orientações pontuais.
 
-### 🛠️ Modo Editor de Conteúdo (`/editor`)
 ### Modo Editor de Conteúdo (`/editor`)
 - **Gestão Completa de Fases (CRUD):**
   - Criação de novas fases com título customizável e seleção de ícone através de um seletor popover compacto e flutuante.
@@ -52,16 +46,13 @@ A aplicação divide-se em duas rotas principais:
 - **Persistência & Migração Automática:**
   - Armazenamento em `localStorage` sob a chave `"logica-dinamica:editor-state"`, com seed inicial automático a partir do banco de dados estático e controle de versão do schema.
 
-### 🧩 3 Tipos de Exercícios Interativos
 ### 3 Tipos de Exercícios Interativos
-1. **Diagramação de Argumentos:** Classificação de frases entre Premissa ($P$) e Conclusão ($C$) com botões seletores ergonômicos.
-2. **Tabela-Verdade:** Matrizes de valoração onde o aluno preenche os valores lógicos ($V$ / $F$) para expressões proposicionais. O editor inclui auto-geração das $2^n$ combinações de linhas a partir das variáveis declaradas.
-2. **Tabela-Verdade:** Matrizes de valoração onde o aluno preenche os valores lógicos ($V$ / $F$) para expressões proposicionais com conectivos intermediários e andaime pedagógico.
+1. **Diagramação de Argumentos:** Classificação de frases entre Premissa ($P$) e Conclusão ($C$) com botões seletores ergonômicos e suporte a markdown.
+2. **Tabela-Verdade:** Matrizes de valoração onde o aluno preenche os valores lógicos ($V$ / $F$) para expressões proposicionais com conectivos intermediários e andaime pedagógico. O editor inclui auto-geração das $2^n$ combinações de linhas a partir das variáveis declaradas.
 3. **Formalização Lógica:** Transcrição de sentenças em linguagem simbólica com apoio de um **teclado virtual customizado** ($\sim, \land, \lor, \rightarrow, \leftrightarrow, \forall, \exists$). A validação é tolerante a espaços em branco.
 
 ---
 
-## 🎨 Design System & UX Guidelines
 ## Design System & UX Guidelines
 
 - **Dark Mode Nativo:** Paleta escura de alto contraste (`#0A0A0A` / `#171717`) reduzindo fadiga ocular.
@@ -69,12 +60,10 @@ A aplicação divide-se em duas rotas principais:
 - **Iconografia Escalável:** Componentes da biblioteca `lucide-react` (zero emojis brutos na UI).
 - **Layout Adaptativo:**
   - **Mobile (< 768px):** Mecânica *Zero Page Scroll* (`100dvh` + rodapé *sticky*) na resolução de exercícios e sidebar retrátil no editor.
-  - **Desktop (≥ 768px):** Painéis divididos e fluxo de leitura contínuo.
   - **Desktop (≥ 768px):** Painéis divididos, abas com 100% de largura e fluxo de leitura contínuo.
 
 ---
 
-## 🛠️ Tech Stack
 ## Tech Stack
 
 - **Framework:** [Next.js 16 (App Router)](https://nextjs.org/)
@@ -87,7 +76,6 @@ A aplicação divide-se em duas rotas principais:
 
 ---
 
-## 🚀 Como Executar o Projeto
 ## Como Executar o Projeto
 
 ### Pré-requisitos
@@ -118,11 +106,9 @@ A aplicação divide-se em duas rotas principais:
 
 ---
 
-## 🧪 Suíte de Testes (TDD)
 ## Suíte de Testes (TDD)
 
-O projeto adota Test-Driven Development (TDD) rigoroso, com 78 testes automatizados cobrindo todas as camadas da aplicação:
-O projeto adota Test-Driven Development (TDD) rigoroso, com 102 testes automatizados cobrindo todas as camadas da aplicação:
+O projeto adota Test-Driven Development (TDD) rigoroso, com 160 testes automatizados cobrindo todas as camadas da aplicação:
 
 ```bash
 npm test
