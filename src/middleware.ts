@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { userAgent } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({
@@ -25,7 +26,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3. Verificação de permissões (RBAC) para o /editor
+  // 3. Verificação de permissões (RBAC) e Dispositivo para o /editor
   if (pathname.startsWith('/editor')) {
+    const { device } = userAgent(request);
+    
+    // Bloqueia qualquer dispositivo classificado como mobile (smartphones)
+    // device.type pode ser 'console', 'mobile', 'tablet', 'smarttv', 'wearable' ou undefined (desktop)
+    if (device.type === 'mobile') {
+      const url = new URL('/', request.url);
+      url.searchParams.set('error', 'mobile_not_supported');
+      return NextResponse.redirect(url);
+    }
     const teacherEmails = (process.env.TEACHER_EMAILS || '')
       .split(',')
       .map((e) => e.trim().toLowerCase())

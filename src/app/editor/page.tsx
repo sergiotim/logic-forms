@@ -26,7 +26,14 @@ export default function EditorPage() {
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState<boolean | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
+
+  useEffect(() => {
+    // Checagem de tela para bloquear smartphones fisicamente
+    const isMobile = Math.min(window.screen.width, window.screen.height) < 768;
+    setIsMobileDevice(isMobile);
+  }, []);
 
   useEffect(() => {
     if (feedback) {
@@ -217,6 +224,29 @@ export default function EditorPage() {
       });
     }
   };
+
+  if (isMobileDevice === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (isMobileDevice) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base p-6 text-center">
+        <div className="bg-surface border border-border-subtle rounded-xl p-8 max-w-sm">
+          <h2 className="text-xl font-bold text-error mb-4">Acesso Bloqueado</h2>
+          <p className="text-text-muted mb-6">O Modo Editor é uma ferramenta administrativa que não suporta smartphones.</p>
+          <p className="text-text-muted text-sm mb-6">Por favor, acesse via Tablet ou Computador.</p>
+          <Link href="/" className="inline-flex items-center justify-center bg-primary text-white font-bold py-2 px-4 rounded-lg w-full transition-colors hover:bg-primary/90">
+            Voltar ao Modo Estudo
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoaded || !editorState) {
     return null;
