@@ -17,8 +17,18 @@ jest.mock('@/lib/storage', () => {
   };
 });
 
+// Mock do next-auth/react
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(() => ({
+    data: { user: { email: 'aluno@rede.ulbra.br' } },
+    status: 'authenticated',
+  })),
+  signOut: jest.fn(),
+}));
+
 import Home from '@/app/page';
 import { loadEditorState } from '@/lib/storage';
+import { signOut, useSession } from 'next-auth/react';
 import type { EditorState } from '@/types';
 
 // --- Fixtures ---
@@ -129,6 +139,15 @@ beforeEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
   (loadEditorState as jest.Mock).mockReturnValue(structuredClone(MOCK_3_PHASES));
+  jest.spyOn(Math, 'random').mockReturnValue(0.999);
+  (useSession as jest.Mock).mockReturnValue({
+    data: { user: { email: 'aluno@rede.ulbra.br', role: 'STUDENT' } },
+    status: 'authenticated',
+  });
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 // ---------------------------------------------------------------------------
@@ -166,9 +185,34 @@ describe('Lobby — Renderização Inicial', () => {
     expect(loadEditorState).toHaveBeenCalledTimes(1);
   });
 
-  it('[Cenário 3] exibe link ou botão para o "Modo Editor" no header ou rodapé', () => {
+  it('[Cenário 3] abre o menu de perfil ao clicar no avatar e permite fazer logout', () => {
     render(<Home />);
-    const editorLink = screen.getByRole('link', { name: /Editor|Admin/i });
+    const profileBtn = screen.getByRole('button', { name: /Menu do usuário/i });
+    expect(profileBtn).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Modo Editor/i })).not.toBeInTheDocument();
+
+    // Clica no avatar para abrir o menu
+    fireEvent.click(profileBtn);
+
+    // Botão de sair no dropdown
+    const logoutBtn = screen.getByRole('menuitem', { name: /Sair da conta/i });
+    expect(logoutBtn).toBeInTheDocument();
+    fireEvent.click(logoutBtn);
+    expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/login' });
+  });
+
+  it('exibe o botão para "Modo Editor" dentro do menu de perfil se o usuário for professor (role: TEACHER)', () => {
+    (useSession as jest.Mock).mockReturnValue({
+      data: { user: { email: 'professor@ulbra.br', role: 'TEACHER' } },
+      status: 'authenticated',
+    });
+
+    render(<Home />);
+    const profileBtn = screen.getByRole('button', { name: /Menu do usuário/i });
+    fireEvent.click(profileBtn);
+
+    const editorLink = screen.getByRole('menuitem', { name: /Modo Editor/i });
+    expect(editorLink).toBeInTheDocument();
     expect(editorLink).toHaveAttribute('href', '/editor');
   });
 });

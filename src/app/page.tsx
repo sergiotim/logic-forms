@@ -1,8 +1,8 @@
 'use client';
+// Modo Estudo - Plataforma Educacional Lógica Dinâmica (Teste de Permissão OK)
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Feedback } from '@/components/ui/Feedback';
 import { Diagramacao } from '@/components/questions/Diagramacao';
@@ -10,21 +10,24 @@ import { TabelaVerdade } from '@/components/questions/TabelaVerdade';
 import { Formalizacao } from '@/components/questions/Formalizacao';
 import { DiagramacaoQuestion, FormalizacaoQuestion, TabelaVerdadeQuestion, Phase } from '@/types';
 import { loadEditorState } from '@/lib/storage';
+import { fetchPhasesApi, fetchUserSubmissionsApi, saveUserSubmissionApi } from '@/lib/api';
 import { ICON_MAP } from '@/lib/icons';
 import { validateFormalizacaoAnswer } from '@/lib/formalizacao';
 import { CheckCircle2, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { ProfileMenu } from '@/components/ui/ProfileMenu';
 
 type ViewState = 'lobby' | 'playing' | 'phase_finished';
 
 interface PhaseCardProps {
   fase: Phase;
   index: number;
+  completedCount: number;
   isCompleted: boolean;
   startPhase: (id: string) => void;
 }
 
-function PhaseCard({ fase, index, isCompleted, startPhase }: PhaseCardProps) {
+function PhaseCard({ fase, index, completedCount, isCompleted, startPhase }: PhaseCardProps) {
   const Icon = ICON_MAP[fase.icone] || ICON_MAP.Network;
   const hasQuestions = fase.questoes.length > 0;
 
@@ -45,7 +48,7 @@ function PhaseCard({ fase, index, isCompleted, startPhase }: PhaseCardProps) {
             <CheckCircle2 size={16} /> Concluído
           </span>
         ) : (
-          <span>0/{fase.questoes.length} concluídas</span>
+          <span>{completedCount}/{fase.questoes.length} concluídas</span>
         )}
       </div>
       {hasQuestions ? (
@@ -68,7 +71,7 @@ function PhaseCard({ fase, index, isCompleted, startPhase }: PhaseCardProps) {
 export default function Home() {
   const [currentView, setCurrentView] = useState<ViewState>('lobby');
   const [activePhase, setActivePhase] = useState<string | null>(null);
-  const [completedPhases, setCompletedPhases] = useState<string[]>([]);
+  const [completedQuestionIds, setCompletedQuestionIds] = useState<Set<string>>(new Set());
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const [phases, setPhases] = useState<Phase[]>([]);
@@ -87,9 +90,31 @@ export default function Home() {
   const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
+    // 1. Carrega local imediatamente para renderização ágil
     const state = loadEditorState();
     setPhases(state.phases);
     setIsLoaded(true);
+
+    // 2. Sincroniza fases atualizadas do Neon PostgreSQL
+    fetchPhasesApi()
+      .then((dbPhases) => {
+        setPhases(dbPhases);
+      })
+      .catch((err) => {
+        console.warn('Sincronização com o banco falhou, usando cache local:', err.message);
+      });
+
+    // 3. Sincroniza submissões salvas do aluno logado
+    fetchUserSubmissionsApi()
+      .then((subs) => {
+        const correctIds = new Set(
+          subs.filter((s) => s.isCorrect).map((s) => s.questionId),
+        );
+        setCompletedQuestionIds(correctIds);
+      })
+      .catch((err) => {
+        console.warn('Sincronização de submissões falhou:', err.message);
+      });
   }, []);
 
   const activePhaseData = phases.find((f) => f.id === activePhase);
@@ -193,6 +218,23 @@ export default function Home() {
       setFeedback({ type: 'success', message: 'Correto! Muito bem.' });
       triggerGlow();
       setIsValidated(true);
+
+      if (question) {
+        setCompletedQuestionIds((prev) => {
+          const next = new Set(prev);
+          next.add(question.id);
+          return next;
+        });
+
+        let rawAnswer: unknown = null;
+        if (question.tipo === 'formalizacao') rawAnswer = formalizacaoAnswer;
+        else if (question.tipo === 'diagramacao') rawAnswer = diagramacaoAnswer;
+        else if (question.tipo === 'tabela_verdade') rawAnswer = tabelaAnswer;
+
+        saveUserSubmissionApi(question.id, true, rawAnswer).catch((err: unknown) => {
+          console.warn('Erro ao salvar submissão no banco:', err instanceof Error ? err.message : err);
+        });
+      }
     } else {
       setFeedback({ type: 'error', message: 'Resposta incorreta. Tente novamente.' });
       triggerShake();
@@ -218,9 +260,6 @@ export default function Home() {
   };
 
   const returnToLobby = () => {
-    if (activePhase !== null && !completedPhases.includes(activePhase)) {
-      setCompletedPhases([...completedPhases, activePhase]);
-    }
     setActivePhase(null);
     setCurrentView('lobby');
   };
@@ -275,13 +314,11 @@ export default function Home() {
           </div>
         )}
 
+        {/* Ações da Navbar */}
         {currentView === 'lobby' && (
-          <Link
-            href="/editor"
-            className="text-sm font-medium text-text-muted hover:text-primary transition-colors flex items-center gap-1.5"
-          >
-            Modo Editor
-          </Link>
+          <div className="flex items-center gap-3">
+            <ProfileMenu />
+          </div>
         )}
       </nav>
 
@@ -306,15 +343,24 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {phases.map((fase, index) => (
-                    <PhaseCard
-                      key={fase.id}
-                      fase={fase}
-                      index={index}
-                      isCompleted={completedPhases.includes(fase.id)}
-                      startPhase={startPhase}
-                    />
-                  ))}
+                  {phases.map((fase, index) => {
+                    const completedCount = fase.questoes.filter((q) =>
+                      completedQuestionIds.has(q.id),
+                    ).length;
+                    const isCompleted =
+                      fase.questoes.length > 0 && completedCount === fase.questoes.length;
+
+                    return (
+                      <PhaseCard
+                        key={fase.id}
+                        fase={fase}
+                        index={index}
+                        completedCount={completedCount}
+                        isCompleted={isCompleted}
+                        startPhase={startPhase}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
