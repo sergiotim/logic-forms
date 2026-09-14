@@ -13,9 +13,10 @@ import { loadEditorState } from '@/lib/storage';
 import { fetchPhasesApi, fetchUserSubmissionsApi, saveUserSubmissionApi } from '@/lib/api';
 import { ICON_MAP } from '@/lib/icons';
 import { validateFormalizacaoAnswer } from '@/lib/formalizacao';
-import { CheckCircle2, X } from 'lucide-react';
+import { CheckCircle2, X, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { ProfileMenu } from '@/components/ui/ProfileMenu';
+import { useSession } from 'next-auth/react';
 
 type ViewState = 'lobby' | 'playing' | 'phase_finished';
 
@@ -24,19 +25,24 @@ interface PhaseCardProps {
   index: number;
   completedCount: number;
   isCompleted: boolean;
+  isLocked: boolean;
   startPhase: (id: string) => void;
 }
 
-function PhaseCard({ fase, index, completedCount, isCompleted, startPhase }: PhaseCardProps) {
+function PhaseCard({ fase, index, completedCount, isCompleted, isLocked, startPhase }: PhaseCardProps) {
   const Icon = ICON_MAP[fase.icone] || ICON_MAP.Network;
   const hasQuestions = fase.questoes.length > 0;
 
   return (
     <div
       data-testid="phase-card"
-      className="bg-surface border border-border-subtle rounded-xl p-6 shadow-lg flex flex-col hover:border-primary/50 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
+      className={`bg-surface border border-border-subtle rounded-xl p-6 shadow-lg flex flex-col transition-all duration-300 ${
+        isLocked
+          ? 'opacity-60 cursor-not-allowed grayscale'
+          : 'hover:border-primary/50 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]'
+      }`}
     >
-      <div className="mb-4 text-primary transition-transform duration-300 group-hover:scale-110">
+      <div className={`mb-4 text-primary transition-transform duration-300 ${!isLocked ? 'group-hover:scale-110' : ''}`}>
         <Icon size={40} strokeWidth={1.5} />
       </div>
       <h3 className="text-xl font-bold text-white mb-2">
@@ -47,17 +53,22 @@ function PhaseCard({ fase, index, completedCount, isCompleted, startPhase }: Pha
           <span className="text-success font-semibold flex items-center gap-1">
             <CheckCircle2 size={16} /> Concluído
           </span>
+        ) : isLocked ? (
+          <span className="text-text-muted font-semibold flex items-center gap-1">
+            <Lock size={16} /> Bloqueado
+          </span>
         ) : (
           <span>{completedCount}/{fase.questoes.length} concluídas</span>
         )}
       </div>
       {hasQuestions ? (
         <Button
-          variant={isCompleted ? 'outline' : 'primary'}
-          onClick={() => startPhase(fase.id)}
+          variant={isCompleted ? 'outline' : isLocked ? 'disabled' : 'primary'}
+          onClick={() => !isLocked && startPhase(fase.id)}
           className="w-full"
+          disabled={isLocked}
         >
-          {isCompleted ? 'Refazer' : 'Iniciar'}
+          {isCompleted ? 'Refazer' : isLocked ? 'Bloqueado' : 'Iniciar'}
         </Button>
       ) : (
         <Button variant="disabled" disabled className="w-full">
@@ -69,6 +80,9 @@ function PhaseCard({ fase, index, completedCount, isCompleted, startPhase }: Pha
 }
 
 export default function Home() {
+  const { data: session } = useSession();
+  const isTeacher = session?.user?.role === 'TEACHER';
+
   const [currentView, setCurrentView] = useState<ViewState>('lobby');
   const [activePhase, setActivePhase] = useState<string | null>(null);
   const [completedQuestionIds, setCompletedQuestionIds] = useState<Set<string>>(new Set());
@@ -90,13 +104,12 @@ export default function Home() {
   const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
-    // 1. Carrega local imediatamente para renderização ágil
+    // 1. Carrega local imediatamente para referências
     const state = loadEditorState();
     setPhases(state.phases);
-    setIsLoaded(true);
 
     // 2. Sincroniza fases atualizadas do Neon PostgreSQL
-    fetchPhasesApi()
+    const p1 = fetchPhasesApi()
       .then((dbPhases) => {
         setPhases(dbPhases);
       })
@@ -105,7 +118,7 @@ export default function Home() {
       });
 
     // 3. Sincroniza submissões salvas do aluno logado
-    fetchUserSubmissionsApi()
+    const p2 = fetchUserSubmissionsApi()
       .then((subs) => {
         const correctIds = new Set(
           subs.filter((s) => s.isCorrect).map((s) => s.questionId),
@@ -115,6 +128,11 @@ export default function Home() {
       .catch((err) => {
         console.warn('Sincronização de submissões falhou:', err.message);
       });
+      
+    // Apenas renderiza a UI após obter as submissões (evita flashing de fases)
+    Promise.all([p1, p2]).finally(() => {
+      setIsLoaded(true);
+    });
   }, []);
 
   const activePhaseData = phases.find((f) => f.id === activePhase);
@@ -273,7 +291,14 @@ export default function Home() {
   const activePhaseVisualIndex = phases.findIndex((f) => f.id === activePhase) + 1;
 
   if (!isLoaded) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base text-text-muted">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p>Sincronizando progresso...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -350,6 +375,12 @@ export default function Home() {
                     const isCompleted =
                       fase.questoes.length > 0 && completedCount === fase.questoes.length;
 
+                    // Verifica se as fases anteriores foram completadas (professor não tem bloqueio)
+                    const isLocked = !isTeacher && index > 0 && !phases.slice(0, index).every((prevPhase) => {
+                      const prevCount = prevPhase.questoes.filter((q) => completedQuestionIds.has(q.id)).length;
+                      return prevPhase.questoes.length > 0 && prevCount === prevPhase.questoes.length;
+                    });
+
                     return (
                       <PhaseCard
                         key={fase.id}
@@ -357,6 +388,7 @@ export default function Home() {
                         index={index}
                         completedCount={completedCount}
                         isCompleted={isCompleted}
+                        isLocked={isLocked}
                         startPhase={startPhase}
                       />
                     );

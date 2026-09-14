@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 
 // Mock do módulo de storage para controle total nos testes
 jest.mock('@/lib/storage', () => {
@@ -154,39 +154,49 @@ afterEach(() => {
 // BLOCO 1 — Lobby — Renderização e Seed
 // ---------------------------------------------------------------------------
 
+async function renderLobby() {
+  render(<Home />);
+  await waitFor(() => expect(screen.queryByText(/Sincronizando progresso.../i)).not.toBeInTheDocument());
+}
+
 describe('Lobby — Renderização Inicial', () => {
-  it('[Cenário 1] exibe o Lobby com as 3 fases carregadas do localStorage', () => {
-    render(<Home />);
+  it('[Cenário 1] exibe o Lobby com as 3 fases carregadas do localStorage', async () => {
+    await renderLobby();
     expect(screen.getByText(/Fase 1: Diagramação/i)).toBeInTheDocument();
     expect(screen.getByText(/Fase 2: Tabela-Verdade/i)).toBeInTheDocument();
     expect(screen.getByText(/Fase 3: Formalização/i)).toBeInTheDocument();
   });
 
-  it('[Cenário 1] exibe 3 botões "Iniciar" no estado inicial', () => {
-    render(<Home />);
+  it('[Cenário 1] exibe apenas 1 botão "Iniciar" e os outros "Bloqueado" no estado inicial', async () => {
+    await renderLobby();
     const iniciarBtns = screen.getAllByRole('button', { name: /Iniciar/i });
-    expect(iniciarBtns).toHaveLength(3);
+    expect(iniciarBtns).toHaveLength(1);
+    const bloqueadoBtns = screen.getAllByRole('button', { name: /Bloqueado/i });
+    expect(bloqueadoBtns).toHaveLength(2);
   });
 
-  it('[Cenário 1] NÃO exibe handles ou instruções de drag-and-drop para o aluno', () => {
-    render(<Home />);
+  it('[Cenário 1] NÃO exibe handles ou instruções de drag-and-drop para o aluno', async () => {
+    await renderLobby();
     expect(screen.queryByText(/Arraste os cart/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/reordenar/i)).not.toBeInTheDocument();
   });
 
-  it('[Cenário 1] exibe status "0/2 concluídas" para cada fase inicialmente', () => {
-    render(<Home />);
+  it('[Cenário 1] exibe status "0/2 concluídas" ou "Bloqueado" para cada fase inicialmente', async () => {
+    await renderLobby();
     const statuses = screen.getAllByText(/0\/2 concluídas/i);
-    expect(statuses).toHaveLength(3);
+    expect(statuses).toHaveLength(1);
+    
+    const lockedStatuses = screen.getAllByText(/Bloqueado/i);
+    expect(lockedStatuses).toHaveLength(4);
   });
 
-  it('[Cenário 2] chama loadEditorState para buscar os dados do storage ao montar', () => {
-    render(<Home />);
+  it('[Cenário 2] chama loadEditorState para buscar os dados do storage ao montar', async () => {
+    await renderLobby();
     expect(loadEditorState).toHaveBeenCalledTimes(1);
   });
 
-  it('[Cenário 3] abre o menu de perfil ao clicar no avatar e permite fazer logout', () => {
-    render(<Home />);
+  it('[Cenário 3] abre o menu de perfil ao clicar no avatar e permite fazer logout', async () => {
+    await renderLobby();
     const profileBtn = screen.getByRole('button', { name: /Menu do usuário/i });
     expect(profileBtn).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Modo Editor/i })).not.toBeInTheDocument();
@@ -201,13 +211,13 @@ describe('Lobby — Renderização Inicial', () => {
     expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/login' });
   });
 
-  it('exibe o botão para "Modo Editor" dentro do menu de perfil se o usuário for professor (role: TEACHER)', () => {
+  it('exibe o botão para "Modo Editor" dentro do menu de perfil se o usuário for professor (role: TEACHER)', async () => {
     (useSession as jest.Mock).mockReturnValue({
       data: { user: { email: 'professor@ulbra.br', role: 'TEACHER' } },
       status: 'authenticated',
     });
 
-    render(<Home />);
+    await renderLobby();
     const profileBtn = screen.getByRole('button', { name: /Menu do usuário/i });
     fireEvent.click(profileBtn);
 
@@ -222,23 +232,23 @@ describe('Lobby — Renderização Inicial', () => {
 // ---------------------------------------------------------------------------
 
 describe('Lobby — Estado Vazio', () => {
-  it('[Cenário estado vazio] exibe mensagem quando não há fases no storage', () => {
+  it('[Cenário estado vazio] exibe mensagem quando não há fases no storage', async () => {
     (loadEditorState as jest.Mock).mockReturnValue({
       version: 1,
       updatedAt: '2026-09-10T14:00:00.000Z',
       phases: [],
     });
-    render(<Home />);
+    await renderLobby();
     expect(screen.getByText(/Nenhuma fase disponível|Acesse o Editor/i)).toBeInTheDocument();
   });
 
-  it('[Cenário fase sem questões] exibe botão desabilitado para fase sem questões', () => {
+  it('[Cenário fase sem questões] exibe botão desabilitado para fase sem questões', async () => {
     (loadEditorState as jest.Mock).mockReturnValue({
       version: 1,
       updatedAt: '2026-09-10T14:00:00.000Z',
       phases: [{ id: 'f1', titulo: 'Fase Vazia', icone: 'Network', questoes: [] }],
     });
-    render(<Home />);
+    await renderLobby();
     const btn = screen.getByRole('button', { name: /Sem questões/i });
     expect(btn).toBeDisabled();
   });
@@ -249,8 +259,8 @@ describe('Lobby — Estado Vazio', () => {
 // ---------------------------------------------------------------------------
 
 describe('Navegação Lobby -> Fase', () => {
-  it('navega para a Fase 1 ao clicar em Iniciar e exibe a primeira questão', () => {
-    render(<Home />);
+  it('navega para a Fase 1 ao clicar em Iniciar e exibe a primeira questão', async () => {
+    await renderLobby();
 
     const phase1Card = screen.getByText(/Fase 1: Diagramação/i).closest('[data-testid="phase-card"]');
     const iniciarBtn = phase1Card
@@ -264,8 +274,8 @@ describe('Navegação Lobby -> Fase', () => {
     expect(screen.getByText(/Analise o argumento disjuntivo/i)).toBeInTheDocument();
   });
 
-  it('exibe a barra de progresso correta ao iniciar uma fase', () => {
-    render(<Home />);
+  it('exibe a barra de progresso correta ao iniciar uma fase', async () => {
+    await renderLobby();
     fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[0]);
     expect(screen.getByText(/Questão 1\/2/i)).toBeInTheDocument();
   });
@@ -276,8 +286,8 @@ describe('Navegação Lobby -> Fase', () => {
 // ---------------------------------------------------------------------------
 
 describe('Fluxo completo de uma Fase (Diagramação)', () => {
-  it('conclui a Fase 1 e retorna ao Lobby com status atualizado', () => {
-    render(<Home />);
+  it('conclui a Fase 1 e retorna ao Lobby com status atualizado', async () => {
+    await renderLobby();
 
     // Inicia Fase 1
     fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[0]);
@@ -319,9 +329,9 @@ describe('Fluxo completo de uma Fase (Diagramação)', () => {
 // ---------------------------------------------------------------------------
 
 describe('Modal de saída durante a fase', () => {
-  it('exibe modal de confirmação ao clicar no botão de sair', () => {
-    render(<Home />);
-    fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[1]); // Fase 2
+  it('exibe modal de confirmação ao clicar no botão de sair', async () => {
+    await renderLobby();
+    fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[0]); // Fase 2
 
     const fecharBtn = screen.getByRole('button', { name: /Fechar/i });
     fireEvent.click(fecharBtn);
@@ -329,9 +339,9 @@ describe('Modal de saída durante a fase', () => {
     expect(screen.getByText(/Tem certeza de que deseja sair/i)).toBeInTheDocument();
   });
 
-  it('volta para a fase ao clicar em "Continuar jogando"', () => {
-    render(<Home />);
-    fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[1]);
+  it('volta para a fase ao clicar em "Continuar jogando"', async () => {
+    await renderLobby();
+    fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[0]);
 
     fireEvent.click(screen.getByRole('button', { name: /Fechar/i }));
     fireEvent.click(screen.getByRole('button', { name: /Continuar jogando/i }));
@@ -340,9 +350,9 @@ describe('Modal de saída durante a fase', () => {
     expect(screen.getByText(/Questão 1\/2/i)).toBeInTheDocument();
   });
 
-  it('retorna ao Lobby ao confirmar saída', () => {
-    render(<Home />);
-    fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[1]);
+  it('retorna ao Lobby ao confirmar saída', async () => {
+    await renderLobby();
+    fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[0]);
 
     fireEvent.click(screen.getByRole('button', { name: /Fechar/i }));
     fireEvent.click(screen.getByRole('button', { name: /^Sair$/i }));
