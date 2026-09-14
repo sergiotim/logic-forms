@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ROLES
+// ==========================================
+enum Role {
+  STUDENT
+  TEACHER
+}
+
+enum QuestionType {
+  DIAGRAMACAO
+  TABELA_VERDADE
+  FORMALIZACAO
+}
+
+// ==========================================
+// NEXTAUTH & USERS
+// ==========================================
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(STUDENT) 
+
+  accounts      Account[]
+  sessions      Session[]
+  submissions   Submission[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// BUSINESS DOMAIN (LÓGICA DINÂMICA)
+// ==========================================
+model Phase {
+  id        String     @id @default(cuid())
+  title     String
+  icon      String
+  order     Int
+  
+  questions Question[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Question {
+  id        String       @id @default(cuid())
+  phaseId   String
+  type      QuestionType
+  topic     String
+  enunciado String
+  order     Int
+  
+  // JSON flexível que mapeia para o TS:
+  // BaseQuestion (frases | expressao/linhas | dicas/teclado)
+  content   Json         
+
+  phase       Phase        @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Submission {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  
+  isCorrect  Boolean
+  answer     Json     // Resposta bruta enviada pelo aluno
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  @@unique([userId, questionId]) 
+}
