@@ -45,8 +45,8 @@ export const TabelaVerdade: React.FC<TabelaVerdadeProps> = ({ question, userAnsw
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border-subtle font-mono">
-      <table className="w-full border-collapse bg-base">
+    <div className="rounded-lg border border-border-subtle font-mono shadow-inner w-full overflow-x-auto">
+      <table className="w-full border-collapse bg-base text-[10px] sm:text-[11px] md:text-sm">
         <thead>
           <tr>
             {question.variaveis.map((v, i) => {
@@ -54,7 +54,7 @@ export const TabelaVerdade: React.FC<TabelaVerdadeProps> = ({ question, userAnsw
               return (
                 <th
                   key={i}
-                  className={`border border-border-subtle text-center p-3 whitespace-nowrap ${
+                  className={`border border-border-subtle text-center px-1 py-1.5 md:p-3 whitespace-nowrap ${
                     connective
                       ? 'bg-primary/5 text-primary border-t-2 border-t-primary/50'
                       : 'bg-surface text-primary'
@@ -65,7 +65,7 @@ export const TabelaVerdade: React.FC<TabelaVerdadeProps> = ({ question, userAnsw
                 </th>
               );
             })}
-            <th className="border border-border-subtle text-center p-3 bg-primary/10 border-l-2 border-l-primary text-primary whitespace-nowrap">
+            <th className="border border-border-subtle text-center px-1 py-1.5 md:p-3 bg-primary/10 border-l-2 border-l-primary text-primary whitespace-nowrap">
               {question.expressao}
             </th>
           </tr>
@@ -88,10 +88,10 @@ export const TabelaVerdade: React.FC<TabelaVerdadeProps> = ({ question, userAnsw
                       return (
                         <td
                           key={cIdx}
-                          className="p-2 min-w-[80px] border border-border-subtle text-center"
+                          className="px-0.5 py-1 md:p-2 border border-border-subtle text-center"
                         >
                           <div
-                            className="w-full py-1.5 bg-surface/80 border border-primary/30 rounded text-primary font-bold text-sm select-none"
+                            className="w-full py-1 md:py-1.5 bg-surface/80 border border-primary/30 rounded text-primary font-bold text-[10px] md:text-sm select-none"
                             title="Resposta pré-preenchida pelo professor"
                           >
                             {v}
@@ -104,26 +104,26 @@ export const TabelaVerdade: React.FC<TabelaVerdadeProps> = ({ question, userAnsw
                     return (
                       <td
                         key={cIdx}
-                        className="p-2 min-w-[80px] border border-border-subtle text-center"
+                        className="px-0.5 py-1 md:p-2 border border-border-subtle text-center"
                       >
                         {renderButton(cellVal, () => handleToggle(rowIndex, header))}
                       </td>
                     );
                   }
 
-                  // Variável atômica (P, Q, R) -> célula estática pré-preenchida
+                  // Variável atômica (P, Q, R)
                   return (
-                    <td key={cIdx} className="border border-border-subtle text-center p-3 text-text-muted whitespace-nowrap">
+                    <td key={cIdx} className="border border-border-subtle text-center px-1 py-1.5 md:p-3 text-text-muted whitespace-nowrap">
                       {v}
                     </td>
                   );
                 })}
 
                 {/* Coluna final */}
-                <td className="p-2 min-w-[100px] border border-border-subtle border-l-2 border-l-border-subtle text-center">
+                <td className="px-0.5 py-1 md:p-2 border border-border-subtle border-l-2 border-l-border-subtle text-center">
                   {isFinalRevealed ? (
                     <div
-                      className="w-full py-1.5 bg-surface/80 border border-primary/30 rounded text-primary font-bold text-sm select-none"
+                      className="w-full py-1 md:py-1.5 bg-surface/80 border border-primary/30 rounded text-primary font-bold text-[10px] md:text-sm select-none"
                       title="Resposta pré-preenchida pelo professor"
                     >
                       {question.resposta_esperada[rowIndex] || 'V'}

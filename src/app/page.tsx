@@ -354,7 +354,7 @@ export default function Home() {
             : 'overflow-y-auto overflow-x-hidden p-4 md:p-6 pt-6 md:pt-12'
         }`}
       >
-        <div className={`w-full max-w-3xl ${currentView === 'playing' ? 'h-[100dvh] md:h-auto flex flex-col' : ''}`}>
+        <div className={`w-full max-w-3xl ${currentView === 'playing' ? 'h-full md:h-auto flex flex-col' : ''}`}>
           {currentView === 'lobby' && (
             <div className="animate-in fade-in zoom-in-95 duration-300">
               <div className="text-center mb-10">

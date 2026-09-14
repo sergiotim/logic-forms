@@ -37,7 +37,7 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col h-screen overflow-hidden selection:bg-primary selection:text-white">
+      <body className="min-h-full flex flex-col h-[100dvh] overflow-hidden selection:bg-primary selection:text-white">
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
