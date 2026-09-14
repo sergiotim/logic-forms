@@ -19,7 +19,7 @@ interface PhaseEditorProps {
 
 export const PhaseEditor: React.FC<PhaseEditorProps> = ({
   phase,
-  totalPhasesCount,
+  totalPhasesCount = 1,
   onUpdatePhase,
   onDeletePhase,
   onAddQuestion,
@@ -151,7 +151,7 @@ export const PhaseEditor: React.FC<PhaseEditorProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+          <div className="flex items-center gap-2 self-end md:self-center shrink-0 flex-wrap">
             {onExportPhase && (
               <Button
                 type="button"
@@ -161,7 +161,7 @@ export const PhaseEditor: React.FC<PhaseEditorProps> = ({
                 title="Exportar esta fase em arquivo .json"
                 aria-label={`Exportar fase ${phase.titulo}`}
               >
-                <DownloadCloud size={15} /> Exportar Fase
+                <DownloadCloud size={15} /> Exportar
               </Button>
             )}
             <Button

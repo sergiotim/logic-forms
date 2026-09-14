@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Phase, LucideIconName } from '@/types';
 import { ICON_MAP, ICON_OPTIONS } from '@/lib/icons';
 import { Button } from '@/components/ui/Button';
-import { Plus, X, GripVertical, UploadCloud } from 'lucide-react';
+import { Plus, X, GripVertical, UploadCloud, DownloadCloud } from 'lucide-react';
 
 import {
   DndContext,
@@ -29,6 +29,7 @@ interface PhaseSidebarProps {
   onCreatePhase: (titulo: string, icone: LucideIconName) => void;
   onReorderPhases: (oldIndex: number, newIndex: number) => void;
   onImportPackage?: (pkg: unknown) => void;
+  onExportAll?: () => void;
 }
 
 interface SortablePhaseItemProps {
@@ -116,6 +117,7 @@ export const PhaseSidebar: React.FC<PhaseSidebarProps> = ({
   onCreatePhase,
   onReorderPhases,
   onImportPackage,
+  onExportAll,
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPhaseTitle, setNewPhaseTitle] = useState('');
@@ -224,36 +226,59 @@ export const PhaseSidebar: React.FC<PhaseSidebarProps> = ({
       />
 
       {/* Header do Sidebar */}
-      <div className="p-3.5 border-b border-border-subtle space-y-2.5">
+      <div className="p-3.5 border-b border-border-subtle space-y-3">
+        {/* Linha 1: Título e Contagem */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <h2 className="text-sm font-bold text-white tracking-wide">Fases de Estudo</h2>
-            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-base border border-border-subtle text-text-muted shrink-0">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-white tracking-wide whitespace-nowrap">
+              Fases de Estudo
+            </h2>
+            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-base border border-border-subtle text-text-muted">
               {phases.length}
             </span>
           </div>
-          {onImportPackage && (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-2.5 py-1 rounded-md border border-border-subtle bg-base text-text-muted hover:text-white hover:border-primary/50 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-              title="Importar pacote de fases (.json)"
-              aria-label="Importar pacote de fases"
-            >
-              <UploadCloud size={13} />
-              <span>Importar</span>
-            </button>
-          )}
         </div>
 
+        {/* Linha 2: Botão Primário Nova Fase */}
         <button
           type="button"
           onClick={() => setShowCreateModal(true)}
-          className="w-full py-2 px-3 rounded-lg border border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-[0.99]"
+          className="w-full py-2 px-3 rounded-lg border border-primary/40 bg-primary/15 text-primary hover:bg-primary hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-[0.99]"
         >
           <Plus size={15} />
           <span>Nova Fase</span>
         </button>
+
+        {/* Linha 3: Ações Utilitárias em Grid Balanceado */}
+        {(onExportAll || onImportPackage) && (
+          <div className={`grid ${onExportAll && onImportPackage ? 'grid-cols-2' : 'grid-cols-1'} gap-2 pt-0.5`}>
+            {onExportAll && (
+              <button
+                type="button"
+                onClick={onExportAll}
+                disabled={phases.length === 0}
+                className="py-1.5 px-2 rounded-lg border border-border-subtle bg-base text-text-muted hover:text-white hover:border-primary/50 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                title="Exportar todas as fases juntas (.json)"
+                aria-label="Exportar tudo"
+              >
+                <DownloadCloud size={13} className="shrink-0" />
+                <span className="truncate">Exportar Tudo</span>
+              </button>
+            )}
+            {onImportPackage && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="py-1.5 px-2 rounded-lg border border-border-subtle bg-base text-text-muted hover:text-white hover:border-primary/50 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                title="Importar pacote de fases (.json)"
+                aria-label="Importar pacote de fases"
+              >
+                <UploadCloud size={13} className="shrink-0" />
+                <span className="truncate">Importar</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Lista de Fases com Drag and Drop */}

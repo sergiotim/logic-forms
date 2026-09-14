@@ -17,6 +17,7 @@ interface EditorLayoutProps {
   onReorderQuestions: (phaseId: string, oldIndex: number, newIndex: number) => void;
   onImportPackage?: (pkg: unknown) => void;
   onExportPhase?: (phaseId: string) => void;
+  onExportAll?: () => void;
 }
 
 export const EditorLayout: React.FC<EditorLayoutProps> = ({
@@ -32,6 +33,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
   onReorderQuestions,
   onImportPackage,
   onExportPhase,
+  onExportAll,
 }) => {
   const [modalQuestion, setModalQuestion] = useState<Question | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,6 +72,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
         onCreatePhase={onCreatePhase}
         onReorderPhases={onReorderPhases}
         onImportPackage={onImportPackage}
+        onExportAll={onExportAll}
       />
 
       {/* Conteúdo Principal do Editor */}

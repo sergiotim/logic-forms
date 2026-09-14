@@ -18,12 +18,14 @@ import { exportPackage, importPackage } from '@/lib/exportImport';
 import { EditorState, Phase, Question, LucideIconName } from '@/types';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { Feedback } from '@/components/ui/Feedback';
-import { ArrowLeft, Settings, X } from 'lucide-react';
+import { ArrowLeft, Settings, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { fetchPhasesApi, savePhasesApi } from '@/lib/api';
 
 export default function EditorPage() {
   const [editorState, setEditorState] = useState<EditorState | null>(null);
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
 
   useEffect(() => {
@@ -34,47 +36,84 @@ export default function EditorPage() {
   }, [feedback]);
 
   useEffect(() => {
-    const state = loadEditorState();
-    setEditorState(state);
-    if (state.phases.length > 0) {
-      setSelectedPhaseId(state.phases[0].id);
+    // 1. Inicia imediatamente com o estado local para renderização instantânea
+    const local = loadEditorState();
+    setEditorState(local);
+    if (local.phases.length > 0) {
+      setSelectedPhaseId(local.phases[0].id);
     }
     setIsLoaded(true);
+
+    // 2. Busca os dados reais e atualizados do Neon PostgreSQL
+    fetchPhasesApi()
+      .then((dbPhases) => {
+        const stateFromDb: EditorState = {
+          version: local.version || 1,
+          updatedAt: new Date().toISOString(),
+          phases: dbPhases,
+        };
+        setEditorState(stateFromDb);
+        saveEditorState(stateFromDb);
+        if (dbPhases.length > 0) {
+          setSelectedPhaseId((prev) =>
+            prev && dbPhases.some((p) => p.id === prev) ? prev : dbPhases[0].id,
+          );
+        } else {
+          setSelectedPhaseId(null);
+        }
+      })
+      .catch((err) => {
+        console.warn('Sincronização com o banco falhou, usando cache local:', err.message);
+      });
   }, []);
 
-  const handleCreatePhase = (titulo: string, icone: LucideIconName) => {
+  const persistState = async (updatedState: EditorState) => {
+    setEditorState(updatedState);
+    saveEditorState(updatedState);
+    try {
+      setIsSaving(true);
+      await savePhasesApi(updatedState.phases);
+    } catch (err: unknown) {
+      console.error('Erro ao persistir no banco:', err);
+      const msg = err instanceof Error ? err.message : '';
+      setFeedback({
+        type: 'warning',
+        message: 'Alteração salva localmente, mas houve erro ao sincronizar com o banco: ' + msg,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreatePhase = async (titulo: string, icone: LucideIconName) => {
     if (!editorState) return;
     const newPhase = createPhase(titulo, icone);
     const updatedState: EditorState = {
       ...editorState,
       phases: [...editorState.phases, newPhase],
     };
-    setEditorState(updatedState);
-    saveEditorState(updatedState);
     setSelectedPhaseId(newPhase.id);
+    await persistState(updatedState);
   };
 
-  const handleUpdatePhase = (phase: Phase) => {
+  const handleUpdatePhase = async (phase: Phase) => {
     if (!editorState) return;
     const updatedState = updatePhase(editorState, phase);
-    setEditorState(updatedState);
-    saveEditorState(updatedState);
+    await persistState(updatedState);
   };
 
-  const handleDeletePhase = (phaseId: string) => {
+  const handleDeletePhase = async (phaseId: string) => {
     if (!editorState) return;
     if (editorState.phases.length <= 1) return;
 
     const updatedState = deletePhase(editorState, phaseId);
-    setEditorState(updatedState);
-    saveEditorState(updatedState);
-
     if (selectedPhaseId === phaseId) {
       setSelectedPhaseId(updatedState.phases.length > 0 ? updatedState.phases[0].id : null);
     }
+    await persistState(updatedState);
   };
 
-  const handleSaveQuestion = (phaseId: string, question: Question) => {
+  const handleSaveQuestion = async (phaseId: string, question: Question) => {
     if (!editorState) return;
     const phase = editorState.phases.find((p) => p.id === phaseId);
     if (!phase) return;
@@ -93,29 +132,25 @@ export default function EditorPage() {
       };
     }
 
-    setEditorState(updatedState);
-    saveEditorState(updatedState);
+    await persistState(updatedState);
   };
 
-  const handleDeleteQuestion = (phaseId: string, questionId: string) => {
+  const handleDeleteQuestion = async (phaseId: string, questionId: string) => {
     if (!editorState) return;
     const updatedState = deleteQuestion(editorState, phaseId, questionId);
-    setEditorState(updatedState);
-    saveEditorState(updatedState);
+    await persistState(updatedState);
   };
 
-  const handleReorderPhases = (oldIndex: number, newIndex: number) => {
+  const handleReorderPhases = async (oldIndex: number, newIndex: number) => {
     if (!editorState) return;
     const updatedState = reorderPhases(editorState, oldIndex, newIndex);
-    setEditorState(updatedState);
-    saveEditorState(updatedState);
+    await persistState(updatedState);
   };
 
-  const handleReorderQuestions = (phaseId: string, oldIndex: number, newIndex: number) => {
+  const handleReorderQuestions = async (phaseId: string, oldIndex: number, newIndex: number) => {
     if (!editorState) return;
     const updatedState = reorderQuestions(editorState, phaseId, oldIndex, newIndex);
-    setEditorState(updatedState);
-    saveEditorState(updatedState);
+    await persistState(updatedState);
   };
 
   const handleExportPhase = (phaseId: string) => {
@@ -141,24 +176,44 @@ export default function EditorPage() {
     });
   };
 
-  const handleImportPackage = (packageData: unknown) => {
+  const handleExportAll = () => {
+    if (!editorState || editorState.phases.length === 0) return;
+    const pkg = exportPackage(editorState);
+    const json = JSON.stringify(pkg, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.download = `logica-dinamica-todas-fases-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setFeedback({
+      type: 'success',
+      message: `Todas as ${editorState.phases.length} fases foram exportadas em um único pacote com sucesso!`,
+    });
+  };
+
+  const handleImportPackage = async (packageData: unknown) => {
     if (!editorState) return;
     try {
       const result = importPackage(editorState, packageData);
-      setEditorState(result.state);
-      saveEditorState(result.state);
       const lastImported = result.state.phases[result.state.phases.length - 1];
       if (lastImported) {
         setSelectedPhaseId(lastImported.id);
       }
+      await persistState(result.state);
       setFeedback({
         type: 'success',
-        message: `${result.importedPhasesCount} fase(s) e ${result.importedQuestionsCount} questão(ões) importada(s) com sucesso!`,
+        message: `${result.importedPhasesCount} fase(s) e ${result.importedQuestionsCount} questão(ões) importada(s) e salvas no banco com sucesso!`,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao importar pacote.';
       setFeedback({
         type: 'error',
-        message: err.message || 'Erro ao importar pacote.',
+        message: msg,
       });
     }
   };
@@ -176,7 +231,18 @@ export default function EditorPage() {
             <Settings size={20} />
           </div>
           <div>
-            <h1 className="font-bold text-lg text-white leading-tight">Editor de Conteúdo</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-lg text-white leading-tight">Editor de Conteúdo</h1>
+              {isSaving ? (
+                <span className="flex items-center gap-1 text-[11px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                  <Loader2 size={11} className="animate-spin" /> Salvando...
+                </span>
+              ) : (
+                <span className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-success bg-success/10 px-2 py-0.5 rounded-full border border-success/20">
+                  <CheckCircle2 size={11} /> Sincronizado
+                </span>
+              )}
+            </div>
             <span className="text-xs text-text-muted hidden sm:inline">
               Gerencie fases, formule questões e acompanhe o preview em tempo real
             </span>
@@ -205,6 +271,7 @@ export default function EditorPage() {
         onReorderQuestions={handleReorderQuestions}
         onImportPackage={handleImportPackage}
         onExportPhase={handleExportPhase}
+        onExportAll={handleExportAll}
       />
 
       {/* Toast flutuante de Feedback */}

@@ -457,11 +457,11 @@ describe('[SPEC-005] Exportação e Importação de Fases na UI', () => {
     }
   });
 
-  it('exibe o botão de Exportar Fase no cabeçalho da fase selecionada', () => {
+  it('exibe o botão de Exportar no cabeçalho da fase selecionada', () => {
     render(<EditorPage />);
     fireEvent.click(getSidebarPhase('Diagramação'));
 
-    const exportBtn = screen.getByRole('button', { name: /Exportar Fase/i });
+    const exportBtn = screen.getByRole('button', { name: /Exportar fase Diagramação/i });
     expect(exportBtn).toBeInTheDocument();
   });
 
@@ -471,14 +471,31 @@ describe('[SPEC-005] Exportação e Importação de Fases na UI', () => {
     expect(importBtn).toBeInTheDocument();
   });
 
-  it('dispara a exportação e gera feedback de sucesso ao clicar em Exportar Fase', () => {
+  it('dispara a exportação e gera feedback de sucesso ao clicar em Exportar', () => {
     render(<EditorPage />);
     fireEvent.click(getSidebarPhase('Diagramação'));
 
-    const exportBtn = screen.getByRole('button', { name: /Exportar Fase/i });
+    const exportBtn = screen.getByRole('button', { name: /Exportar fase Diagramação/i });
     fireEvent.click(exportBtn);
 
     expect(screen.getByText(/Fase "Diagramação" exportada com sucesso!/i)).toBeInTheDocument();
   });
+
+  it('exibe o botão de Exportar Tudo na barra lateral e dispara exportação com sucesso', () => {
+    render(<EditorPage />);
+    const exportAllBtn = screen.getByRole('button', { name: /Exportar tudo/i });
+    expect(exportAllBtn).toBeInTheDocument();
+
+    fireEvent.click(exportAllBtn);
+    expect(screen.getByText(/Todas as 3 fases foram exportadas em um único pacote com sucesso!/i)).toBeInTheDocument();
+  });
+
+  it('não exibe o botão redundante de Exportar Todas no formulário da fase', () => {
+    render(<EditorPage />);
+    fireEvent.click(getSidebarPhase('Diagramação'));
+
+    expect(screen.queryByRole('button', { name: /Exportar todas/i })).not.toBeInTheDocument();
+  });
 });
+
 
