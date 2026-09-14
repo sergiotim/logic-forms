@@ -8,12 +8,13 @@ jest.mock('next-auth/jwt', () => ({
   getToken: jest.fn(),
 }), { virtual: true });
 
-// Mock do NextResponse para rastrear os redirecionamentos
+// Mock do NextResponse e userAgent para rastrear os redirecionamentos
 jest.mock('next/server', () => ({
   NextResponse: {
     next: jest.fn(() => ({ type: 'next' })),
     redirect: jest.fn((url) => ({ type: 'redirect', url: url.toString() })),
   },
+  userAgent: jest.fn(() => ({ device: { type: undefined } })),
 }));
 
 describe('Middleware de Autenticação e Controle de Acesso', () => {

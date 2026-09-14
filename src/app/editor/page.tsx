@@ -26,13 +26,18 @@ export default function EditorPage() {
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isMobileDevice, setIsMobileDevice] = useState<boolean | null>(null);
+  const [isMobileDevice, setIsMobileDevice] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.screen.width > 0 && Math.min(window.screen.width, window.screen.height) < 768;
+  });
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
 
   useEffect(() => {
     // Checagem de tela para bloquear smartphones fisicamente
-    const isMobile = Math.min(window.screen.width, window.screen.height) < 768;
-    setIsMobileDevice(isMobile);
+    if (typeof window !== 'undefined' && window.screen.width > 0) {
+      const isMobile = Math.min(window.screen.width, window.screen.height) < 768;
+      setIsMobileDevice(isMobile);
+    }
   }, []);
 
   useEffect(() => {
@@ -225,14 +230,6 @@ export default function EditorPage() {
     }
   };
 
-  if (isMobileDevice === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-base">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   if (isMobileDevice) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base p-6 text-center">
@@ -279,12 +276,6 @@ export default function EditorPage() {
           </div>
         </div>
 
-        <Link
-          href="/"
-          className="text-sm font-medium text-text-muted hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-base transition-colors border border-transparent hover:border-border-subtle"
-        >
-          <ArrowLeft size={16} /> Voltar ao Modo Estudo
-        </Link>
         <div className="flex items-center gap-2">
           <Link
             href="/editor/analytics"
