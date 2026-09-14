@@ -52,52 +52,67 @@ forms/
 ├── docs/                        # Documentação técnica e especificações do produto
 │   ├── brand-kit.md             # Guia de marca, cores, tipografia e tom de voz
 │   ├── Estrutura das Questões (JSON).md  # Schema JSON dos 3 tipos de questão
+│   ├── regras-importacao-ia.md  # Diretrizes para importação de questões geradas por IA
+│   ├── persistencia-submissoes-e-progresso.md # Arquitetura de submissões, progresso e integridade por UUID
 │   └── specs/                   # Especificações técnicas detalhadas
 │       ├── lobby-spec.md        # [SPEC-001] Especificação da tela de Lobby e sistema de fases
 │       ├── editor-spec.md       # [SPEC-002] Especificação do Editor de Conteúdo (Fases e Questões)
 │       ├── parser-spec.md       # [SPEC-003] Especificação do Parser Lógico e Tabela-Verdade
-│       └── formalizacao-spec.md # [SPEC-004] Motor de Validação e Criação de Formalização
+│       ├── formalizacao-spec.md # [SPEC-004] Motor de Validação e Criação de Formalização
+│       ├── auth-db-spec.md      # [SPEC-005] Autenticação Google NextAuth, RBAC e Neon Postgres
+│       └── import-export-spec.md # [SPEC-006] Importação/Exportação em Lote e Sincronização
+├── prisma/                      # Schema do Prisma ORM e migrações do PostgreSQL Neon
+│   └── schema.prisma            # Modelos User, Account, Session, Phase, Question, Submission
 ├── src/
 │   ├── __tests__/               # Testes automatizados de componentes e integração (Jest / RTL)
 │   │   ├── Lobby.test.tsx       # Testes de integração do Lobby e fluxo de resolução de fases
-│   │   └── Editor.test.tsx      # Testes de integração do Modo Editor (CRUD, DnD, preview, abas, validação)
+│   │   ├── Editor.test.tsx      # Testes de integração do Modo Editor (CRUD, DnD, preview, abas, validação)
+│   │   ├── Login.test.tsx       # Testes da página de login e redirecionamento NextAuth
+│   │   ├── apiPhases.test.ts    # Testes dos endpoints de API de fases (GET/POST)
+│   │   ├── apiSubmissions.test.ts # Testes dos endpoints de API de submissões (GET/POST)
+│   │   └── middleware.test.ts   # Testes do middleware de proteção de rotas
 │   ├── app/                     # Next.js App Router
 │   │   ├── page.tsx             # Modo Estudo (Lobby, Quiz, Conclusão de Fase, Exit Modal)
+│   │   ├── login/
+│   │   │   └── page.tsx         # Tela de login com Google OAuth
 │   │   ├── editor/
 │   │   │   └── page.tsx         # Modo Editor (Gerenciamento de fases e questões)
-│   │   ├── layout.tsx           # Wrapper principal da aplicação
+│   │   ├── api/                 # Rotas de API do App Router (NextAuth, Phases, Submissions)
+│   │   ├── layout.tsx           # Wrapper principal da aplicação com SessionProvider
 │   │   └── globals.css          # Estilos globais e animações customizadas
 │   ├── components/              # Componentes React
 │   │   ├── editor/              # Componentes exclusivos do Modo Editor
 │   │   │   ├── EditorLayout.tsx       # Shell com Navbar e layout responsivo
-│   │   │   ├── PhaseSidebar.tsx       # Sidebar de fases com DnD (@dnd-kit)
-│   │   │   ├── PhaseEditor.tsx        # Edição de título e ícone (popover compacto)
+│   │   │   ├── PhaseSidebar.tsx       # Sidebar de fases com DnD e botões de exportar/importar
+│   │   │   ├── PhaseEditor.tsx        # Edição de fase e botão de exportação em lote
 │   │   │   ├── QuestionList.tsx       # Lista de questões da fase com DnD (@dnd-kit)
 │   │   │   ├── QuestionCard.tsx       # Card de questão com ações e drag handle
 │   │   │   ├── QuestionFormModal.tsx  # Modal com abas (Editor vs Visão do Aluno) e formulário
 │   │   │   ├── QuestionPreview.tsx    # Preview ao vivo da questão com sincronização em tempo real
 │   │   │   └── forms/                 # Formulários especializados por tipo
-│   │   │       ├── DiagramacaoForm.tsx
-│   │   │       ├── TabelaVerdadeForm.tsx
-│   │   │       └── FormalizacaoForm.tsx
 │   │   ├── questions/           # Componentes de renderização por tipo de exercício
 │   │   │   ├── Diagramacao.tsx  # Tipo "diagramacao" (Premissas vs Conclusão)
 │   │   │   ├── TabelaVerdade.tsx # Tipo "tabela_verdade" (Matriz V/F com andaime pedagógico)
 │   │   │   └── Formalizacao.tsx # Tipo "formalizacao" (Input + Teclado Lógico Virtual)
 │   │   └── ui/                  # Componentes reutilizáveis de interface
 │   │       ├── Button.tsx       # Variantes de botões (primary, outline, disabled)
-│   │       └── Feedback.tsx     # Alertas visuais (sucesso, aviso, erro)
+│   │       ├── Feedback.tsx     # Alertas visuais (sucesso, aviso, erro)
+│   │       └── ProfileMenu.tsx  # Menu suspenso de perfil do usuário com logout e atalho de editor
 │   ├── data/
 │   │   └── questions.ts         # Banco estático inicial / fallback de seed (bancoDeQuestoes)
 │   ├── lib/                     # Camada lógica, utilitária e serviços
+│   │   ├── auth.ts              # Configuração e callbacks do NextAuth
+│   │   ├── prisma.ts            # Instância singleton do PrismaClient
+│   │   ├── db.ts                # Camada de persistência relacional no Neon Postgres
+│   │   ├── api.ts               # Cliente fetch de integração para fases e submissões
 │   │   ├── parser.ts            # Motor do Parser Proposicional, AST, extração topológica e matriz
 │   │   ├── storage.ts           # CRUD do localStorage, migrações de versão e seed inicial
 │   │   ├── icons.ts             # Mapeamento e opções de LucideIconName serializáveis
 │   │   └── __tests__/           # Testes unitários da camada lógica e de dados
-│   │       ├── parser.test.ts   # Testes unitários do parser lógico e geração de tabelas
-│   │       └── storage.test.ts  # Testes unitários do storage e CRUD
+│   ├── middleware.ts            # Proteção de rotas do Next.js baseada em sessão e RBAC
 │   └── types/
-│       └── index.ts             # Interfaces TypeScript (BaseQuestion, Phase, EditorState, etc.)
+│       ├── index.ts             # Interfaces TypeScript (BaseQuestion, Phase, EditorState, etc.)
+│       └── next-auth.d.ts       # Extensão de tipagem do NextAuth para Session e JWT
 ├── legacy/                      # Protótipos legados (referência estática apenas)
 ├── CHANGELOG.md                 # Histórico de alterações e releases
 ├── README.md                    # Documentação geral do repositório

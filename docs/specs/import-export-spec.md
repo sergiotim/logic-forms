@@ -1,95 +1,119 @@
-# [SPEC-005] Sistema de Importação e Exportação de Fases (Compartilhamento Offline)
+# [SPEC-006] Sistema de Importação e Exportação de Fases e Questões
 
 ## 1. Visão Geral
-Como o sistema de **Lógica Dinâmica** opera de forma client-side (armazenando os dados no `localStorage` do navegador), não há um banco de dados centralizado em nuvem no momento. Para permitir que professores criem, compartilhem e utilizem fases criadas por outros docentes, precisamos de um mecanismo de **Exportação e Importação via arquivos `.json`**.
+O sistema de **Importação e Exportação** do **Lógica Dinâmica** permite que professores realizem backup, compartilhem pacotes didáticos com outros docentes e migrem conteúdos entre ambientes de desenvolvimento e produção com facilidade.
 
-Esta especificação define como os dados relacionais são convertidos em um pacote portável ("Fase Hidratada") e como eles são mesclados de forma segura na máquina de destino sem causar corrupção de dados ou colisão de IDs.
+A partir da versão 2.3.0, o sistema opera de forma integrada à persistência em nuvem (Neon PostgreSQL) e mantém suporte a arquivos portáveis no formato `.json` ("Pacote Hidratado"), com exportação individual de fase e **exportação em lote de todas as fases em um único arquivo**.
 
 ---
 
-## 2. Estrutura do Arquivo de Exportação ("Pacote Hidratado")
-Internamente, a plataforma adota um modelo relacional (a Fase guarda apenas um array de `questionIds`, e os dados vivem no `questionBank`). No entanto, ao exportar, o arquivo precisa ser "hidratado". Isso significa que o sistema deve empacotar os metadados da(s) fase(s) e buscar os objetos completos de todas as questões associadas.
+## 2. Estrutura do Pacote de Exportação ("Pacote Hidratado")
 
-Para garantir máxima flexibilidade, o arquivo de exportação é desenhado para aceitar **uma ou múltiplas fases** (um "Módulo" ou "Pacote").
+O arquivo de exportação empacota os metadados de uma ou mais fases e anexa os objetos completos de todas as questões associadas, preservando as ligações relacionais originais através do campo `originalQuestionIds`.
 
-### Schema do Arquivo Exportado (Ex: `modulo-predicados.json`)
+### Schema do Pacote JSON (Ex: `logica-dinamica-todas-fases-2026-09-14.json`)
 ```json
 {
   "metadata": {
     "version": 1,
     "type": "logica-dinamica:package_export",
-    "exportedAt": "2026-09-11T12:00:00Z"
+    "exportedAt": "2026-09-14T03:00:00.000Z"
   },
   "phases": [
     {
-      "titulo": "Exercícios de Predicados - Parte 1",
+      "titulo": "Fase 1: Introdução aos Conectivos",
       "icone": "Brain",
-      "originalQuestionIds": ["q_old_1", "q_old_2"]
+      "originalQuestionIds": ["q-uuid-1", "q-uuid-2"]
     },
     {
-      "titulo": "Exercícios de Predicados - Parte 2",
-      "icone": "Target",
-      "originalQuestionIds": ["q_old_3"]
+      "titulo": "Fase 2: Tabela-Verdade e Tautologia",
+      "icone": "Table2",
+      "originalQuestionIds": ["q-uuid-3"]
     }
   ],
   "questions": [
     {
-      "originalId": "q_old_1",
+      "originalId": "q-uuid-1",
+      "tipo": "diagramacao",
+      "topico": "Lógica Proposicional",
+      "enunciado": "Classifique as frases do argumento:",
+      "frases": [
+        { "id": "f1", "texto": "Se chove, a rua molha." },
+        { "id": "f2", "texto": "Choveu." },
+        { "id": "f3", "texto": "Logo, a rua está molhada." }
+      ],
+      "resposta_esperada": { "f1": "P", "f2": "P", "f3": "C" }
+    },
+    {
+      "originalId": "q-uuid-2",
       "tipo": "formalizacao",
-      "topico": "Lógica de Predicados",
-      "enunciado": "Formalize: 'Todo peculatário é repulsivo.'",
-      "resposta_esperada": "∀x(Px → Rx)"
+      "topico": "Predicados",
+      "enunciado": "Formalize: 'Todo homem é mortal.'",
+      "resposta_esperada": "∀x(Hx → Mx)"
     },
     {
-      "originalId": "q_old_2",
-      /* ... */
-    },
-    {
-      "originalId": "q_old_3",
-      /* ... */
+      "originalId": "q-uuid-3",
+      "tipo": "tabela_verdade",
+      "topico": "Cálculo Proposicional",
+      "enunciado": "Preencha a tabela-verdade da fórmula:",
+      "expressao": "P ∧ Q",
+      "variaveis": ["P", "Q", "P ∧ Q"],
+      "linhas": [
+        { "id": "row-0", "valores": ["V", "V", "V"] },
+        { "id": "row-1", "valores": ["V", "F", "F"] },
+        { "id": "row-2", "valores": ["F", "V", "F"] },
+        { "id": "row-3", "valores": ["F", "F", "F"] }
+      ],
+      "resposta_esperada": ["V", "F", "F", "F"],
+      "celulas_reveladas": {}
     }
   ]
 }
 ```
-*Nota: Adicionamos o campo temporário `originalId` nas questões e `originalQuestionIds` nas fases apenas para o script de importação saber amarrar quem pertence a qual fase. Esses IDs antigos serão descartados ao entrar no novo localStorage.*
 
 ---
 
-## 3. Fluxo de Exportação
-1. No **Modo Editor**, o professor pode clicar em **"Exportar Fase"** (em uma fase específica) ou **"Exportar Todas"** (no cabeçalho da sidebar).
-2. O sistema agrupa a(s) fase(s) solicitada(s).
-3. Varre os `questionIds` de todas as fases selecionadas e extrai as cópias correspondentes do `questionBank`.
-4. Atribui os `originalId` para manter a relação, monta o objeto JSON e aciona o download nativo do navegador.
+## 3. Modalidades de Exportação
+
+O Modo Editor (`/editor`) organiza os pontos de contato de exportação com clara separação de responsabilidades:
+
+### 3.1. Exportação em Lote ("Exportar Tudo")
+- **Onde se localiza:** No cabeçalho da barra lateral de fases (`PhaseSidebar.tsx`), integrado ao grid de utilitários ao lado do botão "Importar".
+- **Comportamento:**
+  - Varre o estado completo de fases e questões (`exportPackage(editorState)`).
+  - Gera um arquivo unificado nomeado automaticamente com carimbo de data: `logica-dinamica-todas-fases-<YYYY-MM-DD>.json`.
+  - Permite que o professor salve todo o currículo da disciplina com apenas um clique.
+
+### 3.2. Exportação Individual de Fase ("Exportar")
+- **Onde se localiza:** No cabeçalho do formulário da fase ativa (`PhaseEditor.tsx`), através do botão secundário `"Exportar"`.
+- **Comportamento:**
+  - Empacota apenas a fase selecionada e suas respectivas questões.
+  - Gera um arquivo específico: `<titulo-da-fase>.json`.
 
 ---
 
 ## 4. Fluxo de Importação e Prevenção de Colisões
-O desafio da importação em sistemas descentralizados é garantir que uma questão importada não sobrescreva acidentalmente uma questão que já existe na máquina de destino.
+
+Ao importar um arquivo `.json`, o sistema adota um algoritmo defensivo para garantir a integridade dos dados locais e remotos:
 
 ### Algoritmo de Importação Segura:
-1. O usuário aciona a importação e fornece o arquivo `.json`.
-2. O sistema valida a estrutura (`metadata.type === "logica-dinamica:package_export"`). 
-3. **Mapeamento e Geração de Novos IDs:**
-   - Cria um dicionário vazio para mapear os IDs: `idMap = {}`.
-   - Para cada questão contida no array `questions` do JSON:
-     1. Cria um **novo ID** único (ex: `crypto.randomUUID()`).
-     2. Salva o mapeamento: `idMap[questao.originalId] = novoId`.
-     3. Remove o `originalId`, atribui o `novoId` e insere a questão no `questionBank` local.
-4. **Reconstrução das Fases:**
-   - Para cada fase no array `phases` do JSON:
-     1. Cria um **novo ID** único para a fase.
-     2. Mapeia o array `originalQuestionIds` usando o `idMap` para obter os novos IDs locais.
-     3. Cria o objeto da Fase referenciando as novas questões (salvando `questionIds`).
-     4. Adiciona a nova Fase no final da lista de fases (`phases`) do estado global.
-5. Persiste as alterações no `localStorage`.
-6. Exibe um aviso de sucesso (`Feedback` toast de Sucesso indicando quantas fases foram importadas).
+1. **Validação do Arquivo:** Verifica se o JSON contém o cabeçalho esperado (`metadata.type === "logica-dinamica:package_export"`).
+2. **Geração de Novos UUIDs:**
+   - Cria um mapa de tradução: `idMap = new Map()`.
+   - Para cada questão contida no pacote, gera um novo UUID (`crypto.randomUUID()`), registra `idMap.set(originalId, novoId)` e remove `originalId`.
+3. **Reconstrução das Fases:**
+   - Para cada fase no pacote, gera um novo UUID de fase.
+   - Substitui o array `originalQuestionIds` pelos novos IDs gerados através do `idMap`.
+   - Adiciona as novas fases à lista existente (sem sobrescrever as fases que o professor já possui).
+4. **Sincronização Dupla (Local + Neon DB):**
+   - Salva o novo estado consolidado no `localStorage` do navegador para funcionamento offline imediato.
+   - Dispara uma chamada automática assíncrona para `POST /api/phases` (`syncPhasesApi`), persistindo a nova estrutura diretamente no banco de dados Neon PostgreSQL.
+   - Assim que a sincronização no banco é concluída, todos os estudantes autenticados no Modo Estudo passam a ver as novas fases instantaneamente.
+5. **Feedback Visual:** Exibe toast de sucesso informando a quantidade exata de fases e questões importadas com sucesso.
 
 ---
 
-## 5. Interface de Usuário (UI/UX)
-Para garantir uma boa usabilidade, o sistema de importação adotará as seguintes interfaces no Modo Editor (`PhaseSidebar`):
-
-- **Botão de Importação Tradicional:** Um botão com ícone de upload (ex: `UploadCloud` do Lucide) no cabeçalho da barra lateral de fases. Ao clicar, um input `<input type="file" accept=".json" />` (invisível) é acionado.
-- **Drag and Drop (Arrastar e Soltar):** A barra lateral de fases deve escutar eventos de `onDragOver` e `onDrop`. Se o professor arrastar um arquivo `.json` do explorador de arquivos do sistema operacional e soltar sobre a área da lista de fases, a importação é processada instantaneamente.
-- **Feedback Visual:** Durante a leitura do arquivo, mostrar um breve estado de *loading*. Ao finalizar, piscar ou rolar a barra lateral até a nova fase recém-criada para mostrar que ela foi adicionada com sucesso.
-
+## 5. Requisitos de Acessibilidade e Interface (UI/UX)
+- Botões de exportação com ícones Lucide adequados (`Download`, `Package`, `Upload`).
+- Labels e `aria-label` distintos para evitar colisões em tecnologias assistivas e testes automatizados.
+- Input de arquivo invisível (`<input type="file" accept=".json" className="hidden" />`) ativado programmaticamente pelo clique nos botões estilizados.

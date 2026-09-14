@@ -4,6 +4,27 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.3.0] - 2026-09-14 (Autenticação NextAuth, Banco Neon DB, Persistência de Submissões & Exportação em Lote)
+
+### Adicionado (Added)
+- **Autenticação com NextAuth.js e Google OAuth (`src/lib/auth.ts`):** Suporte a login seguro com contas Google institucionais e pessoais autorizadas.
+- **Controle de Acesso Baseado em Papéis (RBAC):** Papéis `STUDENT` e `TEACHER` definidos no schema do Prisma e identificação de docentes via variáveis de ambiente `TEACHER_EMAILS` e `ADMIN_EMAILS`.
+- **Proteção de Rotas com Middleware (`src/middleware.ts`):** Redirecionamento automático de usuários não logados para `/login` e restrição estrita da rota `/editor` para usuários com perfil `TEACHER`.
+- **Página de Login Dedicada (`src/app/login/page.tsx`):** Interface dark mode integrada ao Brand Kit com logo estilizada, badge de versão e botão "Entrar com Google".
+- **Menu Suspenso de Perfil (`src/components/ui/ProfileMenu.tsx`):** Componente de perfil na barra de navegação com avatar do Google, exibição do papel (`PROFESSOR` / `ESTUDANTE`), acesso exclusivo ao Modo Editor para docentes e botão de logout.
+- **Banco de Dados Relacional Neon PostgreSQL (`prisma/schema.prisma`):** Modelos `User`, `Account`, `Session`, `VerificationToken`, `Phase`, `Question` e `Submission`.
+- **Persistência Atômica de Fases e Questões (`src/lib/db.ts` e `/api/phases`):** Endpoints `GET /api/phases` (com auto-seed fallback) e `POST /api/phases` para salvar e sincronizar o conteúdo diretamente no PostgreSQL.
+- **Persistência de Submissões e Progresso do Aluno (`/api/submissions`):** Tabela `Submission` com chave única composta `@@unique([userId, questionId])` e deleção em cascata (`onDelete: Cascade`), garantindo idempotência e integridade referencial.
+- **Cálculo Dinâmico de Progresso por Questão (Sem Falso Positivo):** Progresso de fases derivado diretamente das submissões de cada questão por UUID. A remoção e recriação de fases pelo professor não gera falsos positivos de conclusão para o aluno.
+- **Badges de Progresso no Lobby (`src/app/page.tsx`):** Exibição de status detalhado (`0/N concluídas`, `X/N concluídas` ou `Concluído` com ícone de check).
+- **Exportação em Lote de Todas as Fases ("Exportar Tudo"):** Botões na barra lateral (`PhaseSidebar.tsx`) e no cabeçalho do editor (`PhaseEditor.tsx`) permitindo exportar todo o currículo de fases e questões em um único pacote `.json` com carimbo de data.
+- **Sincronização Dupla ao Importar:** Ao importar um pacote JSON no editor, o estado é imediatamente salvo no `localStorage` e propagado para o banco de dados Neon PostgreSQL via API.
+- **Suíte Abrangente de Testes de Autenticação e Banco:** 49 novos testes automatizados cobrindo `Login.test.tsx`, `apiPhases.test.ts`, `apiSubmissions.test.ts`, `middleware.test.ts` e `db.test.ts`. Suíte total expandida para 185 testes no Jest.
+
+### Alterado (Changed)
+- **Otimização da Barra de Navegação:** Remoção do botão duplicado "Modo Editor" da linha principal da navbar, centralizando o acesso no menu suspenso do perfil do usuário.
+- **Documentação Técnica Expandida (`docs/`):** Adicionado `docs/persistencia-submissoes-e-progresso.md` e atualizadas as especificações `docs/specs/auth-db-spec.md` e `docs/specs/import-export-spec.md`.
+
 ## [2.2.0] - 2026-09-11 (Motor de Formalização Lógica, Validação Semântica & Alpha-Conversão)
 
 ### Adicionado (Added)
