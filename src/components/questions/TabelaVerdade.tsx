@@ -1,4 +1,5 @@
 import React from 'react';
+import { HelpCircle } from 'lucide-react';
 import { TabelaVerdadeQuestion } from '@/types';
 
 interface TabelaVerdadeProps {
@@ -33,19 +34,65 @@ export const TabelaVerdade: React.FC<TabelaVerdadeProps> = ({ question, userAnsw
 
   const renderButton = (val: string, onClick: () => void) => {
     let btnClasses =
-      'w-full h-full min-h-[40px] bg-base border border-border-subtle rounded-md text-text-muted font-bold cursor-pointer transition-colors hover:border-primary';
-    if (val === 'V') btnClasses += ' text-success border-success bg-success/10';
-    if (val === 'F') btnClasses += ' text-error border-error bg-error/10';
+      'w-full h-full min-h-[40px] bg-base rounded-md font-bold cursor-pointer transition-all duration-150 active:scale-95';
+    if (val === '') {
+      btnClasses +=
+        ' text-text-muted border border-dashed border-border-subtle hover:border-primary hover:bg-primary/5';
+    } else if (val === 'V') {
+      btnClasses += ' text-success border border-success bg-success/10 hover:bg-success/20';
+    } else if (val === 'F') {
+      btnClasses += ' text-error border border-error bg-error/10 hover:bg-error/20';
+    }
+
+    const titleText =
+      val === ''
+        ? '1 toque para V, 2 toques para F'
+        : val === 'V'
+          ? 'Valor: V. Clique para mudar para F'
+          : 'Valor: F. Clique para limpar (-)';
+
+    const ariaLabel =
+      val === ''
+        ? 'Célula vazia. 1 toque para V, 2 toques para F.'
+        : `Célula preenchida com ${val}. Clique para alternar.`;
 
     return (
-      <button type="button" onClick={onClick} className={btnClasses}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={btnClasses}
+        title={titleText}
+        aria-label={ariaLabel}
+      >
         {val === '' ? '-' : val}
       </button>
     );
   };
 
   return (
-    <div className="rounded-lg border border-border-subtle font-mono shadow-inner w-full overflow-x-auto">
+    <div className="space-y-3 w-full">
+      {/* Guia de Preenchimento das Células */}
+      <div className="p-2.5 sm:p-3 bg-surface/80 border border-border-subtle rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-sans">
+        <div className="flex items-center gap-2 text-text-muted">
+          <HelpCircle size={15} className="text-primary shrink-0" />
+          <span>
+            Clique nas células vazias (<span className="font-mono font-bold text-text-main">-</span>) para preencher:
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 font-mono text-[11px] self-start sm:self-auto flex-wrap">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-success/15 border border-success/40 text-success font-semibold">
+            <span className="text-[10px] font-sans opacity-75">1 toque</span> V
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error/15 border border-error/40 text-error font-semibold">
+            <span className="text-[10px] font-sans opacity-75">2 toques</span> F
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-base border border-border-subtle text-text-muted font-medium">
+            <span className="text-[10px] font-sans opacity-75">3 toques</span> Limpar
+          </span>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border-subtle font-mono shadow-inner w-full overflow-x-auto">
       <table className="w-full border-collapse bg-base text-[10px] sm:text-[11px] md:text-sm">
         <thead>
           <tr>
@@ -138,5 +185,6 @@ export const TabelaVerdade: React.FC<TabelaVerdadeProps> = ({ question, userAnsw
         </tbody>
       </table>
     </div>
+  </div>
   );
 };
