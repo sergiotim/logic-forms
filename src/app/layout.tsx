@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Plataforma de exercícios de lógica.",
 };
 
+import { SessionProvider } from "@/components/providers/SessionProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +31,7 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col h-screen overflow-hidden selection:bg-primary selection:text-white">
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );
