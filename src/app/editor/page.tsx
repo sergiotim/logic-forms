@@ -18,7 +18,7 @@ import { exportPackage, importPackage } from '@/lib/exportImport';
 import { EditorState, Phase, Question, LucideIconName } from '@/types';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { Feedback } from '@/components/ui/Feedback';
-import { ArrowLeft, Settings, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Settings, X, Loader2, CheckCircle2, BarChart3 } from 'lucide-react';
 import { fetchPhasesApi, savePhasesApi } from '@/lib/api';
 
 export default function EditorPage() {
@@ -255,6 +255,21 @@ export default function EditorPage() {
         >
           <ArrowLeft size={16} /> Voltar ao Modo Estudo
         </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/editor/analytics"
+            className="text-sm font-medium text-text-muted hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg bg-surface hover:bg-surface/80 border border-border-subtle transition-colors"
+          >
+            <BarChart3 size={16} className="text-primary" /> Análises
+          </Link>
+
+          <Link
+            href="/"
+            className="text-sm font-medium text-text-muted hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-base transition-colors border border-transparent hover:border-border-subtle"
+          >
+            <ArrowLeft size={16} /> Voltar ao Modo Estudo
+          </Link>
+        </div>
       </header>
 
       {/* Corpo do Editor */}

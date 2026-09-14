@@ -4,6 +4,21 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.4.0] - 2026-09-14 (Dashboard de Análises do Professor & Diagnóstico Qualitativo com Recharts)
+
+### Adicionado (Added)
+- **Página do Dashboard de Análises (`/editor/analytics`):** Rota dedicada e segura para docentes acompanharem métricas globais e diagnósticos detalhados de fases.
+- **Arquitetura React Server Component (RSC) (`src/app/editor/analytics/page.tsx`):** Acesso direto e performático ao Prisma ORM sem intermediários ou APIs adicionais.
+- **Visualização de Dados com Recharts (`src/components/editor/analytics/AnalyticsDashboard.tsx`):** Gráfico de barras interativo demonstrando a taxa de sucesso acumulada por tipo de questão (`Diagramação`, `Tabela-Verdade` e `Formalização`).
+- **Cards de Métricas Globais (KPIs):** Indicadores de alunos ativos com submissões, taxa média de conclusão da turma e total de fases monitoradas.
+- **Ranking das Questões Mais Difíceis:** Tabela com ordenação decrescente de questões por volume de submissões incorretas e taxa de erro.
+- **Análise Qualitativa de Erros Conceituais:** Motor pedagógico que agrupa e calcula a frequência de respostas incorretas enviadas pelos alunos (campo `answer` JSON), permitindo ao professor identificar distorções comuns.
+- **Filtro Dinâmico por Fase:** Seletor de fases para alternar diagnósticos de maneira instantânea na interface.
+- **Atalho de Navegação no Editor (`src/app/editor/page.tsx`):** Botão "Análises" com ícone `BarChart3` adicionado ao header do Editor.
+- **Proteção RBAC Completa (`src/middleware.ts`):** Rota `/editor/analytics` restrita a usuários com perfil `TEACHER`, com redirecionamento de estudantes para `/`.
+- **Suíte de Testes Automatizados TDD (`analytics.test.ts`, `Analytics.test.tsx`, `middleware.test.ts`):** 16 novos testes automatizados cobrindo agregações no banco, renderização de UI, filtros e regras de acesso no middleware.
+- **Documentação Técnica e de Produto:** Especificação [[SPEC-007]](docs/specs/analytics-spec.md) e guia de arquitetura [[docs/analytics-dashboard.md]](docs/analytics-dashboard.md).
+
 ## [2.3.0] - 2026-09-14 (Autenticação NextAuth, Banco Neon DB, Persistência de Submissões & Exportação em Lote)
 
 ### Adicionado (Added)

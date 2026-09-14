@@ -78,6 +78,13 @@ describe('Middleware de Autenticação e Controle de Acesso', () => {
       
       expect(mockNextResponseRedirect).toHaveBeenCalledWith(new URL('/', req.url));
     });
+
+    it('deve redirecionar para a raiz (/) ao tentar acessar o /editor/analytics', async () => {
+      const req = createMockRequest('/editor/analytics');
+      await middleware(req);
+      
+      expect(mockNextResponseRedirect).toHaveBeenCalledWith(new URL('/', req.url));
+    });
   });
 
   describe('Usuários Autenticados como Professor', () => {
@@ -87,6 +94,13 @@ describe('Middleware de Autenticação e Controle de Acesso', () => {
 
     it('deve permitir acesso ao /editor', async () => {
       const req = createMockRequest('/editor');
+      await middleware(req);
+      
+      expect(mockNextResponseNext).toHaveBeenCalled();
+    });
+
+    it('deve permitir acesso ao /editor/analytics', async () => {
+      const req = createMockRequest('/editor/analytics');
       await middleware(req);
       
       expect(mockNextResponseNext).toHaveBeenCalled();

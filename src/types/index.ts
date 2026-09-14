@@ -88,3 +88,53 @@ export interface ImportPackageResult {
   importedQuestionsCount: number;
 }
 
+// --- Tipos de Analytics do Professor (SPEC-007) ---
+
+export interface QuestionTypePerformance {
+  type: 'DIAGRAMACAO' | 'TABELA_VERDADE' | 'FORMALIZACAO' | QuestionType;
+  totalSubmissions: number;
+  correctSubmissions: number;
+  successRate: number; // 0 - 100%
+}
+
+export interface HardestQuestionSummary {
+  questionId: string;
+  enunciado: string;
+  topic: string;
+  type: QuestionType | 'DIAGRAMACAO' | 'TABELA_VERDADE' | 'FORMALIZACAO';
+  failureCount: number;
+  totalAttempts: number;
+  failureRate: number; // 0 - 100%
+}
+
+export interface CommonErrorItem {
+  answer: string | Record<string, unknown>;
+  count: number;
+  percentage: number;
+}
+
+export interface QuestionErrorAnalysis {
+  questionId: string;
+  enunciado: string;
+  totalErrors: number;
+  topErrors: CommonErrorItem[];
+}
+
+export interface PhaseAnalytics {
+  phaseId: string;
+  phaseTitle: string;
+  totalQuestions: number;
+  totalSubmissions: number;
+  hardestQuestions: HardestQuestionSummary[];
+  errorAnalysis: QuestionErrorAnalysis[];
+}
+
+export interface GlobalAnalyticsData {
+  totalActiveStudents: number;
+  totalStudents: number;
+  globalCompletionRate: number; // 0 - 100%
+  performanceByType: QuestionTypePerformance[];
+  phases: PhaseAnalytics[];
+}
+
+

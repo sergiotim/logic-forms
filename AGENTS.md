@@ -60,13 +60,15 @@ forms/
 │       ├── parser-spec.md       # [SPEC-003] Especificação do Parser Lógico e Tabela-Verdade
 │       ├── formalizacao-spec.md # [SPEC-004] Motor de Validação e Criação de Formalização
 │       ├── auth-db-spec.md      # [SPEC-005] Autenticação Google NextAuth, RBAC e Neon Postgres
-│       └── import-export-spec.md # [SPEC-006] Importação/Exportação em Lote e Sincronização
+│       ├── import-export-spec.md # [SPEC-006] Importação/Exportação em Lote e Sincronização
+│       └── analytics-spec.md    # [SPEC-007] Dashboard de Análises do Professor (Analytics)
 ├── prisma/                      # Schema do Prisma ORM e migrações do PostgreSQL Neon
 │   └── schema.prisma            # Modelos User, Account, Session, Phase, Question, Submission
 ├── src/
 │   ├── __tests__/               # Testes automatizados de componentes e integração (Jest / RTL)
 │   │   ├── Lobby.test.tsx       # Testes de integração do Lobby e fluxo de resolução de fases
 │   │   ├── Editor.test.tsx      # Testes de integração do Modo Editor (CRUD, DnD, preview, abas, validação)
+│   │   ├── Analytics.test.tsx   # Testes de integração do Dashboard de Análises
 │   │   ├── Login.test.tsx       # Testes da página de login e redirecionamento NextAuth
 │   │   ├── apiPhases.test.ts    # Testes dos endpoints de API de fases (GET/POST)
 │   │   ├── apiSubmissions.test.ts # Testes dos endpoints de API de submissões (GET/POST)
@@ -76,12 +78,16 @@ forms/
 │   │   ├── login/
 │   │   │   └── page.tsx         # Tela de login com Google OAuth
 │   │   ├── editor/
-│   │   │   └── page.tsx         # Modo Editor (Gerenciamento de fases e questões)
+│   │   │   ├── page.tsx         # Modo Editor (Gerenciamento de fases e questões)
+│   │   │   └── analytics/
+│   │   │       └── page.tsx     # Dashboard de Análises (RSC)
 │   │   ├── api/                 # Rotas de API do App Router (NextAuth, Phases, Submissions)
 │   │   ├── layout.tsx           # Wrapper principal da aplicação com SessionProvider
 │   │   └── globals.css          # Estilos globais e animações customizadas
 │   ├── components/              # Componentes React
 │   │   ├── editor/              # Componentes exclusivos do Modo Editor
+│   │   │   ├── analytics/
+│   │   │   │   └── AnalyticsDashboard.tsx # Painel com gráficos Recharts e diagnósticos
 │   │   │   ├── EditorLayout.tsx       # Shell com Navbar e layout responsivo
 │   │   │   ├── PhaseSidebar.tsx       # Sidebar de fases com DnD e botões de exportar/importar
 │   │   │   ├── PhaseEditor.tsx        # Edição de fase e botão de exportação em lote
@@ -105,6 +111,7 @@ forms/
 │   │   ├── prisma.ts            # Instância singleton do PrismaClient
 │   │   ├── db.ts                # Camada de persistência relacional no Neon Postgres
 │   │   ├── api.ts               # Cliente fetch de integração para fases e submissões
+│   │   ├── analytics.ts         # Motor de métricas, agregação e diagnóstico de erros (SPEC-007)
 │   │   ├── parser.ts            # Motor do Parser Proposicional, AST, extração topológica e matriz
 │   │   ├── storage.ts           # CRUD do localStorage, migrações de versão e seed inicial
 │   │   ├── icons.ts             # Mapeamento e opções de LucideIconName serializáveis
