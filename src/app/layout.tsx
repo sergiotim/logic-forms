@@ -36,8 +36,12 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col h-[100dvh] overflow-hidden selection:bg-primary selection:text-white">
+      <body
+        className="min-h-full flex flex-col h-[100dvh] overflow-hidden selection:bg-primary selection:text-white"
+        suppressHydrationWarning
+      >
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

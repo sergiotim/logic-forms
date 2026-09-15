@@ -9,16 +9,28 @@ interface DiagramacaoProps {
 }
 
 export const Diagramacao: React.FC<DiagramacaoProps> = ({ question, userAnswer, onChange }) => {
-  const [shuffledFrases, setShuffledFrases] = useState(question.frases);
+  const [shuffledFrases, setShuffledFrases] = useState(question?.frases || []);
 
   useEffect(() => {
+    if (!question?.frases || question.frases.length === 0) {
+      setShuffledFrases([]);
+      return;
+    }
     const shuffleArray = [...question.frases];
     for (let i = shuffleArray.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffleArray[i], shuffleArray[j]] = [shuffleArray[j], shuffleArray[i]];
     }
     setShuffledFrases(shuffleArray);
-  }, [question.id, question.frases]);
+  }, [question?.id, question?.frases]);
+
+  if (!shuffledFrases || shuffledFrases.length === 0) {
+    return (
+      <div className="p-6 bg-surface border border-dashed border-border-subtle rounded-xl text-center text-text-muted text-sm font-sans">
+        Esta questão de diagramação não possui frases cadastradas para classificação.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

@@ -90,8 +90,9 @@ function tokenize(input: string): Token[] {
     if (char === '↔') { tokens.push({ type: 'IFF', value: char }); i++; continue; }
     if (char === '→') { tokens.push({ type: 'IMPLIES', value: char }); i++; continue; }
     
-    // Disjunção (suporta v, V, ∨, |) - DEVE vir antes de checar variáveis
-    if (char === 'v' || char === 'V' || char === '∨' || char === '|') {
+    // Disjunção (suporta v minúsculo, ∨, |) - DEVE vir antes de checar variáveis
+    // 'V' maiúsculo é reservado para variáveis proposicionais (ex: V de 'Vida')
+    if (char === 'v' || char === '∨' || char === '|') {
       tokens.push({ type: 'OR', value: '∨' });
       i++;
       continue;

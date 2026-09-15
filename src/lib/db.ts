@@ -9,7 +9,7 @@ function toPrismaQuestionType(tipo: string): PrismaQuestionType {
   const upper = tipo.toUpperCase();
   if (upper === 'DIAGRAMACAO') return PrismaQuestionType.DIAGRAMACAO;
   if (upper === 'TABELA_VERDADE') return PrismaQuestionType.TABELA_VERDADE;
-  if (upper === 'FORMALIZACAO') return PrismaQuestionType.FORMALIZACAO;
+  if (upper.includes('FORMALIZACAO')) return PrismaQuestionType.FORMALIZACAO;
   return PrismaQuestionType.DIAGRAMACAO;
 }
 
@@ -18,6 +18,28 @@ function toPrismaQuestionType(tipo: string): PrismaQuestionType {
  */
 function fromPrismaQuestionType(type: PrismaQuestionType): QuestionType {
   return type.toLowerCase() as QuestionType;
+}
+
+/**
+ * Resolve o tipo TypeScript da questão combinando o enum do Prisma e metadados no content.
+ * Possui heurística de compatibilidade para identificar formalizacao_argumento persistidas no banco.
+ */
+function resolveQuestionType(prismaType: PrismaQuestionType, content: Record<string, unknown>): QuestionType {
+  if (content.originalTipo && typeof content.originalTipo === 'string') {
+    return content.originalTipo as QuestionType;
+  }
+  if (content.tipo && typeof content.tipo === 'string') {
+    return content.tipo as QuestionType;
+  }
+  // Heurística de retrocompatibilidade para argumentos salvos no banco
+  if (
+    content.resposta_esperada &&
+    typeof content.resposta_esperada === 'object' &&
+    'premissas' in (content.resposta_esperada as object)
+  ) {
+    return 'formalizacao_argumento';
+  }
+  return fromPrismaQuestionType(prismaType);
 }
 
 /**
@@ -42,7 +64,7 @@ export async function getPhasesFromDb(): Promise<Phase[]> {
         typeof q.content === 'object' && q.content !== null ? (q.content as Record<string, unknown>) : {};
       return {
         id: q.id,
-        tipo: fromPrismaQuestionType(q.type),
+        tipo: resolveQuestionType(q.type, content),
         topico: q.topic,
         enunciado: q.enunciado,
         ...content,
@@ -115,7 +137,11 @@ export async function syncPhasesToDb(phases: Phase[]): Promise<void> {
             const { id, tipo, topico, enunciado, ...content } = question as Question & Record<string, unknown>;
 
             const prismaType = toPrismaQuestionType(tipo);
-            const jsonContent = (content || {}) as Prisma.InputJsonObject;
+            const isStandardPrismaType = tipo === 'diagramacao' || tipo === 'tabela_verdade' || tipo === 'formalizacao';
+            const jsonContent = {
+              ...(content || {}),
+              ...(!isStandardPrismaType ? { originalTipo: tipo } : {}),
+            } as Prisma.InputJsonObject;
 
             return tx.question.upsert({
               where: { id },

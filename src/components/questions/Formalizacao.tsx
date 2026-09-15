@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { FormalizacaoQuestion } from '@/types';
 
 interface FormalizacaoProps {
@@ -9,6 +9,14 @@ interface FormalizacaoProps {
 
 export const Formalizacao: React.FC<FormalizacaoProps> = ({ question, userAnswer, onChange }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const keyboardKeys = useMemo(() => {
+    const configured = question.teclado_virtual || [];
+    const symbolsWithParens = [...configured];
+    if (!symbolsWithParens.includes('(')) symbolsWithParens.push('(');
+    if (!symbolsWithParens.includes(')')) symbolsWithParens.push(')');
+    return symbolsWithParens;
+  }, [question.teclado_virtual]);
 
   const handleKeyPress = (char: string) => {
     const input = inputRef.current;
@@ -41,7 +49,7 @@ export const Formalizacao: React.FC<FormalizacaoProps> = ({ question, userAnswer
       </div>
       
       <div className="bg-base p-2 md:p-3 rounded-t-lg border border-border-subtle border-b-0 flex flex-wrap gap-2 font-mono">
-        {question.teclado_virtual.map((tecla, idx) => {
+        {keyboardKeys.map((tecla, idx) => {
           const isLetter = /^[a-zA-Z]$/.test(tecla);
           return (
             <button 
