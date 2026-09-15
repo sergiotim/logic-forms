@@ -46,10 +46,11 @@ A aplicação divide-se em duas rotas principais:
 - **Persistência & Migração Automática:**
   - Armazenamento em `localStorage` sob a chave `"logica-dinamica:editor-state"`, com seed inicial automático a partir do banco de dados estático e controle de versão do schema.
 
-### 3 Tipos de Exercícios Interativos
+### 4 Tipos de Exercícios Interativos
 1. **Diagramação de Argumentos:** Classificação de frases entre Premissa ($P$) e Conclusão ($C$) com botões seletores ergonômicos e suporte a markdown.
 2. **Tabela-Verdade:** Matrizes de valoração onde o aluno preenche os valores lógicos ($V$ / $F$) para expressões proposicionais com conectivos intermediários e andaime pedagógico. O editor inclui auto-geração das $2^n$ combinações de linhas a partir das variáveis declaradas.
-3. **Formalização Lógica:** Transcrição de sentenças em linguagem simbólica com apoio de um **teclado virtual customizado** ($\sim, \land, \lor, \rightarrow, \leftrightarrow, \forall, \exists$). A validação é tolerante a espaços em branco.
+3. **Formalização Lógica (Sentenças):** Transcrição de sentenças em linguagem simbólica com apoio de um **teclado virtual customizado** ($\sim, \land, \lor, \rightarrow, \leftrightarrow, \forall, \exists$), suporte a equivalência semântica e $\alpha$-conversão de predicados.
+4. **Formalização de Argumentos (Dedutivos):** Decomposição e formalização de argumentos com múltiplas premissas e conclusão. O estudante segmenta o texto, conta as premissas e digita utilizando um teclado virtual global com foco ativo. A validação independe da ordem de inserção das premissas e suporta quantificadores e equivalência lógica.
 
 ---
 

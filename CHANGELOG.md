@@ -4,6 +4,29 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.5.0] - 2026-09-15 (Formalização de Argumentos Dedutivos, UI/UX Alinhada & Quantificadores com Alpha-Conversão)
+
+### Adicionado (Added)
+- **Novo Tipo de Questão: Formalização de Argumentos (`formalizacao_argumento`):** Exercício avançado no qual o estudante segmenta o texto, identifica as premissas independentemente da ordem e formaliza a conclusão dedutiva.
+- **Motor de Validação de Argumentos (`src/lib/formalizacao-argumento.ts`):**
+  - Validação de correspondência de premissas baseada em pool independente de ordem (permutação livre).
+  - Feedback pedagógico granular para excesso ou escassez de premissas identificadas pelo aluno.
+  - Suporte completo a **Lógica de Predicados com Quantificadores (`∀`, `∃`)** e $\alpha$-normalização de variáveis ligadas (`normalizeQuantifiedVariables`).
+  - Avaliação de equivalência semântica proposicional ($A \leftrightarrow B$) no modo semântico e verificação textual rigorosa no modo estrito.
+- **Redesign e Alinhamento Estrito de UI/UX no Editor (`src/components/editor/forms/FormalizacaoArgumentoForm.tsx`):**
+  - Adoção das mesmas nomenclaturas (`Enunciado`, `Tópico`, `Dicionário de Variáveis (Dicas)`, `Teclado Virtual do Aluno`).
+  - Seletor de rigor compacto no canto direito da seção de fórmulas: dropdown com opções `Semântico (Automático)` e `Estrito (Exato)`.
+  - Barra de atalhos de símbolos acoplada diretamente à borda superior de cada premissa e da conclusão: `Símbolos: [ ∀ ] [ ∃ ] [ ~ ] [ ∧ ] [ ∨ ] [ → ] [ ↔ ] [ ( ] [ ) ]`.
+  - Validação sintática em tempo real com `validateFormalizacaoSyntax`, alertando visualmente parênteses desbalanceados ou operadores soltos.
+  - Botão `✨ Sincronizar Dicas` para extrair variáveis e predicados do argumento para o dicionário automaticamente (`extractFormalizacaoDicas`).
+  - Botão `🪄 Auto-sugerir` para sugerir operadores e distratores para o teclado virtual (`suggestVirtualKeyboard`).
+- **Componente do Estudante com Foco Ativo (`src/components/questions/FormalizacaoArgumento.tsx`):**
+  - Teclado lógico virtual global único no topo do contêiner, direcionando os caracteres dinamicamente para o campo ativo em foco (premissa ou conclusão).
+  - Extração inteligente de predicados maiúsculos (`[A-Z]`) e variáveis/constantes minúsculas (`[a-z]`), com parênteses `(` e `)` garantidos.
+  - Adição e remoção dinâmica de campos de premissa com atalhos acessíveis.
+- **Nova Suíte de Testes Automatizados TDD (`FormalizacaoArgumentoForm.test.tsx` e `formalizacao-argumento.test.ts`):** 25 testes cobrindo integração do formulário, validação sintática, comutatividade de premissas, quantificadores e equivalência lógica. Suíte total expandida para **231 testes** e **16 test suites** com 100% de aprovação.
+- **Documentação Técnica:** Especificação técnica completa [[SPEC-008]](docs/specs/formalizacao-argumento-spec.md) e atualização do schema JSON em `docs/Estrutura das Questões (JSON).md`.
+
 ## [2.4.0] - 2026-09-14 (Dashboard de Análises do Professor & Diagnóstico Qualitativo com Recharts)
 
 ### Adicionado (Added)

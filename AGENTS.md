@@ -151,6 +151,11 @@ Toda questão estende `BaseQuestion` (`id`, `tipo`, `topico`, `enunciado`).
    - **Campos Avançados (SPEC-004):** `respostas_alternativas?: string[]`, `modo_validacao?: 'semantico' | 'estrito'`.
    - **Regra de Validação:** Normalização de espaços em branco, suporte a equivalência semântica proposicional ($A \leftrightarrow B$) e $\alpha$-normalização de predicados quantificados.
 
+4. **Formalização de Argumentos (`tipo: "formalizacao_argumento"`)**
+   - **Objetivo:** Identificar, segmentar e formalizar premissas e conclusão de argumentos dedutivos completos.
+   - **Campos Específicos:** `dicas: string[]`, `teclado_virtual: string[]`, `resposta_esperada: { premissas: string[], conclusao: string }`, `modo_validacao?: 'semantico' | 'estrito'`.
+   - **Regra de Validação:** Validação de quantidade de premissas com feedback específico, correspondência por pool independente da ordem de submissão, $\alpha$-conversão em quantificadores (`∀`, `∃`) e equivalência proposicional.
+
 ### Entidades de Fases e Estado do Editor (`src/types/index.ts`)
 - **`Phase`:** Representa uma fase configurável (`id`, `titulo`, `icone: LucideIconName`, `questoes: Question[]`). Suporta fases heterogêneas (questões de tipos diferentes na mesma fase).
 - **`EditorState`:** Schema serializável armazenado no `localStorage` sob a chave `"logica-dinamica:editor-state"` (`version`, `phases`, `updatedAt`).

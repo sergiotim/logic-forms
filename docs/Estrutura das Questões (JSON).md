@@ -124,7 +124,63 @@ Toda questão, independentemente do tipo, estende `BaseQuestion` e possui os seg
 
 ---
 
-## 5. Estrutura de Fases, Persistência & Banco de Questões (`EditorState`)
+## 5. Tipo: Formalização de Argumentos (`formalizacao_argumento`)
+
+**Objetivo:** Permitir ao aluno extrair, segmentar e formalizar individualmente premissas e conclusão de argumentos dedutivos completos.
+
+**Campos Específicos:**
+- **dicas** (Array de Strings): Dicionário de proposições, predicados e variáveis (ex: `"D: Deus existe"`, `"x: variável individual"`).
+- **teclado_virtual** (Array de Strings): Símbolos lógicos ativos no teclado virtual (ex: `["∀", "∃", "~", "∧", "∨", "→", "↔"]`).
+- **resposta_esperada** (Objeto):
+  - **premissas** (Array de Strings): Lista de fórmulas correspondentes às premissas do argumento (a ordem de preenchimento pelo aluno é indiferente).
+  - **conclusao** (String): Fórmula correspondente à conclusão dedutiva do argumento.
+- **modo_validacao** (String opcional, `"semantico"` | `"estrito"`): Define se o motor lógico aceita tautologias/equivalências e $\alpha$-conversão de predicados (`"semantico"`) ou exige correspondência textual direta (`"estrito"`). Padrão: `"semantico"`.
+
+**Exemplo Completo (Argumento Proposicional - Modus Ponens):**
+```json
+{  
+  "id": "q-mp-1",  
+  "tipo": "formalizacao_argumento",  
+  "topico": "Modus Ponens",  
+  "enunciado": "Se Deus existe, então a vida tem significado. Deus existe. Portanto, a vida tem significado.",  
+  "dicas": [  
+    "D: Deus existe",  
+    "V: A vida tem significado"  
+  ],  
+  "teclado_virtual": ["~", "∧", "∨", "→", "↔"],  
+  "resposta_esperada": {  
+    "premissas": ["D → V", "D"],  
+    "conclusao": "V"  
+  },  
+  "modo_validacao": "semantico"  
+}
+```
+
+**Exemplo Completo (Argumento com Quantificadores - Silogismo Categórico):**
+```json
+{  
+  "id": "q-pred-1",  
+  "tipo": "formalizacao_argumento",  
+  "topico": "Lógica de Predicados",  
+  "enunciado": "Todo homem é mortal. Sócrates é homem. Portanto, Sócrates é mortal.",  
+  "dicas": [  
+    "H: é homem",  
+    "M: é mortal",  
+    "s: Sócrates",  
+    "x: variável individual"  
+  ],  
+  "teclado_virtual": ["∀", "∃", "~", "∧", "∨", "→"],  
+  "resposta_esperada": {  
+    "premissas": ["∀x(Hx → Mx)", "Hs"],  
+    "conclusao": "Ms"  
+  },  
+  "modo_validacao": "semantico"  
+}
+```
+
+---
+
+## 6. Estrutura de Fases, Persistência & Banco de Questões (`EditorState`)
 
 No Modo Editor, os dados são persistidos no `localStorage` sob a chave `"logica-dinamica:editor-state"`.
 Para garantir escalabilidade e reaproveitamento, adotamos uma **Estrutura Relacional**: as questões vivem em um banco central (`questionBank`), enquanto as fases apenas referenciam essas questões através de IDs.
