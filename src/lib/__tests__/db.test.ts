@@ -101,6 +101,12 @@ describe('db.ts (Neon PostgreSQL Service)', () => {
 
       await syncPhasesToDb(phases);
 
+      // Garante que o timeout de 30s e maxWait de 10s foram repassados ao Prisma
+      expect(prisma.$transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+        { maxWait: 10000, timeout: 30000 }
+      );
+
       // Exclui fases que não estão na lista
       expect(mockTx.phase.deleteMany).toHaveBeenCalledWith({
         where: { id: { notIn: ['fase-1'] } },

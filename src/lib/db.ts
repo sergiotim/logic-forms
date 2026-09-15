@@ -56,89 +56,96 @@ export async function getPhasesFromDb(): Promise<Phase[]> {
  * Lida com criação, edição, exclusão e reordenação (order).
  */
 export async function syncPhasesToDb(phases: Phase[]): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    const phaseIds = phases.map((p) => p.id);
+  await prisma.$transaction(
+    async (tx) => {
+      const phaseIds = phases.map((p) => p.id);
 
-    // 1. Se não houver fases, apaga todas as fases (e questões por cascade)
-    if (phaseIds.length === 0) {
-      await tx.phase.deleteMany({});
-      return;
-    }
+      // 1. Se não houver fases, apaga todas as fases (e questões por cascade)
+      if (phaseIds.length === 0) {
+        await tx.phase.deleteMany({});
+        return;
+      }
 
-    // 2. Exclui fases que foram removidas pelo professor
-    await tx.phase.deleteMany({
-      where: {
-        id: { notIn: phaseIds },
-      },
-    });
-
-    // 3. Itera sobre as fases na ordem atual
-    for (let pIndex = 0; pIndex < phases.length; pIndex++) {
-      const phase = phases[pIndex];
-
-      // Upsert da fase (atualiza título, ícone e a nova ordem)
-      await tx.phase.upsert({
-        where: { id: phase.id },
-        update: {
-          title: phase.titulo,
-          icon: phase.icone,
-          order: pIndex,
-        },
-        create: {
-          id: phase.id,
-          title: phase.titulo,
-          icon: phase.icone,
-          order: pIndex,
+      // 2. Exclui fases que foram removidas pelo professor
+      await tx.phase.deleteMany({
+        where: {
+          id: { notIn: phaseIds },
         },
       });
 
-      const questionIds = phase.questoes.map((q) => q.id);
+      // 3. Itera sobre as fases na ordem atual
+      for (let pIndex = 0; pIndex < phases.length; pIndex++) {
+        const phase = phases[pIndex];
 
-      // Exclui questões removidas desta fase
-      if (questionIds.length === 0) {
-        await tx.question.deleteMany({
-          where: { phaseId: phase.id },
-        });
-      } else {
-        await tx.question.deleteMany({
-          where: {
-            phaseId: phase.id,
-            id: { notIn: questionIds },
-          },
-        });
-      }
-
-      // Upsert de cada questão na ordem atual
-      for (let qIndex = 0; qIndex < phase.questoes.length; qIndex++) {
-        const question = phase.questoes[qIndex];
-        const { id, tipo, topico, enunciado, ...content } = question as Question & Record<string, unknown>;
-
-        const prismaType = toPrismaQuestionType(tipo);
-        const jsonContent = (content || {}) as Prisma.InputJsonObject;
-
-        await tx.question.upsert({
-          where: { id },
+        // Upsert da fase (atualiza título, ícone e a nova ordem)
+        await tx.phase.upsert({
+          where: { id: phase.id },
           update: {
-            phaseId: phase.id,
-            type: prismaType,
-            topic: topico,
-            enunciado,
-            order: qIndex,
-            content: jsonContent,
+            title: phase.titulo,
+            icon: phase.icone,
+            order: pIndex,
           },
           create: {
-            id,
-            phaseId: phase.id,
-            type: prismaType,
-            topic: topico,
-            enunciado,
-            order: qIndex,
-            content: jsonContent,
+            id: phase.id,
+            title: phase.titulo,
+            icon: phase.icone,
+            order: pIndex,
           },
         });
+
+        const questionIds = phase.questoes.map((q) => q.id);
+
+        // Exclui questões removidas desta fase
+        if (questionIds.length === 0) {
+          await tx.question.deleteMany({
+            where: { phaseId: phase.id },
+          });
+        } else {
+          await tx.question.deleteMany({
+            where: {
+              phaseId: phase.id,
+              id: { notIn: questionIds },
+            },
+          });
+        }
+
+        // Upsert de cada questão na ordem atual em paralelo via Promise.all
+        await Promise.all(
+          phase.questoes.map((question, qIndex) => {
+            const { id, tipo, topico, enunciado, ...content } = question as Question & Record<string, unknown>;
+
+            const prismaType = toPrismaQuestionType(tipo);
+            const jsonContent = (content || {}) as Prisma.InputJsonObject;
+
+            return tx.question.upsert({
+              where: { id },
+              update: {
+                phaseId: phase.id,
+                type: prismaType,
+                topic: topico,
+                enunciado,
+                order: qIndex,
+                content: jsonContent,
+              },
+              create: {
+                id,
+                phaseId: phase.id,
+                type: prismaType,
+                topic: topico,
+                enunciado,
+                order: qIndex,
+                content: jsonContent,
+              },
+            });
+          })
+        );
       }
+    },
+    {
+      maxWait: 10000,
+      timeout: 30000,
     }
-  });
+  );
 }
 
 /**
