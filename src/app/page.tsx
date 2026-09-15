@@ -8,11 +8,19 @@ import { Feedback } from '@/components/ui/Feedback';
 import { Diagramacao } from '@/components/questions/Diagramacao';
 import { TabelaVerdade } from '@/components/questions/TabelaVerdade';
 import { Formalizacao } from '@/components/questions/Formalizacao';
-import { DiagramacaoQuestion, FormalizacaoQuestion, TabelaVerdadeQuestion, Phase } from '@/types';
+import { FormalizacaoArgumento } from '@/components/questions/FormalizacaoArgumento';
+import {
+  DiagramacaoQuestion,
+  FormalizacaoQuestion,
+  FormalizacaoArgumentoQuestion,
+  TabelaVerdadeQuestion,
+  Phase,
+} from '@/types';
 import { loadEditorState } from '@/lib/storage';
 import { fetchPhasesApi, fetchUserSubmissionsApi, saveUserSubmissionApi } from '@/lib/api';
 import { ICON_MAP } from '@/lib/icons';
 import { validateFormalizacaoAnswer } from '@/lib/formalizacao';
+import { validateFormalizacaoArgumentoAnswer } from '@/lib/formalizacao-argumento';
 import { CheckCircle2, X, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { ProfileMenu } from '@/components/ui/ProfileMenu';
@@ -91,10 +99,13 @@ export default function Home() {
   const [phases, setPhases] = useState<Phase[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // States for answers
   const [diagramacaoAnswer, setDiagramacaoAnswer] = useState<Record<string, string>>({});
   const [tabelaAnswer, setTabelaAnswer] = useState<Record<string, string>>({});
   const [formalizacaoAnswer, setFormalizacaoAnswer] = useState<string>('');
+  const [argumentoAnswer, setArgumentoAnswer] = useState<{ premissas: string[]; conclusao: string }>({
+    premissas: [''],
+    conclusao: '',
+  });
 
   // Feedback state
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
@@ -149,6 +160,8 @@ export default function Home() {
       setDiagramacaoAnswer({});
     } else if (question?.tipo === 'formalizacao') {
       setFormalizacaoAnswer('');
+    } else if (question?.tipo === 'formalizacao_argumento') {
+      setArgumentoAnswer({ premissas: [''], conclusao: '' });
     }
   }, [currentIndex, question]);
 
@@ -165,6 +178,7 @@ export default function Home() {
     if (!question) return;
     let isCorrect = false;
     let missingData = false;
+    let customErrorMessage = '';
 
     if (question.tipo === 'formalizacao') {
       const q = question as FormalizacaoQuestion;
@@ -175,6 +189,24 @@ export default function Home() {
       } else {
         const result = validateFormalizacaoAnswer(formalizacaoAnswer, q);
         isCorrect = result.isValid;
+      }
+    } else if (question.tipo === 'formalizacao_argumento') {
+      const q = question as FormalizacaoArgumentoQuestion;
+      const hasAnyInput =
+        argumentoAnswer.premissas.some((p) => p.trim()) || argumentoAnswer.conclusao.trim();
+
+      if (!hasAnyInput) {
+        missingData = true;
+      } else {
+        const result = validateFormalizacaoArgumentoAnswer(
+          argumentoAnswer.premissas,
+          argumentoAnswer.conclusao,
+          q
+        );
+        isCorrect = result.isValid;
+        if (!result.isValid && result.error) {
+          customErrorMessage = result.error;
+        }
       }
     } else if (question.tipo === 'diagramacao') {
       const q = question as DiagramacaoQuestion;
@@ -246,6 +278,7 @@ export default function Home() {
 
         let rawAnswer: unknown = null;
         if (question.tipo === 'formalizacao') rawAnswer = formalizacaoAnswer;
+        else if (question.tipo === 'formalizacao_argumento') rawAnswer = argumentoAnswer;
         else if (question.tipo === 'diagramacao') rawAnswer = diagramacaoAnswer;
         else if (question.tipo === 'tabela_verdade') rawAnswer = tabelaAnswer;
 
@@ -254,7 +287,10 @@ export default function Home() {
         });
       }
     } else {
-      setFeedback({ type: 'error', message: 'Resposta incorreta. Tente novamente.' });
+      setFeedback({
+        type: 'error',
+        message: customErrorMessage || 'Resposta incorreta. Tente novamente.',
+      });
       triggerShake();
     }
   };
@@ -265,6 +301,7 @@ export default function Home() {
     setDiagramacaoAnswer({});
     setTabelaAnswer({});
     setFormalizacaoAnswer('');
+    setArgumentoAnswer({ premissas: [''], conclusao: '' });
     setCurrentView('playing');
   };
 
@@ -453,6 +490,13 @@ export default function Home() {
                       question={question as FormalizacaoQuestion}
                       userAnswer={formalizacaoAnswer}
                       onChange={setFormalizacaoAnswer}
+                    />
+                  )}
+                  {question.tipo === 'formalizacao_argumento' && (
+                    <FormalizacaoArgumento
+                      question={question as FormalizacaoArgumentoQuestion}
+                      userAnswer={argumentoAnswer}
+                      onChange={setArgumentoAnswer}
                     />
                   )}
                 </div>
