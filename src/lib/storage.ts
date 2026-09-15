@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file storage.ts
  * @description Módulo de persistência do Editor — CRUD puro e imutável para EditorState no localStorage.
  * SPEC: editor-spec.md — Seção 3.4
@@ -174,12 +174,26 @@ export function createQuestion(type: QuestionType): Question {
     };
   }
 
+  if (type === 'formalizacao_argumento') {
+    return {
+      ...base,
+      tipo: 'formalizacao_argumento',
+      dicas: [''],
+      teclado_virtual: ['~', '∧', '∨', '→', '(', ')'],
+      resposta_esperada: {
+        premissas: [''],
+        conclusao: '',
+      },
+      modo_validacao: 'semantico',
+    };
+  }
+
   // formalizacao
   return {
     ...base,
     tipo: 'formalizacao',
     dicas: [''],
-    teclado_virtual: ['~', '∧', '∨', '→'],
+    teclado_virtual: ['~', '∧', '∨', '→', '(', ')'],
     resposta_esperada: '',
   };
 }

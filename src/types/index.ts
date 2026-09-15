@@ -1,4 +1,4 @@
-export type QuestionType = 'diagramacao' | 'tabela_verdade' | 'formalizacao';
+export type QuestionType = 'diagramacao' | 'tabela_verdade' | 'formalizacao' | 'formalizacao_argumento';
 
 export interface BaseQuestion {
   id: string;
@@ -31,7 +31,26 @@ export interface FormalizacaoQuestion extends BaseQuestion {
   modo_validacao?: 'semantico' | 'estrito';
 }
 
-export type Question = DiagramacaoQuestion | TabelaVerdadeQuestion | FormalizacaoQuestion;
+export interface FormalizacaoArgumentoQuestion extends BaseQuestion {
+  tipo: 'formalizacao_argumento';
+  dicas: string[];
+  teclado_virtual: string[];
+  resposta_esperada: {
+    premissas: string[];
+    conclusao: string;
+  };
+  respostas_alternativas?: {
+    premissas?: string[][];
+    conclusao?: string[];
+  };
+  modo_validacao?: 'semantico' | 'estrito';
+}
+
+export type Question =
+  | DiagramacaoQuestion
+  | TabelaVerdadeQuestion
+  | FormalizacaoQuestion
+  | FormalizacaoArgumentoQuestion;
 
 // --- Novos tipos para o Editor (SPEC-002) ---
 
