@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import { Question, DiagramacaoQuestion, TabelaVerdadeQuestion, FormalizacaoQuestion } from '@/types';
+import {
+  Question,
+  DiagramacaoQuestion,
+  TabelaVerdadeQuestion,
+  FormalizacaoQuestion,
+  FormalizacaoArgumentoQuestion,
+} from '@/types';
 import { Diagramacao } from '@/components/questions/Diagramacao';
 import { TabelaVerdade } from '@/components/questions/TabelaVerdade';
 import { Formalizacao } from '@/components/questions/Formalizacao';
+import { FormalizacaoArgumento } from '@/components/questions/FormalizacaoArgumento';
 import { Eye } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -12,6 +19,13 @@ interface QuestionPreviewProps {
 
 export const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) => {
   const [tabelaPreviewAnswer, setTabelaPreviewAnswer] = useState<Record<string, string>>({});
+  const [argumentoPreviewAnswer, setArgumentoPreviewAnswer] = useState<{
+    premissas: string[];
+    conclusao: string;
+  }>({
+    premissas: [''],
+    conclusao: '',
+  });
 
   return (
     <div
@@ -60,6 +74,13 @@ export const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) =>
             question={question as FormalizacaoQuestion}
             userAnswer=""
             onChange={() => {}}
+          />
+        )}
+        {question.tipo === 'formalizacao_argumento' && (
+          <FormalizacaoArgumento
+            question={question as FormalizacaoArgumentoQuestion}
+            userAnswer={argumentoPreviewAnswer}
+            onChange={setArgumentoPreviewAnswer}
           />
         )}
       </div>

@@ -4,9 +4,10 @@ import { createQuestion } from '@/lib/storage';
 import { DiagramacaoForm } from './forms/DiagramacaoForm';
 import { TabelaVerdadeForm } from './forms/TabelaVerdadeForm';
 import { FormalizacaoForm } from './forms/FormalizacaoForm';
+import { FormalizacaoArgumentoForm } from './forms/FormalizacaoArgumentoForm';
 import { QuestionPreview } from './QuestionPreview';
 import { Button } from '@/components/ui/Button';
-import { Network, Table2, PenLine, X, Eye } from 'lucide-react';
+import { Network, Table2, PenLine, Split, X, Eye } from 'lucide-react';
 
 interface QuestionFormModalProps {
   initialQuestion: Question | null;
@@ -43,6 +44,18 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
     if (currentQuestion.tipo === 'formalizacao') {
       if (!currentQuestion.resposta_esperada || !currentQuestion.resposta_esperada.trim()) {
         setErrorMessage('A resposta esperada é obrigatória.');
+        return;
+      }
+    }
+
+    if (currentQuestion.tipo === 'formalizacao_argumento') {
+      const validPremises = currentQuestion.resposta_esperada.premissas.filter((p) => p.trim());
+      if (validPremises.length === 0) {
+        setErrorMessage('Adicione pelo menos uma premissa ao gabarito do argumento.');
+        return;
+      }
+      if (!currentQuestion.resposta_esperada.conclusao.trim()) {
+        setErrorMessage('A conclusão esperada do argumento é obrigatória.');
         return;
       }
     }
@@ -136,18 +149,18 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                 Selecione o modelo pedagógico para esta questão:
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
                 <button
                   type="button"
                   data-testid="type-btn-diagramacao"
                   aria-label="Tipo Diagramação"
                   onClick={() => handleSelectType('diagramacao')}
-                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-6 flex flex-col items-center text-center transition-all duration-300 group"
+                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-5 flex flex-col items-center text-center transition-all duration-300 group"
                 >
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                     <Network size={24} />
                   </div>
-                  <h4 className="font-bold text-white mb-1">Diagramação</h4>
+                  <h4 className="font-bold text-white mb-1 text-sm">Diagramação</h4>
                   <p className="text-xs text-text-muted">
                     Classificação de premissas e conclusão de um argumento.
                   </p>
@@ -158,12 +171,12 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                   data-testid="type-btn-tabela_verdade"
                   aria-label="Tipo Tabela-Verdade"
                   onClick={() => handleSelectType('tabela_verdade')}
-                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-6 flex flex-col items-center text-center transition-all duration-300 group"
+                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-5 flex flex-col items-center text-center transition-all duration-300 group"
                 >
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                     <Table2 size={24} />
                   </div>
-                  <h4 className="font-bold text-white mb-1">Tabela-Verdade</h4>
+                  <h4 className="font-bold text-white mb-1 text-sm">Tabela-Verdade</h4>
                   <p className="text-xs text-text-muted">
                     Matriz booleana de valorações verdadeiras e falsas.
                   </p>
@@ -174,14 +187,30 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                   data-testid="type-btn-formalizacao"
                   aria-label="Tipo Formalização"
                   onClick={() => handleSelectType('formalizacao')}
-                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-6 flex flex-col items-center text-center transition-all duration-300 group"
+                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-5 flex flex-col items-center text-center transition-all duration-300 group"
                 >
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                     <PenLine size={24} />
                   </div>
-                  <h4 className="font-bold text-white mb-1">Formalização</h4>
+                  <h4 className="font-bold text-white mb-1 text-sm">Formalização</h4>
                   <p className="text-xs text-text-muted">
                     Transcrição com teclado lógico virtual de sentenças.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  data-testid="type-btn-formalizacao_argumento"
+                  aria-label="Tipo Formalização de Argumento"
+                  onClick={() => handleSelectType('formalizacao_argumento')}
+                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-5 flex flex-col items-center text-center transition-all duration-300 group"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <Split size={24} />
+                  </div>
+                  <h4 className="font-bold text-white mb-1 text-sm">Argumento</h4>
+                  <p className="text-xs text-text-muted">
+                    Estruturação de premissas e dedução de conclusão.
                   </p>
                 </button>
               </div>
@@ -221,7 +250,18 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                   />
                 )}
 
-                {errorMessage && currentQuestion?.tipo !== 'formalizacao' && (
+                {currentQuestion?.tipo === 'formalizacao_argumento' && (
+                  <FormalizacaoArgumentoForm
+                    question={currentQuestion}
+                    onChange={(updated) => {
+                      setCurrentQuestion(updated);
+                      setErrorMessage(null);
+                    }}
+                    error={errorMessage || undefined}
+                  />
+                )}
+
+                {errorMessage && currentQuestion?.tipo !== 'formalizacao' && currentQuestion?.tipo !== 'formalizacao_argumento' && (
                   <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-error text-xs font-medium">
                     {errorMessage}
                   </div>
