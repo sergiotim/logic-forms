@@ -9,6 +9,8 @@ function toPrismaQuestionType(tipo: string): PrismaQuestionType {
   const upper = tipo.toUpperCase();
   if (upper === 'DIAGRAMACAO') return PrismaQuestionType.DIAGRAMACAO;
   if (upper === 'TABELA_VERDADE') return PrismaQuestionType.TABELA_VERDADE;
+  if (upper === 'MULTIPLA_ESCOLHA') return PrismaQuestionType.MULTIPLA_ESCOLHA;
+  if (upper === 'FORMALIZACAO_ARGUMENTO') return PrismaQuestionType.FORMALIZACAO_ARGUMENTO;
   if (upper.includes('FORMALIZACAO')) return PrismaQuestionType.FORMALIZACAO;
   return PrismaQuestionType.DIAGRAMACAO;
 }
@@ -137,7 +139,7 @@ export async function syncPhasesToDb(phases: Phase[]): Promise<void> {
             const { id, tipo, topico, enunciado, ...content } = question as Question & Record<string, unknown>;
 
             const prismaType = toPrismaQuestionType(tipo);
-            const isStandardPrismaType = tipo === 'diagramacao' || tipo === 'tabela_verdade' || tipo === 'formalizacao';
+            const isStandardPrismaType = tipo === 'diagramacao' || tipo === 'tabela_verdade' || tipo === 'formalizacao' || tipo === 'multipla_escolha' || tipo === 'formalizacao_argumento';
             const jsonContent = {
               ...(content || {}),
               ...(!isStandardPrismaType ? { originalTipo: tipo } : {}),
