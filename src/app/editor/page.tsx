@@ -19,7 +19,7 @@ import { EditorState, Phase, Question, LucideIconName } from '@/types';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { Feedback } from '@/components/ui/Feedback';
 import { ArrowLeft, Settings, X, Loader2, CheckCircle2, BarChart3 } from 'lucide-react';
-import { fetchPhasesApi, savePhasesApi } from '@/lib/api';
+import { fetchPhasesApi, savePhasesApi, saveSinglePhaseApi } from '@/lib/api';
 
 export default function EditorPage() {
   const [editorState, setEditorState] = useState<EditorState | null>(null);
@@ -97,6 +97,24 @@ export default function EditorPage() {
     }
   };
 
+  const persistSinglePhase = async (updatedState: EditorState, phase: Phase) => {
+    setEditorState(updatedState);
+    saveEditorState(updatedState);
+    try {
+      setIsSaving(true);
+      await saveSinglePhaseApi(phase);
+    } catch (err: unknown) {
+      console.error('Erro ao persistir fase no banco:', err);
+      const msg = err instanceof Error ? err.message : '';
+      setFeedback({
+        type: 'warning',
+        message: 'Alteração salva localmente, mas houve erro ao sincronizar com o banco: ' + msg,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleCreatePhase = async (titulo: string, icone: LucideIconName) => {
     if (!editorState) return;
     const newPhase = createPhase(titulo, icone);
@@ -111,7 +129,7 @@ export default function EditorPage() {
   const handleUpdatePhase = async (phase: Phase) => {
     if (!editorState) return;
     const updatedState = updatePhase(editorState, phase);
-    await persistState(updatedState);
+    await persistSinglePhase(updatedState, phase);
   };
 
   const handleDeletePhase = async (phaseId: string) => {
@@ -144,13 +162,23 @@ export default function EditorPage() {
       };
     }
 
-    await persistState(updatedState);
+    const updatedPhase = updatedState.phases.find((p) => p.id === phaseId);
+    if (updatedPhase) {
+      await persistSinglePhase(updatedState, updatedPhase);
+    } else {
+      await persistState(updatedState);
+    }
   };
 
   const handleDeleteQuestion = async (phaseId: string, questionId: string) => {
     if (!editorState) return;
     const updatedState = deleteQuestion(editorState, phaseId, questionId);
-    await persistState(updatedState);
+    const updatedPhase = updatedState.phases.find((p) => p.id === phaseId);
+    if (updatedPhase) {
+      await persistSinglePhase(updatedState, updatedPhase);
+    } else {
+      await persistState(updatedState);
+    }
   };
 
   const handleReorderPhases = async (oldIndex: number, newIndex: number) => {
@@ -162,7 +190,12 @@ export default function EditorPage() {
   const handleReorderQuestions = async (phaseId: string, oldIndex: number, newIndex: number) => {
     if (!editorState) return;
     const updatedState = reorderQuestions(editorState, phaseId, oldIndex, newIndex);
-    await persistState(updatedState);
+    const updatedPhase = updatedState.phases.find((p) => p.id === phaseId);
+    if (updatedPhase) {
+      await persistSinglePhase(updatedState, updatedPhase);
+    } else {
+      await persistState(updatedState);
+    }
   };
 
   const handleExportPhase = (phaseId: string) => {

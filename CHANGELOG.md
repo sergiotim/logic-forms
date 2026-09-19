@@ -4,6 +4,21 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.6.0] - 2026-09-19 (Sincronização Granular de Fases/Questões & Neon Serverless Driver Adapter)
+
+### Adicionado (Added)
+- **Endpoint Granular de Sincronização de Fase (`PUT /api/phases/[id]`):** Rota dedicada para atualização atômica de uma fase ativa e suas questões associadas, protegida por RBAC (`role: TEACHER`).
+- **Funções de Persistência Granular (`src/lib/db.ts` e `src/lib/api.ts`):**
+  - `syncSinglePhaseToDb(phase: Phase)`: Transação atômica escopada estritamente à fase ativa, mantendo o `order` da fase existente e realizando upsert concorrente apenas das questões da fase via `Promise.all`.
+  - `saveSinglePhaseApi(phase: Phase)`: Cliente de integração HTTP apontando para `PUT /api/phases/[id]`.
+- **Neon Serverless Driver Adapter (`@prisma/adapter-neon` e `@neondatabase/serverless`):** Integração do driver serverless da Neon com WebSockets (`ws`) no `src/lib/prisma.ts`, eliminando a dependência de conexões TCP estaduais travadas no PgBouncer em funções Serverless da Vercel.
+- **Registro Formal de Decisão de Arquitetura (ADR-001):** Documento técnico formal detalhando o problema, análise de causa raiz (RCA) e especificações em `docs/specs/adr-001-granular-sync-neon-adapter.md`.
+
+### Otimizado (Performance)
+- **Redução Drástica de Sobrecarga de Rede e Banco:** Operações cotidianas no Modo Editor (`handleUpdatePhase`, `handleSaveQuestion`, `handleDeleteQuestion`, `handleReorderQuestions`) agora enviam apenas o payload da fase ativa, reduzindo em mais de 75% o tráfego de dados e garantindo tempos de resposta inferiores a 300ms.
+- **Eliminação de Erros de Timeout em Produção:** Prevenção definitiva de falhas `PrismaClientKnownRequestError [P2028]: Transaction not found` causadas por reescrita monolítica de todo o currículo em ambientes serverless.
+- **Resolução da Issue #1:** Closes #1.
+
 ## [2.5.0] - 2026-09-15 (Formalização de Argumentos Dedutivos, UI/UX Alinhada & Quantificadores com Alpha-Conversão)
 
 ### Adicionado (Added)

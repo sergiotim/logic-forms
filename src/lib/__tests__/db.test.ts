@@ -1,4 +1,4 @@
-import { getPhasesFromDb, syncPhasesToDb, getUserSubmissions, saveUserSubmission } from '@/lib/db';
+import { getPhasesFromDb, syncPhasesToDb, syncSinglePhaseToDb, getUserSubmissions, saveUserSubmission } from '@/lib/db';
 import { prisma } from '@/lib/prisma';
 import type { Phase, DiagramacaoQuestion } from '@/types';
 
@@ -145,6 +145,129 @@ describe('db.ts (Neon PostgreSQL Service)', () => {
           content: { frases: [], resposta_esperada: {} },
         },
       });
+    });
+  });
+
+  describe('syncSinglePhaseToDb()', () => {
+    it('sincroniza uma única fase preservando a ordem existente e atualizando questões', async () => {
+      const mockTx = {
+        phase: {
+          findUnique: jest.fn().mockResolvedValue({ order: 2 }),
+          count: jest.fn(),
+          upsert: jest.fn(),
+        },
+        question: {
+          deleteMany: jest.fn(),
+          upsert: jest.fn(),
+        },
+      };
+
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        return callback(mockTx);
+      });
+
+      const phase: Phase = {
+        id: 'fase-2',
+        titulo: 'Fase 2 Atualizada',
+        icone: 'Table2',
+        questoes: [
+          {
+            id: 'q-2',
+            tipo: 'diagramacao',
+            topico: 'Premissas',
+            enunciado: 'Enunciado 2',
+            frases: [],
+            resposta_esperada: {},
+          },
+        ],
+      };
+
+      await syncSinglePhaseToDb(phase);
+
+      expect(prisma.$transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+        { maxWait: 5000, timeout: 10000 }
+      );
+
+      // Garante que buscou a ordem existente
+      expect(mockTx.phase.findUnique).toHaveBeenCalledWith({
+        where: { id: 'fase-2' },
+        select: { order: true },
+      });
+
+      // Upsert da fase com a ordem preservada (2)
+      expect(mockTx.phase.upsert).toHaveBeenCalledWith({
+        where: { id: 'fase-2' },
+        update: { title: 'Fase 2 Atualizada', icon: 'Table2', order: 2 },
+        create: { id: 'fase-2', title: 'Fase 2 Atualizada', icon: 'Table2', order: 2 },
+      });
+
+      // Exclui questões que não estão mais na fase
+      expect(mockTx.question.deleteMany).toHaveBeenCalledWith({
+        where: { phaseId: 'fase-2', id: { notIn: ['q-2'] } },
+      });
+
+      // Upsert da questão
+      expect(mockTx.question.upsert).toHaveBeenCalledWith({
+        where: { id: 'q-2' },
+        update: {
+          phaseId: 'fase-2',
+          type: 'DIAGRAMACAO',
+          topic: 'Premissas',
+          enunciado: 'Enunciado 2',
+          order: 0,
+          content: { frases: [], resposta_esperada: {} },
+        },
+        create: {
+          id: 'q-2',
+          phaseId: 'fase-2',
+          type: 'DIAGRAMACAO',
+          topic: 'Premissas',
+          enunciado: 'Enunciado 2',
+          order: 0,
+          content: { frases: [], resposta_esperada: {} },
+        },
+      });
+    });
+
+    it('calcula nova ordem para fase inédita e remove todas as questões se a lista estiver vazia', async () => {
+      const mockTx = {
+        phase: {
+          findUnique: jest.fn().mockResolvedValue(null),
+          count: jest.fn().mockResolvedValue(5),
+          upsert: jest.fn(),
+        },
+        question: {
+          deleteMany: jest.fn(),
+          upsert: jest.fn(),
+        },
+      };
+
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        return callback(mockTx);
+      });
+
+      const phase: Phase = {
+        id: 'fase-nova',
+        titulo: 'Fase Inédita',
+        icone: 'PenLine',
+        questoes: [],
+      };
+
+      await syncSinglePhaseToDb(phase);
+
+      expect(mockTx.phase.count).toHaveBeenCalled();
+      expect(mockTx.phase.upsert).toHaveBeenCalledWith({
+        where: { id: 'fase-nova' },
+        update: { title: 'Fase Inédita', icon: 'PenLine', order: 5 },
+        create: { id: 'fase-nova', title: 'Fase Inédita', icon: 'PenLine', order: 5 },
+      });
+
+      // Quando não há questões, apaga todas as questões da fase
+      expect(mockTx.question.deleteMany).toHaveBeenCalledWith({
+        where: { phaseId: 'fase-nova' },
+      });
+      expect(mockTx.question.upsert).not.toHaveBeenCalled();
     });
   });
 

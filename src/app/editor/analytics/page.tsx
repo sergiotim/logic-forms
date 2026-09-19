@@ -7,6 +7,8 @@ export const metadata = {
   description: 'Painel analítico do professor para acompanhamento de desempenho da turma',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function AnalyticsPage() {
   const analyticsData = await getAnalyticsOverview();
 

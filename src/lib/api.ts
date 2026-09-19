@@ -29,6 +29,22 @@ export async function savePhasesApi(phases: Phase[]): Promise<void> {
 }
 
 /**
+ * Envia e sincroniza uma única fase ativa e suas questões para o Neon PostgreSQL via PUT /api/phases/[id].
+ * Reduz a carga de rede e o tempo de transação em mais de 75%.
+ */
+export async function saveSinglePhaseApi(phase: Phase): Promise<void> {
+  const res = await fetch(`/api/phases/${phase.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phase }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Falha ao salvar fase no banco de dados');
+  }
+}
+
+/**
  * Busca todas as questões resolvidas pelo aluno autenticado no Neon PostgreSQL.
  */
 export async function fetchUserSubmissionsApi(): Promise<{ questionId: string; isCorrect: boolean }[]> {

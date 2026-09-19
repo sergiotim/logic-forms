@@ -175,6 +175,99 @@ export async function syncPhasesToDb(phases: Phase[]): Promise<void> {
 }
 
 /**
+ * Sincroniza uma única fase ativa e suas questões no banco Neon em transação atômica.
+ * Usado para operações granulares do Editor (edição de título, ícone, adição/edição/remoção de questões).
+ * Evita a reescrita monolítica de todo o currículo.
+ */
+export async function syncSinglePhaseToDb(phase: Phase): Promise<void> {
+  await prisma.$transaction(
+    async (tx) => {
+      // 1. Busca a ordem atual da fase no banco (se já existir), ou calcula a próxima ordem disponível
+      const existingPhase = await tx.phase.findUnique({
+        where: { id: phase.id },
+        select: { order: true },
+      });
+
+      let phaseOrder = existingPhase?.order;
+      if (phaseOrder === undefined) {
+        const count = await tx.phase.count();
+        phaseOrder = count;
+      }
+
+      // 2. Upsert da fase (atualiza título e ícone preservando a ordem)
+      await tx.phase.upsert({
+        where: { id: phase.id },
+        update: {
+          title: phase.titulo,
+          icon: phase.icone,
+          order: phaseOrder,
+        },
+        create: {
+          id: phase.id,
+          title: phase.titulo,
+          icon: phase.icone,
+          order: phaseOrder,
+        },
+      });
+
+      // 3. Exclui questões removidas desta fase
+      const questionIds = phase.questoes.map((q) => q.id);
+      if (questionIds.length === 0) {
+        await tx.question.deleteMany({
+          where: { phaseId: phase.id },
+        });
+      } else {
+        await tx.question.deleteMany({
+          where: {
+            phaseId: phase.id,
+            id: { notIn: questionIds },
+          },
+        });
+      }
+
+      // 4. Upsert de cada questão desta fase na ordem indicada via Promise.all
+      await Promise.all(
+        phase.questoes.map((question, qIndex) => {
+          const { id, tipo, topico, enunciado, ...content } = question as Question & Record<string, unknown>;
+
+          const prismaType = toPrismaQuestionType(tipo);
+          const isStandardPrismaType = tipo === 'diagramacao' || tipo === 'tabela_verdade' || tipo === 'formalizacao';
+          const jsonContent = {
+            ...(content || {}),
+            ...(!isStandardPrismaType ? { originalTipo: tipo } : {}),
+          } as Prisma.InputJsonObject;
+
+          return tx.question.upsert({
+            where: { id },
+            update: {
+              phaseId: phase.id,
+              type: prismaType,
+              topic: topico,
+              enunciado,
+              order: qIndex,
+              content: jsonContent,
+            },
+            create: {
+              id,
+              phaseId: phase.id,
+              type: prismaType,
+              topic: topico,
+              enunciado,
+              order: qIndex,
+              content: jsonContent,
+            },
+          });
+        })
+      );
+    },
+    {
+      maxWait: 5000,
+      timeout: 10000,
+    }
+  );
+}
+
+/**
  * Busca todas as submissões de um usuário específico no banco Neon.
  */
 export async function getUserSubmissions(

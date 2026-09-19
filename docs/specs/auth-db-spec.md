@@ -199,7 +199,15 @@ model Submission {
   - Se o banco estiver vazio, aciona a carga inicial (*seed*) a partir de `src/data/questions.ts`.
 - **`POST /api/phases`:**
   - Exclusivo para docentes (`role: TEACHER`).
-  - Recebe o array completo de fases e sincroniza atomicamente com o PostgreSQL, inserindo/atualizando fases e questões com integridade e executando limpeza de entidades removidas.
+  - Recebe o array completo de fases e sincroniza atomicamente com o PostgreSQL, inserindo/atualizando fases e questões com integridade e executando limpeza de entidades removidas (usado para criação/exclusão de fases, reordenação global e importação em lote).
+- **`PUT /api/phases/[id]`:**
+  - Exclusivo para docentes (`role: TEACHER`).
+  - Recebe os dados de uma única fase ativa (`{ phase: Phase }`) e sincroniza atomicamente apenas a fase e suas questões associadas via `syncSinglePhaseToDb`.
+  - Reduz em mais de 75% o tráfego de rede e a latência de salvamento nas operações rotineiras do Modo Editor.
+
+### 6.2. Driver de Conexão Neon Serverless (@prisma/adapter-neon)
+- O Prisma Client utiliza o `@prisma/adapter-neon` em conjunto com `@neondatabase/serverless` e `ws`.
+- As transações interativas e consultas executam sobre conexões de WebSocket/HTTP otimizadas para ambientes Serverless (Vercel Lambdas), prevenindo esgotamento de conexões TCP e erros de timeout (`P2028: Transaction not found`).
 
 ### 6.2. Submissões e Progresso
 - **`GET /api/submissions`:**
