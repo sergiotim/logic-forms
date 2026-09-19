@@ -1,9 +1,9 @@
 # [SPEC-008] Visibilidade de Fases e Questões
 
 - **Autor(es):** Equipe Lógica Dinâmica
-- **Status:** Draft / Planejamento
+- **Status:** Concluído / Implementado (v2.7.0)
 - **Data de Criação:** 2026-09-19
-- **Target Release / Milestone:** TBD
+- **Target Release / Milestone:** v2.7.0
 
 ---
 
@@ -18,10 +18,10 @@ Atualmente, qualquer fase ou questão criada e salva no Modo Editor é imediatam
 
 ### 1.2 Objetivos (Goals)
 
-- [ ] Adicionar um controle de visibilidade (Mostrar/Ocultar) individual para **Fases** e **Questões**.
-- [ ] No **Modo Editor**, sinalizar visualmente de forma clara quais conteúdos estão ocultos, permitindo que o professor continue interagindo e editando-os normalmente.
-- [ ] No **Modo Estudo**, remover completamente os itens ocultos da visão do aluno.
-- [ ] Garantir que o progresso do aluno (fases concluídas) e a numeração das fases se ajustem dinamicamente e de forma contínua para compensar as ausências.
+- [x] Adicionar um controle de visibilidade (Mostrar/Ocultar) individual para **Fases** e **Questões**.
+- [x] No **Modo Editor**, sinalizar visualmente de forma clara quais conteúdos estão ocultos, permitindo que o professor continue interagindo e editando-os normalmente.
+- [x] No **Modo Estudo**, remover completamente os itens ocultos da visão do aluno.
+- [x] Garantir que o progresso do aluno (fases concluídas) e a numeração das fases se ajustem dinamicamente e de forma contínua para compensar as ausências.
 
 ### 1.3 Fora de Escopo (Non-Goals)
 
@@ -45,7 +45,7 @@ Atualmente, qualquer fase ou questão criada e salva no Modo Editor é imediatam
   - **Recálculo de Progresso:** O progresso do aluno na fase é recalculado dinamicamente baseando-se apenas nas questões visíveis restantes. Se o aluno resolveu 3 questões e a fase tinha 5, o progresso era "3 de 5". Se o professor ocultar a questão 5, o progresso passa instantaneamente a ser "3 de 4".
 - **Para Fases Ocultas:**
   - A fase não aparece no Lobby.
-  - **Numeração Dinâmica:** A numeração visual das fases para o aluno deve ser sempre contínua. Se a "Fase 2" original for ocultada, a "Fase 3" assumirá o nome "Fase 2" na interface do aluno, evitando "buracos" (saltos numéricos) na progressão.
+  - **Numeração Dinâmica:** A numeração visual das fases para o aluno deve ser sempre contínua. Se a "Fase 2" original for ocultada, a Fase 3 assumirá o nome "Fase 2" na interface do aluno, evitando "buracos" (saltos numéricos) na progressão.
 
 ---
 
@@ -83,6 +83,13 @@ export interface BaseQuestion {
   - No Lobby, as fases exibidas derivam de `state.phases.filter(p => !p.oculta)`.
   - No Quiz, as questões da fase atual derivam de `phase.questoes.filter(q => !q.oculta)`.
   - O cálculo do índice e "Fase Atual" no UI do aluno deve utilizar a array filtrada para garantir a numeração dinâmica.
+
+### 3.3 Persistência Zero-DDL no PostgreSQL (Neon DB)
+
+Para viabilizar o deploy contínuo e preservar a integridade entre os ambientes de banco de dados (`dev` e `prod`) sem necessidade de executar migrações DDL (`prisma db push` / `prisma migrate`):
+1. **Questões:** A propriedade `oculta` é serializada e persistida diretamente na coluna `content Json` existente da tabela `Question`.
+2. **Fases:** Como o modelo relacional `Phase` não possui coluna JSON genérica, a propriedade `oculta` é codificada de forma transparente no campo `icon String` através do sufixo `:oculta` (ex: `Network:oculta`).
+3. **Decodificação e Codificação:** As funções `getPhasesFromDb()`, `syncSinglePhaseToDb()` e `syncPhasesToDb()` no `src/lib/db.ts` tratam o sufixo `:oculta`, separando o nome do ícone `LucideIconName` e populando a propriedade booleana `oculta` em tempo de execução.
 
 ---
 

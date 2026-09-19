@@ -21,6 +21,7 @@ A aplicação divide-se em duas rotas principais:
   - Visualização ordenada de fases com status de conclusão ("Concluído" / "0/2 concluídas").
   - Acesso direto para iniciar ou refazer qualquer fase concluída.
   - Tratamento inteligente de fases vazias e persistência no navegador via `localStorage`.
+  - **Numeração Dinâmica e Filtragem de Conteúdo:** Fases e questões ocultadas pelo professor são excluídas da trilha do estudante, mantendo a numeração sequencial contínua (sem saltos) e recalculando o progresso automaticamente.
 - **Modal de Saída Protegida:**
   - Confirmação de abandono ao clicar no ícone de saída durante uma fase para evitar perda inadvertida de progresso.
 - **Feedback Imediato & Gamificação:**
@@ -30,8 +31,10 @@ A aplicação divide-se em duas rotas principais:
 - **Gestão Completa de Fases (CRUD):**
   - Criação de novas fases com título customizável e seleção de ícone através de um seletor popover compacto e flutuante.
   - Exclusão protegida de fases com modal de confirmação exibindo a contagem de questões afetadas.
+  - **Controle de Visibilidade de Fases:** Botão de alternância rápida de visibilidade (`Eye`/`EyeOff`) na barra lateral com estilização em opacidade reduzida para rascunhos.
 - **Gestão Completa de Questões (CRUD):**
-  - Criação e edição dos 3 tipos de questão através de formulários especializados com validação em tempo real.
+  - Criação e edição dos 4 tipos de questão através de formulários especializados com validação em tempo real.
+  - **Controle de Visibilidade de Questões:** Alternância rápida com 1 clique no card de questões e checkbox dedicada no modal de edição ("Visível para os alunos").
   - **Preview ao Vivo:** Painel espelho que renderiza a questão em tempo real exatamente como o aluno a verá.
   - **Interface em Guias Estilo Navegador:** Alternância fluida entre "Editor" (100% de largura para edição confortável de tabelas) e "Visão do Aluno" (preview interativo espelhado em tempo real).
   - Suporte a **fases heterogêneas** (questões de tipos diferentes coexistindo na mesma fase de revisão).
@@ -109,7 +112,7 @@ A aplicação divide-se em duas rotas principais:
 
 ## Suíte de Testes (TDD)
 
-O projeto adota Test-Driven Development (TDD) rigoroso, com 160 testes automatizados cobrindo todas as camadas da aplicação:
+O projeto adota Test-Driven Development (TDD) rigoroso, com 246 testes automatizados cobrindo todas as camadas da aplicação:
 
 ```bash
 npm test
@@ -118,8 +121,8 @@ npm test
 #### Estrutura de Testes
 - `src/lib/__tests__/parser.test.ts`: Tokenização, parsing de AST, precedência de operadores, extração topológica de subexpressões e autogeração de matrizes da tabela-verdade.
 - `src/lib/__tests__/storage.test.ts`: Operações CRUD, seed, reordenação de fases/questões e migrações de schema no `localStorage`.
-- `src/__tests__/Lobby.test.tsx`: Fluxo completo do Modo Estudo (Lobby, Quiz, Exit Modal, conclusão de fases e badges).
-- `src/__tests__/Editor.test.tsx`: Fluxo completo do Modo Editor (criação/edição/remoção de fases e questões, navegação por guias estilo navegador, preview ao vivo e DnD).
+- `src/__tests__/Lobby.test.tsx`: Fluxo completo do Modo Estudo (Lobby, Quiz, Exit Modal, conclusão de fases, badges, visibilidade e numeração contínua).
+- `src/__tests__/Editor.test.tsx`: Fluxo completo do Modo Editor (criação/edição/remoção de fases e questões, navegação por guias estilo navegador, preview ao vivo, visibilidade com opacidade e DnD).
 
 ### Outros Comandos Úteis
 - `npm run lint` — Executa a verificação estática de código (ESLint)
@@ -134,12 +137,13 @@ npm test
 forms/
 ├── docs/                        # Documentação técnica e especificações
 │   ├── brand-kit.md             # Guia de marca, cores, tipografia e tom de voz
-│   ├── Estrutura das Questões (JSON).md # Schema JSON dos 3 tipos de questões
+│   ├── Estrutura das Questões (JSON).md # Schema JSON dos tipos de questões
 │   └── specs/                   # Especificações de produto detalhadas
 │       ├── lobby-spec.md        # [SPEC-001] Especificação do Lobby de Fases
 │       ├── editor-spec.md       # [SPEC-002] Especificação do Editor de Conteúdo
 │       ├── parser-spec.md       # [SPEC-003] Especificação do Parser Lógico e Tabela-Verdade
-│       └── formalizacao-spec.md # [SPEC-004] Motor de Validação e Criação de Formalização
+│       ├── formalizacao-spec.md # [SPEC-004] Motor de Validação e Criação de Formalização
+│       └── visibility-spec.md   # [SPEC-008] Visibilidade de Fases e Questões
 ├── src/
 │   ├── __tests__/               # Testes de integração (Lobby.test.tsx, Editor.test.tsx)
 │   ├── app/                     # Next.js App Router (page.tsx, editor/page.tsx, layout.tsx)
@@ -164,5 +168,6 @@ forms/
 - [[SPEC-002] Especificação do Editor de Conteúdo](docs/specs/editor-spec.md)
 - [[SPEC-003] Especificação do Parser Lógico e Tabela-Verdade](docs/specs/parser-spec.md)
 - [[SPEC-004] Motor de Validação e Criação de Formalização](docs/specs/formalizacao-spec.md)
+- [[SPEC-008] Visibilidade de Fases e Questões](docs/specs/visibility-spec.md)
 - [Estrutura de Dados das Questões (JSON)](docs/Estrutura%20das%20Quest%C3%B5es%20(JSON).md)
 - [Diretrizes de Agentes (AGENTS.md)](AGENTS.md)

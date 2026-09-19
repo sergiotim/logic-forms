@@ -4,6 +4,26 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.7.0] - 2026-09-19 (Visibilidade e Ocultação de Fases e Questões - SPEC-008)
+
+### Adicionado (Added)
+- **Controle de Visibilidade de Fases e Questões:**
+  - Botão de alternância rápida de visibilidade (`Eye` / `EyeOff`) diretamente no card de fases na barra lateral (`src/components/editor/PhaseSidebar.tsx`).
+  - Botão de alternância rápida de visibilidade no card de questões da fase (`src/components/editor/QuestionCard.tsx`).
+  - Caixa de seleção "Visível para os alunos" integrada ao cabeçalho do formulário de edição de questão (`src/components/editor/QuestionFormModal.tsx`).
+- **Feedback Visual no Modo Editor:**
+  - Fases e questões ocultadas permanecem visíveis e editáveis pelo docente, identificadas com opacidade reduzida (`opacity-50`) e ícones de visibilidade distintivos.
+- **Modo Estudo Dinâmico (`src/app/page.tsx`):**
+  - Filtragem instantânea das fases (`visiblePhases`) e questões (`visibleQuestoes`) para o estudante.
+  - **Numeração Contínua de Fases:** Eliminação de saltos numéricos na interface do aluno quando fases intermediárias estão ocultas (ex: se a Fase 2 estiver oculta, a Fase 3 torna-se visualmente "Fase 2").
+  - **Recálculo Dinâmico de Progresso:** Progresso e badges de conclusão da fase recalculados com base exclusiva no total de questões visíveis.
+- **Persistência Zero-DDL no Neon PostgreSQL (`src/lib/db.ts`):**
+  - Compatibilidade e paridade imediata entre as branches de banco de dados (`dev` e `prod`) sem necessidade de migrações DDL (`prisma db push` / `prisma migrate`).
+  - A visibilidade de questões é armazenada diretamente dentro da coluna `content Json`.
+  - A visibilidade de fases é serializada de forma transparente através do sufixo `:oculta` no campo `icon` do modelo `Phase` (ex: `Network:oculta`), sendo extraída e formatada automaticamente nas funções `getPhasesFromDb()`, `syncSinglePhaseToDb()` e `syncPhasesToDb()`.
+- **Suíte de Testes Automatizados TDD:** 15 novos testes adicionados em `Editor.test.tsx` e `Lobby.test.tsx` cobrindo alternância de visibilidade, estilização com opacidade, ausência no Modo Estudo, recálculo de progresso e numeração sequencial. Suíte total do projeto expandida para **246 testes** e **17 test suites** com 100% de aprovação.
+- **Documentação Técnica:** Especificação de requisitos e modelo de dados em [[SPEC-008] Visibilidade de Fases e Questões](docs/specs/visibility-spec.md).
+
 ## [2.6.0] - 2026-09-19 (Sincronização Granular de Fases/Questões & Neon Serverless Driver Adapter)
 
 ### Adicionado (Added)

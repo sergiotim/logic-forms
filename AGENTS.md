@@ -61,7 +61,8 @@ forms/
 │       ├── formalizacao-spec.md # [SPEC-004] Motor de Validação e Criação de Formalização
 │       ├── auth-db-spec.md      # [SPEC-005] Autenticação Google NextAuth, RBAC e Neon Postgres
 │       ├── import-export-spec.md # [SPEC-006] Importação/Exportação em Lote e Sincronização
-│       └── analytics-spec.md    # [SPEC-007] Dashboard de Análises do Professor (Analytics)
+│       ├── analytics-spec.md    # [SPEC-007] Dashboard de Análises do Professor (Analytics)
+│       └── visibility-spec.md   # [SPEC-008] Visibilidade de Fases e Questões
 ├── prisma/                      # Schema do Prisma ORM e migrações do PostgreSQL Neon
 │   └── schema.prisma            # Modelos User, Account, Session, Phase, Question, Submission
 ├── src/
@@ -130,7 +131,7 @@ forms/
 
 ## 4. Tipos de Questões & Schema de Dados
 
-Toda questão estende `BaseQuestion` (`id`, `tipo`, `topico`, `enunciado`).
+Toda questão estende `BaseQuestion` (`id`, `tipo`, `topico`, `enunciado`, `oculta?: boolean`).
 
 1. **Diagramação de Argumentos (`tipo: "diagramacao"`)**
    - **Objetivo:** Classificar frases como Premissa (`"P"`) ou Conclusão (`"C"`).
@@ -157,7 +158,7 @@ Toda questão estende `BaseQuestion` (`id`, `tipo`, `topico`, `enunciado`).
    - **Regra de Validação:** Validação de quantidade de premissas com feedback específico, correspondência por pool independente da ordem de submissão, $\alpha$-conversão em quantificadores (`∀`, `∃`) e equivalência proposicional.
 
 ### Entidades de Fases e Estado do Editor (`src/types/index.ts`)
-- **`Phase`:** Representa uma fase configurável (`id`, `titulo`, `icone: LucideIconName`, `questoes: Question[]`). Suporta fases heterogêneas (questões de tipos diferentes na mesma fase).
+- **`Phase`:** Representa uma fase configurável (`id`, `titulo`, `icone: LucideIconName`, `questoes: Question[]`, `oculta?: boolean`). Suporta fases heterogêneas (questões de tipos diferentes na mesma fase).
 - **`EditorState`:** Schema serializável armazenado no `localStorage` sob a chave `"logica-dinamica:editor-state"` (`version`, `phases`, `updatedAt`).
 
 ---
