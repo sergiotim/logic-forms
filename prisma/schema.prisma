@@ -20,6 +20,8 @@ enum QuestionType {
   DIAGRAMACAO
   TABELA_VERDADE
   FORMALIZACAO
+  FORMALIZACAO_ARGUMENTO
+  MULTIPLA_ESCOLHA
 }
 
 // ==========================================

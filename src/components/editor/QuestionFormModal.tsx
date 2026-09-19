@@ -5,9 +5,10 @@ import { DiagramacaoForm } from './forms/DiagramacaoForm';
 import { TabelaVerdadeForm } from './forms/TabelaVerdadeForm';
 import { FormalizacaoForm } from './forms/FormalizacaoForm';
 import { FormalizacaoArgumentoForm } from './forms/FormalizacaoArgumentoForm';
+import { MultiplaEscolhaForm } from './forms/MultiplaEscolhaForm';
 import { QuestionPreview } from './QuestionPreview';
 import { Button } from '@/components/ui/Button';
-import { Network, Table2, PenLine, Split, X, Eye } from 'lucide-react';
+import { Network, Table2, PenLine, Split, ListChecks, X, Eye } from 'lucide-react';
 
 interface QuestionFormModalProps {
   initialQuestion: Question | null;
@@ -70,6 +71,21 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
     if (currentQuestion.tipo === 'tabela_verdade') {
       if (currentQuestion.variaveis.length === 0) {
         setErrorMessage('Adicione pelo menos uma variável à tabela-verdade.');
+        return;
+      }
+    }
+
+    if (currentQuestion.tipo === 'multipla_escolha') {
+      if (currentQuestion.opcoes.length < 2) {
+        setErrorMessage('A questão de múltipla escolha precisa ter pelo menos 2 alternativas.');
+        return;
+      }
+      if (!currentQuestion.resposta_esperada) {
+        setErrorMessage('Selecione uma das alternativas como a resposta correta.');
+        return;
+      }
+      if (currentQuestion.opcoes.some(opt => !opt.texto.trim())) {
+        setErrorMessage('Todas as alternativas devem ter algum texto.');
         return;
       }
     }
@@ -213,6 +229,22 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                     Estruturação de premissas e dedução de conclusão.
                   </p>
                 </button>
+
+                <button
+                  type="button"
+                  data-testid="type-btn-multipla_escolha"
+                  aria-label="Tipo Múltipla Escolha"
+                  onClick={() => handleSelectType('multipla_escolha')}
+                  className="bg-base border border-border-subtle hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 rounded-xl p-5 flex flex-col items-center text-center transition-all duration-300 group"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <ListChecks size={24} />
+                  </div>
+                  <h4 className="font-bold text-white mb-1 text-sm">Múltipla Escolha</h4>
+                  <p className="text-xs text-text-muted">
+                    Seleção de uma única resposta correta.
+                  </p>
+                </button>
               </div>
             </div>
           ) : (
@@ -258,6 +290,16 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                       setErrorMessage(null);
                     }}
                     error={errorMessage || undefined}
+                  />
+                )}
+
+                {currentQuestion?.tipo === 'multipla_escolha' && (
+                  <MultiplaEscolhaForm
+                    question={currentQuestion}
+                    onChange={(updated) => {
+                      setCurrentQuestion(updated);
+                      setErrorMessage(null);
+                    }}
                   />
                 )}
 

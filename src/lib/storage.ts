@@ -189,12 +189,27 @@ export function createQuestion(type: QuestionType): Question {
   }
 
   // formalizacao
+  if (type === 'formalizacao') {
+    return {
+      ...base,
+      tipo: 'formalizacao',
+      dicas: [''],
+      teclado_virtual: ['~', '∧', '∨', '→', '(', ')'],
+      resposta_esperada: '',
+    };
+  }
+
+  // multipla_escolha
+  const opt1 = uuid();
+  const opt2 = uuid();
   return {
     ...base,
-    tipo: 'formalizacao',
-    dicas: [''],
-    teclado_virtual: ['~', '∧', '∨', '→', '(', ')'],
-    resposta_esperada: '',
+    tipo: 'multipla_escolha',
+    opcoes: [
+      { id: opt1, texto: '' },
+      { id: opt2, texto: '' }
+    ],
+    resposta_esperada: ''
   };
 }
 

@@ -5,11 +5,13 @@ import {
   TabelaVerdadeQuestion,
   FormalizacaoQuestion,
   FormalizacaoArgumentoQuestion,
+  MultiplaEscolhaQuestion,
 } from '@/types';
 import { Diagramacao } from '@/components/questions/Diagramacao';
 import { TabelaVerdade } from '@/components/questions/TabelaVerdade';
 import { Formalizacao } from '@/components/questions/Formalizacao';
 import { FormalizacaoArgumento } from '@/components/questions/FormalizacaoArgumento';
+import { MultiplaEscolha } from '@/components/questions/MultiplaEscolha';
 import { Eye } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -26,6 +28,7 @@ export const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) =>
     premissas: [''],
     conclusao: '',
   });
+  const [multiplaPreviewAnswer, setMultiplaPreviewAnswer] = useState<string>('');
 
   return (
     <div
@@ -81,6 +84,13 @@ export const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) =>
             question={question as FormalizacaoArgumentoQuestion}
             userAnswer={argumentoPreviewAnswer}
             onChange={setArgumentoPreviewAnswer}
+          />
+        )}
+        {question.tipo === 'multipla_escolha' && (
+          <MultiplaEscolha
+            question={question as MultiplaEscolhaQuestion}
+            userAnswer={multiplaPreviewAnswer}
+            onChange={setMultiplaPreviewAnswer}
           />
         )}
       </div>
