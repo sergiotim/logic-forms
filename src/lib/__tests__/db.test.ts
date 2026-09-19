@@ -53,6 +53,22 @@ describe('db.ts (Neon PostgreSQL Service)', () => {
       expect(result[0].questoes[0].tipo).toBe('diagramacao');
       expect((result[0].questoes[0] as DiagramacaoQuestion).frases).toEqual([{ id: '1', texto: 'A' }]);
     });
+
+    it('reconhece a flag de fase oculta persistida no icon', async () => {
+      (prisma.phase.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'fase-oculta',
+          title: 'Fase Oculta',
+          icon: 'Table2:oculta',
+          order: 0,
+          questions: [],
+        },
+      ]);
+
+      const result = await getPhasesFromDb();
+      expect(result[0].icone).toBe('Table2');
+      expect(result[0].oculta).toBe(true);
+    });
   });
 
   describe('syncPhasesToDb()', () => {
@@ -268,6 +284,39 @@ describe('db.ts (Neon PostgreSQL Service)', () => {
         where: { phaseId: 'fase-nova' },
       });
       expect(mockTx.question.upsert).not.toHaveBeenCalled();
+    });
+
+    it('persiste a flag :oculta no icon quando a fase for oculta', async () => {
+      const mockTx = {
+        phase: {
+          findUnique: jest.fn().mockResolvedValue({ order: 2 }),
+          upsert: jest.fn(),
+        },
+        question: {
+          deleteMany: jest.fn(),
+          upsert: jest.fn(),
+        },
+      };
+
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        return callback(mockTx);
+      });
+
+      const phase: Phase = {
+        id: 'fase-1',
+        titulo: 'Fase 1',
+        icone: 'PenLine',
+        oculta: true,
+        questoes: [],
+      };
+
+      await syncSinglePhaseToDb(phase);
+
+      expect(mockTx.phase.upsert).toHaveBeenCalledWith({
+        where: { id: 'fase-1' },
+        update: { title: 'Fase 1', icon: 'PenLine:oculta', order: 2 },
+        create: { id: 'fase-1', title: 'Fase 1', icon: 'PenLine:oculta', order: 2 },
+      });
     });
   });
 

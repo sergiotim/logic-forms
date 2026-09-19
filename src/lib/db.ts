@@ -55,22 +55,26 @@ export async function getPhasesFromDb(): Promise<Phase[]> {
     },
   });
 
-  return dbPhases.map((p) => ({
-    id: p.id,
-    titulo: p.title,
-    icone: (p.icon || 'Network') as LucideIconName,
-    questoes: p.questions.map((q) => {
-      const content =
-        typeof q.content === 'object' && q.content !== null ? (q.content as Record<string, unknown>) : {};
-      return {
-        id: q.id,
-        tipo: resolveQuestionType(q.type, content),
-        topico: q.topic,
-        enunciado: q.enunciado,
-        ...content,
-      } as Question;
-    }),
-  }));
+  return dbPhases.map((p) => {
+    const [rawIcon, flag] = (p.icon || 'Network').split(':');
+    return {
+      id: p.id,
+      titulo: p.title,
+      icone: (rawIcon || 'Network') as LucideIconName,
+      ...(flag === 'oculta' ? { oculta: true } : {}),
+      questoes: p.questions.map((q) => {
+        const content =
+          typeof q.content === 'object' && q.content !== null ? (q.content as Record<string, unknown>) : {};
+        return {
+          id: q.id,
+          tipo: resolveQuestionType(q.type, content),
+          topico: q.topic,
+          enunciado: q.enunciado,
+          ...content,
+        } as Question;
+      }),
+    };
+  });
 }
 
 /**
@@ -99,18 +103,20 @@ export async function syncPhasesToDb(phases: Phase[]): Promise<void> {
       for (let pIndex = 0; pIndex < phases.length; pIndex++) {
         const phase = phases[pIndex];
 
+        const phaseIcon = phase.oculta ? `${phase.icone}:oculta` : phase.icone;
+
         // Upsert da fase (atualiza título, ícone e a nova ordem)
         await tx.phase.upsert({
           where: { id: phase.id },
           update: {
             title: phase.titulo,
-            icon: phase.icone,
+            icon: phaseIcon,
             order: pIndex,
           },
           create: {
             id: phase.id,
             title: phase.titulo,
-            icon: phase.icone,
+            icon: phaseIcon,
             order: pIndex,
           },
         });
@@ -194,18 +200,20 @@ export async function syncSinglePhaseToDb(phase: Phase): Promise<void> {
         phaseOrder = count;
       }
 
+      const phaseIcon = phase.oculta ? `${phase.icone}:oculta` : phase.icone;
+
       // 2. Upsert da fase (atualiza título e ícone preservando a ordem)
       await tx.phase.upsert({
         where: { id: phase.id },
         update: {
           title: phase.titulo,
-          icon: phase.icone,
+          icon: phaseIcon,
           order: phaseOrder,
         },
         create: {
           id: phase.id,
           title: phase.titulo,
-          icon: phase.icone,
+          icon: phaseIcon,
           order: phaseOrder,
         },
       });
