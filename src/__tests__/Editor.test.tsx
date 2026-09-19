@@ -498,4 +498,39 @@ describe('[SPEC-005] Exportação e Importação de Fases na UI', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// BLOCO 7 — [SPEC-008] Visibilidade de Fases e Questões
+// ---------------------------------------------------------------------------
+
+describe('[SPEC-008] Visibilidade de Fases e Questões', () => {
+  it('exibe a fase com opacidade reduzida se estiver oculta', () => {
+    const stateOculta = JSON.parse(JSON.stringify(MOCK_STATE_3_PHASES));
+    stateOculta.phases[0].oculta = true;
+    (loadEditorState as jest.Mock).mockReturnValue(stateOculta);
+    render(<EditorPage />);
+    
+    const sidebar = screen.getByTestId('phase-sidebar');
+    const faseDiagContainer = within(sidebar).getByText('Diagramação').closest('[data-testid="phase-item"]')!;
+    expect(faseDiagContainer.className).toMatch(/opacity-50/);
+  });
+
+  it('exibe o controle rápido de visibilidade (toggle olho) no card', () => {
+    render(<EditorPage />);
+    const sidebar = screen.getByTestId('phase-sidebar');
+    const toggleVisBtn = within(sidebar).getAllByRole('button', { name: /Alternar visibilidade/i })[0];
+    fireEvent.click(toggleVisBtn);
+    expect(saveEditorState).toHaveBeenCalled();
+  });
+
+  it('exibe um checkbox de visibilidade no modal de edição da questão', async () => {
+    render(<EditorPage />);
+    fireEvent.click(getSidebarPhase('Diagramação'));
+    fireEvent.click(screen.getByRole('button', { name: /Editar/i }));
+
+    const checkboxVisibilidade = await screen.findByRole('checkbox', { name: /Visível para os alunos/i });
+    expect(checkboxVisibilidade).toBeInTheDocument();
+  });
+});
+
+
 

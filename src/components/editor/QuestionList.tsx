@@ -24,6 +24,7 @@ interface QuestionListProps {
   questoes: Question[];
   onAddQuestion: () => void;
   onEditQuestion: (question: Question) => void;
+  onToggleQuestionVisibility?: (question: Question) => void;
   onDeleteQuestion: (questionId: string) => void;
   onReorderQuestions: (oldIndex: number, newIndex: number) => void;
 }
@@ -32,6 +33,7 @@ export const QuestionList: React.FC<QuestionListProps> = ({
   questoes,
   onAddQuestion,
   onEditQuestion,
+  onToggleQuestionVisibility,
   onDeleteQuestion,
   onReorderQuestions,
 }) => {
@@ -105,6 +107,11 @@ export const QuestionList: React.FC<QuestionListProps> = ({
                   question={q}
                   index={idx}
                   onEdit={onEditQuestion}
+                  onToggleVisibility={
+                    onToggleQuestionVisibility
+                      ? () => onToggleQuestionVisibility(q)
+                      : undefined
+                  }
                   onDelete={(id) => setDeletingQuestionId(id)}
                 />
               ))}

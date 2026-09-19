@@ -146,7 +146,15 @@ export default function Home() {
     });
   }, []);
 
-  const activePhaseData = phases.find((f) => f.id === activePhase);
+  // Filtra fases e questões visíveis para os alunos no Modo Estudo
+  const visiblePhases = phases
+    .filter((f) => !f.oculta)
+    .map((f) => ({
+      ...f,
+      questoes: f.questoes.filter((q) => !q.oculta),
+    }));
+
+  const activePhaseData = visiblePhases.find((f) => f.id === activePhase);
   const question = activePhaseData?.questoes[currentIndex];
 
   useEffect(() => {
@@ -325,7 +333,7 @@ export default function Home() {
     setCurrentView('lobby');
   };
 
-  const activePhaseVisualIndex = phases.findIndex((f) => f.id === activePhase) + 1;
+  const activePhaseVisualIndex = visiblePhases.findIndex((f) => f.id === activePhase) + 1;
 
   if (!isLoaded) {
     return (
@@ -399,13 +407,13 @@ export default function Home() {
                 <p className="text-text-muted">Escolha uma fase para treinar suas habilidades.</p>
               </div>
 
-              {phases.length === 0 ? (
+              {visiblePhases.length === 0 ? (
                 <div className="bg-surface border border-border-subtle rounded-xl p-8 text-center">
                   <p className="text-text-muted">Nenhuma fase disponível. Acesse o Editor para criar conteúdo.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {phases.map((fase, index) => {
+                  {visiblePhases.map((fase, index) => {
                     const completedCount = fase.questoes.filter((q) =>
                       completedQuestionIds.has(q.id),
                     ).length;
@@ -413,7 +421,7 @@ export default function Home() {
                       fase.questoes.length > 0 && completedCount === fase.questoes.length;
 
                     // Verifica se as fases anteriores foram completadas (professor não tem bloqueio)
-                    const isLocked = !isTeacher && index > 0 && !phases.slice(0, index).every((prevPhase) => {
+                    const isLocked = !isTeacher && index > 0 && !visiblePhases.slice(0, index).every((prevPhase) => {
                       const prevCount = prevPhase.questoes.filter((q) => completedQuestionIds.has(q.id)).length;
                       return prevPhase.questoes.length > 0 && prevCount === prevPhase.questoes.length;
                     });

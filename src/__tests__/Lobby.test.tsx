@@ -362,3 +362,44 @@ describe('Modal de saída durante a fase', () => {
     expect(screen.getByText(/Fase 3:/i)).toBeInTheDocument();
   });
 });
+
+// ---------------------------------------------------------------------------
+// BLOCO 6 — [SPEC-008] Visibilidade no Modo Estudo
+// ---------------------------------------------------------------------------
+
+describe('[SPEC-008] Visibilidade no Modo Estudo (Visão do Aluno)', () => {
+  it('não renderiza fases ocultas no Lobby', async () => {
+    const stateOculta = JSON.parse(JSON.stringify(MOCK_3_PHASES));
+    stateOculta.phases[1].oculta = true; // Oculta Tabela-Verdade
+    (loadEditorState as jest.Mock).mockReturnValue(stateOculta);
+    await renderLobby();
+
+    expect(screen.getByText(/Diagramação/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Tabela-Verdade/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Formalização/i)).toBeInTheDocument();
+  });
+
+  it('mantém a numeração de fases contínua quando uma fase é oculta', async () => {
+    const stateOculta = JSON.parse(JSON.stringify(MOCK_3_PHASES));
+    stateOculta.phases[1].oculta = true; // Oculta Fase 2 original
+    (loadEditorState as jest.Mock).mockReturnValue(stateOculta);
+    await renderLobby();
+
+    // A fase de Formalização (originalmente Fase 3) deve virar Fase 2
+    expect(screen.getByText(/Fase 2: Formalização/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Fase 3/i)).not.toBeInTheDocument();
+  });
+
+  it('não contabiliza questões ocultas no total da fase', async () => {
+    const stateOculta = JSON.parse(JSON.stringify(MOCK_3_PHASES));
+    // Fase Diagramacao (Fase 1) tem 2 questões originais.
+    stateOculta.phases[0].questoes[1].oculta = true; // Oculta a segunda questão
+    (loadEditorState as jest.Mock).mockReturnValue(stateOculta);
+    
+    await renderLobby();
+    
+    // Como a fase original tinha 2 questoes e 1 foi oculta, agora o total é 1.
+    // Assim o progresso inicial deve mostrar "0/1 concluídas" em vez de "0/2"
+    expect(screen.getByText(/0\/1 concluídas/i)).toBeInTheDocument();
+  });
+});

@@ -70,6 +70,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
         selectedPhaseId={selectedPhaseId}
         onSelectPhase={onSelectPhase}
         onCreatePhase={onCreatePhase}
+        onUpdatePhase={onUpdatePhase}
         onReorderPhases={onReorderPhases}
         onImportPackage={onImportPackage}
         onExportAll={onExportAll}
@@ -86,6 +87,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
               onDeletePhase={onDeletePhase}
               onAddQuestion={handleOpenNewQuestion}
               onEditQuestion={handleOpenEditQuestion}
+              onSaveQuestion={(q) => onSaveQuestion(selectedPhase.id, q)}
               onDeleteQuestion={(qId) => onDeleteQuestion(selectedPhase.id, qId)}
               onReorderQuestions={(oldIdx, newIdx) =>
                 onReorderQuestions(selectedPhase.id, oldIdx, newIdx)

@@ -277,15 +277,35 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border-subtle bg-surface flex justify-end gap-3 shrink-0">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          {selectedType && (
-            <Button type="button" variant="primary" onClick={handleSave}>
-              Salvar
+        <div className="p-4 border-t border-border-subtle bg-surface flex items-center justify-between gap-3 shrink-0">
+          <div>
+            {selectedType && currentQuestion && (
+              <label className="flex items-center gap-2 cursor-pointer text-xs sm:text-sm text-text-muted hover:text-white transition-colors select-none">
+                <input
+                  type="checkbox"
+                  checked={!currentQuestion.oculta}
+                  onChange={(e) => {
+                    setCurrentQuestion({
+                      ...currentQuestion,
+                      oculta: !e.target.checked,
+                    });
+                  }}
+                  className="rounded border-border-subtle text-primary focus:ring-primary h-4 w-4 bg-base cursor-pointer"
+                />
+                <span>Visível para os alunos</span>
+              </label>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancelar
             </Button>
-          )}
+            {selectedType && (
+              <Button type="button" variant="primary" onClick={handleSave}>
+                Salvar
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

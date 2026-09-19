@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Phase, LucideIconName } from '@/types';
 import { ICON_MAP, ICON_OPTIONS } from '@/lib/icons';
 import { Button } from '@/components/ui/Button';
-import { Plus, X, GripVertical, UploadCloud, DownloadCloud } from 'lucide-react';
+import { Plus, X, GripVertical, UploadCloud, DownloadCloud, Eye, EyeOff } from 'lucide-react';
 
 import {
   DndContext,
@@ -27,6 +27,7 @@ interface PhaseSidebarProps {
   selectedPhaseId: string | null;
   onSelectPhase: (phaseId: string) => void;
   onCreatePhase: (titulo: string, icone: LucideIconName) => void;
+  onUpdatePhase?: (phase: Phase) => void;
   onReorderPhases: (oldIndex: number, newIndex: number) => void;
   onImportPackage?: (pkg: unknown) => void;
   onExportAll?: () => void;
@@ -37,9 +38,10 @@ interface SortablePhaseItemProps {
   index: number;
   isSelected: boolean;
   onSelect: () => void;
+  onToggleVisibility?: () => void;
 }
 
-function SortablePhaseItem({ fase, index, isSelected, onSelect }: SortablePhaseItemProps) {
+function SortablePhaseItem({ fase, index, isSelected, onSelect, onToggleVisibility }: SortablePhaseItemProps) {
   const {
     attributes,
     listeners,
@@ -60,8 +62,11 @@ function SortablePhaseItem({ fase, index, isSelected, onSelect }: SortablePhaseI
   return (
     <div
       ref={setNodeRef}
+      data-testid="phase-item"
       style={style}
       className={`group w-full p-2.5 rounded-xl border flex items-center gap-2 transition-colors ${
+        fase.oculta ? 'opacity-50' : ''
+      } ${
         isDragging
           ? 'opacity-90 scale-[1.02] shadow-2xl border-primary bg-surface'
           : isSelected
@@ -84,7 +89,7 @@ function SortablePhaseItem({ fase, index, isSelected, onSelect }: SortablePhaseI
       <button
         type="button"
         onClick={onSelect}
-        className="flex-1 min-w-0 flex items-center gap-3 text-left focus:outline-none"
+        className="flex-1 min-w-0 flex items-center gap-3 text-left focus:outline-none cursor-pointer"
       >
         <div
           className={`p-2 rounded-lg shrink-0 ${
@@ -106,6 +111,22 @@ function SortablePhaseItem({ fase, index, isSelected, onSelect }: SortablePhaseI
           <h4 className="font-bold text-sm text-white truncate">{fase.titulo}</h4>
         </div>
       </button>
+
+      {/* Botão rápido de alternar visibilidade */}
+      {onToggleVisibility && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleVisibility();
+          }}
+          className="p-1.5 text-text-muted hover:text-white rounded-lg hover:bg-surface transition-colors shrink-0 cursor-pointer"
+          title={fase.oculta ? 'Mostrar fase' : 'Ocultar fase'}
+          aria-label="Alternar visibilidade"
+        >
+          {fase.oculta ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+      )}
     </div>
   );
 }
@@ -115,6 +136,7 @@ export const PhaseSidebar: React.FC<PhaseSidebarProps> = ({
   selectedPhaseId,
   onSelectPhase,
   onCreatePhase,
+  onUpdatePhase,
   onReorderPhases,
   onImportPackage,
   onExportAll,
@@ -313,6 +335,9 @@ export const PhaseSidebar: React.FC<PhaseSidebarProps> = ({
                     index={idx}
                     isSelected={fase.id === selectedPhaseId}
                     onSelect={() => onSelectPhase(fase.id)}
+                    onToggleVisibility={() =>
+                      onUpdatePhase?.({ ...fase, oculta: !fase.oculta })
+                    }
                   />
                 ))}
               </div>

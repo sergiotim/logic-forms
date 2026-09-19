@@ -12,6 +12,7 @@ interface PhaseEditorProps {
   onDeletePhase: (phaseId: string) => void;
   onAddQuestion: () => void;
   onEditQuestion: (question: Question) => void;
+  onSaveQuestion?: (question: Question) => void;
   onDeleteQuestion: (questionId: string) => void;
   onReorderQuestions: (oldIndex: number, newIndex: number) => void;
   onExportPhase?: (phaseId: string) => void;
@@ -24,6 +25,7 @@ export const PhaseEditor: React.FC<PhaseEditorProps> = ({
   onDeletePhase,
   onAddQuestion,
   onEditQuestion,
+  onSaveQuestion,
   onDeleteQuestion,
   onReorderQuestions,
   onExportPhase,
@@ -181,6 +183,11 @@ export const PhaseEditor: React.FC<PhaseEditorProps> = ({
         questoes={phase.questoes}
         onAddQuestion={onAddQuestion}
         onEditQuestion={onEditQuestion}
+        onToggleQuestionVisibility={
+          onSaveQuestion
+            ? (question) => onSaveQuestion({ ...question, oculta: !question.oculta })
+            : undefined
+        }
         onDeleteQuestion={onDeleteQuestion}
         onReorderQuestions={onReorderQuestions}
       />

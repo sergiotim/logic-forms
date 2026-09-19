@@ -1,7 +1,7 @@
 import React from 'react';
 import { Question } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Pencil, Trash2, GripVertical } from 'lucide-react';
+import { Pencil, Trash2, GripVertical, Eye, EyeOff } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -9,6 +9,7 @@ interface QuestionCardProps {
   question: Question;
   index: number;
   onEdit: (question: Question) => void;
+  onToggleVisibility?: () => void;
   onDelete: (questionId: string) => void;
 }
 
@@ -16,6 +17,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
   index,
   onEdit,
+  onToggleVisibility,
   onDelete,
 }) => {
   const {
@@ -51,6 +53,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       ref={setNodeRef}
       style={style}
       className={`bg-surface border border-border-subtle rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors ${
+        question.oculta ? 'opacity-50' : ''
+      } ${
         isDragging
           ? 'opacity-90 scale-[1.01] shadow-2xl border-primary'
           : 'hover:border-border-subtle/80'
@@ -89,6 +93,18 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       </div>
 
       <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+        {onToggleVisibility && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onToggleVisibility}
+            className="text-xs px-3 py-1.5 flex items-center gap-1.5 border-border-subtle text-text-muted hover:text-white"
+            title={question.oculta ? 'Mostrar questão' : 'Ocultar questão'}
+            aria-label="Alternar visibilidade"
+          >
+            {question.oculta ? <EyeOff size={14} /> : <Eye size={14} />}
+          </Button>
+        )}
         <Button
           type="button"
           variant="outline"

@@ -5,6 +5,7 @@ export interface BaseQuestion {
   tipo: QuestionType;
   topico: string;
   enunciado: string;
+  oculta?: boolean;
 }
 
 export interface DiagramacaoQuestion extends BaseQuestion {
@@ -71,6 +72,7 @@ export interface Phase {
   titulo: string;
   icone: LucideIconName;
   questoes: Question[];
+  oculta?: boolean;
 }
 
 export interface EditorState {
