@@ -9,11 +9,13 @@ import { Diagramacao } from '@/components/questions/Diagramacao';
 import { TabelaVerdade } from '@/components/questions/TabelaVerdade';
 import { Formalizacao } from '@/components/questions/Formalizacao';
 import { FormalizacaoArgumento } from '@/components/questions/FormalizacaoArgumento';
+import { MultiplaEscolha } from '@/components/questions/MultiplaEscolha';
 import {
   DiagramacaoQuestion,
   FormalizacaoQuestion,
   FormalizacaoArgumentoQuestion,
   TabelaVerdadeQuestion,
+  MultiplaEscolhaQuestion,
   Phase,
 } from '@/types';
 import { loadEditorState } from '@/lib/storage';
@@ -102,6 +104,7 @@ export default function Home() {
   const [diagramacaoAnswer, setDiagramacaoAnswer] = useState<Record<string, string>>({});
   const [tabelaAnswer, setTabelaAnswer] = useState<Record<string, string>>({});
   const [formalizacaoAnswer, setFormalizacaoAnswer] = useState<string>('');
+  const [multiplaAnswer, setMultiplaAnswer] = useState<string>('');
   const [argumentoAnswer, setArgumentoAnswer] = useState<{ premissas: string[]; conclusao: string }>({
     premissas: [''],
     conclusao: '',
@@ -162,6 +165,8 @@ export default function Home() {
       setFormalizacaoAnswer('');
     } else if (question?.tipo === 'formalizacao_argumento') {
       setArgumentoAnswer({ premissas: [''], conclusao: '' });
+    } else if (question?.tipo === 'multipla_escolha') {
+      setMultiplaAnswer('');
     }
   }, [currentIndex, question]);
 
@@ -259,6 +264,13 @@ export default function Home() {
       if (!missingData) {
         isCorrect = allCorrect;
       }
+    } else if (question.tipo === 'multipla_escolha') {
+      const q = question as MultiplaEscolhaQuestion;
+      if (!multiplaAnswer) {
+        missingData = true;
+      } else {
+        isCorrect = multiplaAnswer === q.resposta_esperada;
+      }
     }
 
     if (missingData) {
@@ -281,6 +293,7 @@ export default function Home() {
         else if (question.tipo === 'formalizacao_argumento') rawAnswer = argumentoAnswer;
         else if (question.tipo === 'diagramacao') rawAnswer = diagramacaoAnswer;
         else if (question.tipo === 'tabela_verdade') rawAnswer = tabelaAnswer;
+        else if (question.tipo === 'multipla_escolha') rawAnswer = multiplaAnswer;
 
         saveUserSubmissionApi(question.id, true, rawAnswer).catch((err: unknown) => {
           console.warn('Erro ao salvar submissão no banco:', err instanceof Error ? err.message : err);
@@ -301,6 +314,7 @@ export default function Home() {
     setDiagramacaoAnswer({});
     setTabelaAnswer({});
     setFormalizacaoAnswer('');
+    setMultiplaAnswer('');
     setArgumentoAnswer({ premissas: [''], conclusao: '' });
     setCurrentView('playing');
   };
@@ -497,6 +511,13 @@ export default function Home() {
                       question={question as FormalizacaoArgumentoQuestion}
                       userAnswer={argumentoAnswer}
                       onChange={setArgumentoAnswer}
+                    />
+                  )}
+                  {question.tipo === 'multipla_escolha' && (
+                    <MultiplaEscolha
+                      question={question as MultiplaEscolhaQuestion}
+                      userAnswer={multiplaAnswer}
+                      onChange={setMultiplaAnswer}
                     />
                   )}
                 </div>
