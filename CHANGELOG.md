@@ -4,6 +4,16 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.8.0] - 2026-09-19 (Questões de Múltipla Escolha e Refatoração do Banco)
+
+### Adicionado (Added)
+- **Novo Tipo de Questão: Múltipla Escolha (`multipla_escolha`):** Exercício clássico de seleção única, com renderização de opções como cartões expansíveis e suporte a Markdown.
+- **Sistema de Anti-Cola (Fisher-Yates Shuffle):** O frontend agora embaralha automaticamente as posições das opções toda vez que o componente é renderizado para o aluno, inibindo respostas fixas por posição.
+- **Formulário de Edição Dinâmico (`MultiplaEscolhaForm.tsx`):** Professor pode adicionar e remover n-opções e marcar visualmente o gabarito.
+
+### Corrigido (Fixed)
+- **Sincronização de Banco de Dados (`db.ts`):** Adicionado suporte explícito na camada de integração do Prisma ORM aos tipos `MULTIPLA_ESCOLHA` e `FORMALIZACAO_ARGUMENTO`, corrigindo o bug de herança silenciosa como diagrama.
+
 ## [2.7.0] - 2026-09-19 (Visibilidade e Ocultação de Fases e Questões - SPEC-008)
 
 ### Adicionado (Added)
