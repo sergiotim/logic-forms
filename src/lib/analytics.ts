@@ -150,7 +150,7 @@ export async function getAnalyticsOverview(): Promise<GlobalAnalyticsData> {
   }
 
   // 3. Desempenho por tipo de questão
-  const questionTypes: QuestionType[] = ['DIAGRAMACAO', 'TABELA_VERDADE', 'FORMALIZACAO'];
+  const questionTypes: QuestionType[] = ['DIAGRAMACAO', 'TABELA_VERDADE', 'FORMALIZACAO', 'FORMALIZACAO_ARGUMENTO', 'MULTIPLA_ESCOLHA'];
   const performanceByType: QuestionTypePerformance[] = questionTypes.map((type) => {
     const typeSubs = submissions.filter((s) => s.question?.type === type);
     const totalSubmissions = typeSubs.length;

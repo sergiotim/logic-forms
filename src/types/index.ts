@@ -119,7 +119,7 @@ export interface ImportPackageResult {
 // --- Tipos de Analytics do Professor (SPEC-007) ---
 
 export interface QuestionTypePerformance {
-  type: 'DIAGRAMACAO' | 'TABELA_VERDADE' | 'FORMALIZACAO' | QuestionType;
+  type: 'DIAGRAMACAO' | 'TABELA_VERDADE' | 'FORMALIZACAO' | 'FORMALIZACAO_ARGUMENTO' | 'MULTIPLA_ESCOLHA' | QuestionType;
   totalSubmissions: number;
   correctSubmissions: number;
   successRate: number; // 0 - 100%
@@ -129,7 +129,7 @@ export interface HardestQuestionSummary {
   questionId: string;
   enunciado: string;
   topic: string;
-  type: QuestionType | 'DIAGRAMACAO' | 'TABELA_VERDADE' | 'FORMALIZACAO';
+  type: QuestionType | 'DIAGRAMACAO' | 'TABELA_VERDADE' | 'FORMALIZACAO' | 'FORMALIZACAO_ARGUMENTO' | 'MULTIPLA_ESCOLHA';
   failureCount: number;
   totalAttempts: number;
   failureRate: number; // 0 - 100%
