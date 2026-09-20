@@ -25,12 +25,12 @@ O arquivo gerado deve ser um JSON válido contendo um objeto raiz com **três se
   },
   "phases": [
     {
-      "titulo": "Fase 1: Argumentos",
+      "titulo": "Argumentos",
       "icone": "Network",
       "originalQuestionIds": ["q1", "q2"]
     },
     {
-      "titulo": "Fase 2: Tabelas-Verdade",
+      "titulo": "Tabelas-Verdade",
       "icone": "Table2",
       "originalQuestionIds": ["q3", "q4"]
     }
@@ -69,7 +69,7 @@ O pacote suporta a importação de **uma única fase** ou de **múltiplas fases 
 ### Campos do Objeto Fase:
 | Campo | Tipo | Obrigatório | Valores Aceitos | Descrição |
 | :--- | :--- | :---: | :--- | :--- |
-| `titulo` | `string` | **Sim** | Texto legível de 3 a 60 caracteres | Nome da fase (ex: `"Fase 1: Diagramação"`, `"Fase 2: Conectivos"`). |
+| `titulo` | `string` | **Sim** | Texto legível de 3 a 60 caracteres | Nome temático da fase (ex: `"Diagramação"`, `"Conectivos"`). **NÃO inclua o prefixo "Fase X:"**, pois a plataforma insere a numeração ordinal dinamicamente na interface. |
 | `icone` | `string` | **Sim** | *Enum restrito* (ver tabela abaixo) | Identificador visual do ícone da fase. |
 | `originalQuestionIds` | `string[]` | **Sim** | Array de strings não-vazio | Lista de IDs correspondentes ao campo `originalId` das questões contidas em `questions`. |
 
@@ -265,17 +265,17 @@ Abaixo está um exemplo de pacote completo contendo **3 fases pedagógicas indep
   },
   "phases": [
     {
-      "titulo": "Fase 1: Reconhecimento de Argumentos",
+      "titulo": "Reconhecimento de Argumentos",
       "icone": "Network",
       "originalQuestionIds": ["q_diag_01", "q_diag_02"]
     },
     {
-      "titulo": "Fase 2: Valoração Booleana",
+      "titulo": "Valoração Booleana",
       "icone": "Table2",
       "originalQuestionIds": ["q_tab_01", "q_tab_02"]
     },
     {
-      "titulo": "Fase 3: Tradução em Predicados",
+      "titulo": "Tradução em Predicados",
       "icone": "PenLine",
       "originalQuestionIds": ["q_form_01"]
     }
