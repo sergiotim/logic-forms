@@ -224,9 +224,37 @@ Classificação de sentenças de um argumento como Premissa (`"P"`) ou Conclusã
 
 ---
 
+### 5.4 Tipo 4: Múltipla Escolha (`"tipo": "multipla_escolha"`)
+
+Permite criar questões teóricas ou desafios com alternativas fechadas, suportando formatação Markdown (negrito, símbolos) nas opções.
+
+#### Campos Obrigatórios:
+| Campo | Tipo | Descrição e Regras |
+| :--- | :--- | :--- |
+| `opcoes` | `Array<{ id: string; texto: string }>` | Mínimo de 2 opções. Cada opção deve ter um `id` único e o `texto` correspondente. |
+| `resposta_esperada` | `string` | O `id` exato da opção que é o gabarito correto. |
+
+#### Exemplo JSON Mínimo e Suficiente:
+```json
+{
+  "originalId": "q_multi_1",
+  "tipo": "multipla_escolha",
+  "topico": "Conceitos Básicos",
+  "enunciado": "Qual alternativa representa a lei do Terceiro Excluído?",
+  "opcoes": [
+    { "id": "opt1", "texto": "P ∨ ~P" },
+    { "id": "opt2", "texto": "P ∧ ~P" },
+    { "id": "opt3", "texto": "P → Q" }
+  ],
+  "resposta_esperada": "opt1"
+}
+```
+
+---
+
 ## 6. Exemplo de Pacote Completo com Múltiplas Fases (Pronto para Importação)
 
-Abaixo está um exemplo de pacote completo contendo **3 fases pedagógicas independentes**, demonstrando a importação em lote com os 3 tipos de questão simplificados:
+Abaixo está um exemplo de pacote completo contendo **3 fases pedagógicas independentes**, demonstrando a importação em lote com os 4 tipos de questão simplificados:
 
 ```json
 {
