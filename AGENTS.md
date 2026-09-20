@@ -156,6 +156,11 @@ Toda questão estende `BaseQuestion` (`id`, `tipo`, `topico`, `enunciado`).
    - **Campos Específicos:** `dicas: string[]`, `teclado_virtual: string[]`, `resposta_esperada: { premissas: string[], conclusao: string }`, `modo_validacao?: 'semantico' | 'estrito'`.
    - **Regra de Validação:** Validação de quantidade de premissas com feedback específico, correspondência por pool independente da ordem de submissão, $\alpha$-conversão em quantificadores (`∀`, `∃`) e equivalência proposicional.
 
+5. **Múltipla Escolha (`tipo: "multipla_escolha"`)**
+   - **Objetivo:** Escolher uma única alternativa correta entre várias opções embaralhadas dinamicamente.
+   - **Campos Específicos:** `opcoes: [{ id, texto }]`, `resposta_esperada: string`.
+   - **Regra de Validação:** Apenas o `id` da opção correta deve ser correspondente. As opções exibidas para o aluno recebem prefixos visuais "A)", "B)", "C)" após embaralhamento via algoritmo de Fisher-Yates.
+
 ### Entidades de Fases e Estado do Editor (`src/types/index.ts`)
 - **`Phase`:** Representa uma fase configurável (`id`, `titulo`, `icone: LucideIconName`, `questoes: Question[]`). Suporta fases heterogêneas (questões de tipos diferentes na mesma fase).
 - **`EditorState`:** Schema serializável armazenado no `localStorage` sob a chave `"logica-dinamica:editor-state"` (`version`, `phases`, `updatedAt`).

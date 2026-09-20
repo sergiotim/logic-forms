@@ -180,7 +180,33 @@ Toda questão, independentemente do tipo, estende `BaseQuestion` e possui os seg
 
 ---
 
-## 6. Estrutura de Fases, Persistência & Banco de Questões (`EditorState`)
+## 6. Tipo: Múltipla Escolha (`multipla_escolha`)
+
+**Objetivo:** Permitir ao aluno escolher uma única alternativa correta entre várias opções.
+
+**Campos Específicos:**
+- **opcoes** (Array de Objetos): Lista de opções disponíveis. Cada objeto possui um `id` único e um `texto`.
+- **resposta_esperada** (String): O `id` correspondente à opção correta.
+
+**Exemplo Completo:**
+```json
+{
+  "id": "q-multi-1",
+  "tipo": "multipla_escolha",
+  "topico": "Semântica Proposicional",
+  "enunciado": "Qual das seguintes fórmulas é uma Tautologia?",
+  "opcoes": [
+    { "id": "opt_1", "texto": "P ∨ Q" },
+    { "id": "opt_2", "texto": "P ∧ ~P" },
+    { "id": "opt_3", "texto": "P ∨ ~P" }
+  ],
+  "resposta_esperada": "opt_3"
+}
+```
+
+---
+
+## 7. Estrutura de Fases, Persistência & Banco de Questões (`EditorState`)
 
 No Modo Editor, os dados são persistidos no `localStorage` sob a chave `"logica-dinamica:editor-state"`.
 Para garantir escalabilidade e reaproveitamento, adotamos uma **Estrutura Relacional**: as questões vivem em um banco central (`questionBank`), enquanto as fases apenas referenciam essas questões através de IDs.
