@@ -272,7 +272,7 @@ export async function syncSinglePhaseToDb(phase: Phase): Promise<void> {
     },
     {
       maxWait: 5000,
-      timeout: 10000,
+      timeout: 20000,
     }
   );
 }
@@ -323,4 +323,3 @@ export async function saveUserSubmission(data: {
     },
   });
 }
-
