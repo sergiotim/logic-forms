@@ -202,7 +202,7 @@ describe('db.ts (Neon PostgreSQL Service)', () => {
 
       expect(prisma.$transaction).toHaveBeenCalledWith(
         expect.any(Function),
-        { maxWait: 5000, timeout: 10000 }
+        { maxWait: 5000, timeout: 20000 }
       );
 
       // Garante que buscou a ordem existente
