@@ -98,7 +98,13 @@ export function validatePackage(
     return { isValid: false, error: 'Lista de questões ausente ou inválida no pacote.' };
   }
 
-  const validTypes = ['diagramacao', 'tabela_verdade', 'formalizacao'];
+  const validTypes = [
+    'diagramacao',
+    'tabela_verdade',
+    'formalizacao',
+    'formalizacao_argumento',
+    'multipla_escolha',
+  ];
   for (const q of pkg.questions) {
     if (!q || typeof q !== 'object') {
       return { isValid: false, error: 'Questão inválida no pacote.' };
@@ -111,6 +117,15 @@ export function validatePackage(
     }
     if (typeof q.enunciado !== 'string') {
       return { isValid: false, error: 'Enunciado inválido em questão do pacote.' };
+    }
+    if (q.tipo === 'multipla_escolha') {
+      const mc = q as any;
+      if (!Array.isArray(mc.opcoes) || mc.opcoes.length < 2) {
+        return { isValid: false, error: 'Questão de múltipla escolha deve conter ao menos 2 opções.' };
+      }
+      if (typeof mc.resposta_esperada !== 'string' || !mc.resposta_esperada) {
+        return { isValid: false, error: 'Questão de múltipla escolha sem resposta_esperada definida.' };
+      }
     }
   }
 
