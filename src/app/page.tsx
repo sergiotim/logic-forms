@@ -408,7 +408,7 @@ export default function Home() {
 
         {currentView === 'playing' && activePhaseData && (
           <div className="text-[11px] sm:text-xs md:text-sm font-mono text-text-muted bg-base px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-border-subtle whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[220px] md:max-w-none">
-            Fase {activePhaseVisualIndex}: Questão {currentIndex + 1}/{activePhaseData.questoes.length}
+            Fase {activePhaseVisualIndex}: {currentIndex + 1}/{activePhaseData.questoes.length}
           </div>
         )}
 
