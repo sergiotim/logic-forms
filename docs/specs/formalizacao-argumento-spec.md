@@ -83,9 +83,12 @@ No componente `FormalizacaoArgumentoForm.tsx` (nova aba no modal de criação):
 Para elevar o desafio cognitivo e não "dar a resposta", a interface do estudante não revela a quantidade inicial de premissas.
 - **Estado Inicial:** Exibe 1 campo vazio de Premissa e 1 campo vazio de Conclusão separados por uma linha horizontal, e um botão `[ + Adicionar outra premissa ]`.
 - **Ação:** O aluno deve segmentar o texto mentalmente. Se identificar mais de uma premissa, ele clica em "Adicionar", revelando novos inputs (que podem ser deletados via ícone de lixeira/X se adicionados acidentalmente).
+- **Painel Fixo de Contexto e Ferramentas (Dicas e Teclado Virtual Fixos no Topo):**
+  - Para evitar o "efeito ioiô" (scroll constante para cima e para baixo para consultar o léxico e alcançar os botões de conectivos), as **Dicas** (dicionário de variáveis/predicados) e o **Teclado Virtual Global com Foco Ativo** permanecem **fixos/sticky no topo** da visualização do exercício, imediatamente abaixo do Enunciado.
+  - **Área de Rolagem Restrita aos Inputs:** Apenas a lista dinâmica de caixas de texto das premissas e a conclusão deslizam na área rolável intermediária. O estudante pode adicionar quantas premissas forem necessárias e navegar entre elas sem jamais perder de vista o texto do argumento, o dicionário de variáveis ou o teclado de símbolos.
 - **Teclado Virtual Global com Foco Ativo:** 
-  - Para evitar poluição visual, apenas **um** teclado virtual é renderizado na base do container do exercício (ou "sticky" no mobile).
-  - O campo em foco no momento recebe um destaque visual claro (ex: `ring-primary`, brilho azul).
+  - Para evitar poluição visual, apenas **um** teclado virtual é renderizado, posicionado no painel fixo superior.
+  - O campo em foco no momento recebe um destaque visual claro (ex: `ring-primary`, brilho azul) e o teclado exibe um indicador dinâmico pulsante (`Editando Premissa X` ou `Editando Conclusão`).
   - Cliques no teclado global inserem símbolos unicamente no input ativo.
   - **Origem Estrita do Gabarito:** As variáveis disponíveis no teclado são extraídas estritamente das premissas e da conclusão esperadas. Letras exclusivas de `dicas` não entram no teclado.
   - **Prioridade Posicional:** As variáveis/predicados são renderizados obrigatoriamente no início da barra de teclas, antes dos operadores lógicos e parênteses.

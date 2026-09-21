@@ -140,56 +140,63 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Dicas / Léxico */}
-      {question.dicas && question.dicas.length > 0 && (
-        <div className="flex flex-wrap gap-2 font-mono">
-          {question.dicas.map((dica, idx) => (
-            <span
-              key={idx}
-              className="text-xs bg-surface border border-border-subtle text-text-muted px-2.5 py-1 rounded-md"
-            >
-              {dica}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Teclado Virtual Global com Foco Ativo (Barra Superior de Símbolos) */}
-      <div className="bg-surface p-3 rounded-xl border border-border-subtle space-y-2 shadow-inner">
-        <div className="flex items-center justify-between text-xs text-text-muted font-mono px-1">
-          <span>Teclado Lógico Virtual</span>
-          <span className="text-primary font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            {activeTarget.type === 'conclusion'
-              ? 'Editando Conclusão'
-              : `Editando Premissa ${activeTarget.index + 1}`}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2 font-mono">
-          {keyboardKeys.map((tecla, idx) => {
-            const isLetter = /^[a-zA-Z]$/.test(tecla);
-            return (
-              <button
+    <div className="space-y-4">
+      {/* Painel Fixo de Contexto e Ferramentas (Dicas + Teclado Virtual com Foco Ativo) */}
+      <div
+        data-testid="fixed-context-tools-panel"
+        className="sticky top-0 z-20 bg-base md:bg-surface pt-1 pb-3 space-y-2.5 border-b border-border-subtle/80 backdrop-blur-md shadow-sm"
+      >
+        {/* Dicas / Léxico */}
+        {question.dicas && question.dicas.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 font-mono" data-testid="dicas-container">
+            {question.dicas.map((dica, idx) => (
+              <span
                 key={idx}
-                type="button"
-                onClick={() => handleKeyPress(tecla)}
-                className={`flex-1 min-w-[2.75rem] border rounded-lg px-3 py-2 text-lg transition-all shadow-sm text-center active:scale-95 ${
-                  isLetter
-                    ? 'bg-primary/10 text-primary font-bold border-primary/30 hover:bg-primary hover:text-white hover:border-primary'
-                    : 'bg-base hover:bg-surface text-text-main border-border-subtle hover:border-primary'
-                }`}
+                className="text-xs bg-surface md:bg-base border border-border-subtle text-text-muted px-2.5 py-1 rounded-md"
               >
-                {tecla}
-              </button>
-            );
-          })}
+                {dica}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Teclado Virtual Global com Foco Ativo */}
+        <div className="bg-surface md:bg-base p-2.5 rounded-xl border border-border-subtle space-y-2 shadow-inner">
+          <div className="flex items-center justify-between text-xs text-text-muted font-mono px-1">
+            <span className="font-semibold text-text-main">Teclado Lógico Virtual</span>
+            <span className="text-primary font-semibold flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              {activeTarget.type === 'conclusion'
+                ? 'Editando Conclusão'
+                : `Editando Premissa ${activeTarget.index + 1}`}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 font-mono">
+            {keyboardKeys.map((tecla, idx) => {
+              const isLetter = /^[a-zA-Z]$/.test(tecla);
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleKeyPress(tecla)}
+                  className={`flex-1 min-w-[2.5rem] border rounded-lg px-2.5 py-1.5 text-base md:text-lg transition-all shadow-sm text-center active:scale-95 ${
+                    isLetter
+                      ? 'bg-primary/10 text-primary font-bold border-primary/30 hover:bg-primary hover:text-white hover:border-primary'
+                      : 'bg-base md:bg-surface hover:bg-surface text-text-main border-border-subtle hover:border-primary'
+                  }`}
+                >
+                  {tecla}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Bloco de Premissas */}
-      <div className="space-y-3">
+      <div className="space-y-3 pt-2">
         <label className="text-xs font-mono uppercase tracking-wider text-text-muted block">
           Premissas do Argumento
         </label>
@@ -197,7 +204,7 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
         {premises.map((premiseText, idx) => {
           const isActive = activeTarget.type === 'premise' && activeTarget.index === idx;
           return (
-            <div key={idx} className="flex items-center gap-2">
+            <div key={idx} className="flex items-center gap-2 scroll-mt-32">
               <div className="flex-1 relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted select-none">
                   P{idx + 1}:
@@ -227,6 +234,7 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
                   onClick={() => handleRemovePremise(idx)}
                   className="p-3 text-text-muted hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 rounded-xl transition-colors"
                   title="Remover esta premissa"
+                  aria-label={`Remover premissa ${idx + 1}`}
                 >
                   <Trash2 size={18} />
                 </button>
@@ -255,7 +263,7 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
       </div>
 
       {/* Bloco de Conclusão */}
-      <div className="space-y-2">
+      <div className="space-y-2 scroll-mt-32 pb-4">
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted select-none">
             C:

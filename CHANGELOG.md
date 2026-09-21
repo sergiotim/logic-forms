@@ -4,6 +4,19 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.8.2] - 2026-09-21 (Painel Fixo de Contexto e Ferramentas em Formalização de Argumentos)
+
+### Adicionado (Added)
+- **Painel Fixo de Contexto e Ferramentas no Topo (`FormalizacaoArgumento.tsx`):**
+  - Unificação de **Dicas (Léxico)** e **Teclado Virtual Global com Foco Ativo** em um painel fixo (`sticky top-0 z-20`) logo abaixo do enunciado do argumento.
+  - Eliminação do "efeito ioiô" (scroll vertical contínuo para consultar o dicionário de variáveis e alcançar os botões de conectivos lógicos).
+  - Apenas a lista dinâmica de premissas e a conclusão rolam na tela, mantendo o enunciado, as variáveis e os símbolos sempre ao alcance visual e de toque do aluno.
+- **Prevenção de Blur e Perda de Cursor no Teclado Virtual:**
+  - Adição de `onMouseDown={(e) => e.preventDefault()}` nos botões do teclado para reter a seleção de cursor e o foco do input ativo durante toques/cliques rápidos.
+  - Adição de `scroll-mt-32` nos containers de premissas e conclusão para que o foco automático e inserções mantenham o campo visível abaixo da barra fixa.
+- **Suíte de Testes Automatizados TDD:**
+  - `src/components/questions/__tests__/FormalizacaoArgumento.test.tsx`: 7 novos testes automatizados cobrindo presença do painel fixo (`data-testid="fixed-context-tools-panel"`), ordenação prioritária de variáveis antes dos operadores, indicador de foco ativo, inserção de caracteres direcionada à premissa/conclusão ativa, dinamismo de premissas e retenção de foco no mousedown.
+
 ## [2.8.1] - 2026-09-21 (Gestão Automática de Variáveis no Teclado de Formalização)
 
 ### Corrigido (Fixed)
