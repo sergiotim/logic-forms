@@ -40,11 +40,13 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
     const nextPremissas = [...premissas];
     nextPremissas[index] = val;
 
-    // Garante automaticamente que operadores e variáveis presentes na fórmula estejam no teclado do aluno
+    // Garante que operadores e variáveis presentes na fórmula estejam no teclado,
+    // removendo automaticamente variáveis que não existem mais no argumento
     const allFormulas = [...nextPremissas, conclusao].join(' ');
     const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
-    const formulaVars = allFormulas.match(/[a-zA-Z]/g) || [];
-    const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys, ...formulaVars]));
+    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || []));
+    const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
+    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
 
     onChange({
       ...question,
@@ -69,8 +71,15 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
   const handleRemovePremissa = (index: number) => {
     if (premissas.length <= 1) return;
     const nextPremissas = premissas.filter((_, i) => i !== index);
+    const allFormulas = [...nextPremissas, conclusao].join(' ');
+    const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
+    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || []));
+    const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
+    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
+
     onChange({
       ...question,
+      teclado_virtual: mergedKeys,
       resposta_esperada: {
         ...question.resposta_esperada,
         premissas: nextPremissas,
@@ -85,8 +94,9 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
   const handleUpdateConclusao = (val: string) => {
     const allFormulas = [...premissas, val].join(' ');
     const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
-    const formulaVars = allFormulas.match(/[a-zA-Z]/g) || [];
-    const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys, ...formulaVars]));
+    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || []));
+    const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
+    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
 
     onChange({
       ...question,
@@ -143,9 +153,14 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
       ? question.teclado_virtual.filter((k) => k !== key)
       : [...question.teclado_virtual, key];
 
+    const currentVars: string[] = fullArgumentText.match(/[a-zA-Z]/g) || [];
+    const sanitizedTeclado = novoTeclado.filter(
+      (k) => !/^[a-zA-Z]$/.test(k) || currentVars.includes(k)
+    );
+
     onChange({
       ...question,
-      teclado_virtual: novoTeclado,
+      teclado_virtual: sanitizedTeclado,
     });
   };
 
@@ -437,7 +452,7 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
           {Array.from(new Set([
             ...AVAILABLE_KEYS,
             ...(fullArgumentText.match(/[a-zA-Z]/g) || []),
-            ...question.teclado_virtual
+            ...question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k))
           ])).filter(k => k !== '(' && k !== ')').map((sym) => {
             const isSelected = question.teclado_virtual.includes(sym);
             return (
