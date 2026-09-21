@@ -306,7 +306,7 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
 
                   <th
                     scope="col"
-                    className="p-4 cursor-pointer hover:text-white transition-colors select-none"
+                    className="p-4 min-w-[210px] cursor-pointer hover:text-white transition-colors select-none"
                     onClick={() => handleSort('porcentagemConcluida')}
                   >
                     <div className="flex items-center gap-1.5">
@@ -400,13 +400,13 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
                         </td>
 
                         {/* Progresso (% Concluído e % Restante) */}
-                        <td className="p-4 min-w-[180px]">
+                        <td className="p-4 min-w-[210px]">
                           <div className="space-y-1.5">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-mono font-bold text-white">
+                            <div className="flex items-center justify-between gap-2 text-xs">
+                              <span className="font-mono font-bold text-white shrink-0">
                                 {student.porcentagemConcluida}% concluído
                               </span>
-                              <span className="text-[11px] text-text-muted font-mono">
+                              <span className="text-[11px] text-text-muted font-mono shrink-0">
                                 {student.porcentagemRestante}% restante
                               </span>
                             </div>
