@@ -200,7 +200,16 @@ describe('StudentAnalyticsDashboard Interface (SPEC-007 v2.8.0 - TDD Fase Vermel
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(/Fase Inicial de Dedução/i)).toBeInTheDocument();
 
-    // Badges das questões no Raio-X
+    // Acordeões de fase devem iniciar recolhidos por padrão
+    expect(screen.queryByText(/acertou de primeira/i)).not.toBeInTheDocument();
+
+    // Clicar no acordeão da fase para expandir
+    const phaseAccordionBtn = screen.getByRole('button', { name: /Fase Inicial de Dedução/i });
+    expect(phaseAccordionBtn).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(phaseAccordionBtn);
+    expect(phaseAccordionBtn).toHaveAttribute('aria-expanded', 'true');
+
+    // Badges das questões visíveis após expansão
     expect(screen.getByText(/acertou de primeira/i)).toBeInTheDocument();
     expect(screen.getByText(/conclu[ií]da ap[oó]s 1 erro/i)).toBeInTheDocument();
 
