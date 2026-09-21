@@ -17,7 +17,7 @@ describe('FormalizacaoArgumento Component (Visão do Estudante)', () => {
     },
   };
 
-  it('renderiza o painel fixo de contexto e ferramentas no topo com dicas e teclado virtual', () => {
+  it('renderiza dicas compactas no topo e teclado virtual acoplado na base', () => {
     render(
       <FormalizacaoArgumento
         question={mockQuestion}
@@ -26,19 +26,21 @@ describe('FormalizacaoArgumento Component (Visão do Estudante)', () => {
       />
     );
 
-    const fixedPanel = screen.getByTestId('fixed-context-tools-panel');
-    expect(fixedPanel).toBeInTheDocument();
-    expect(fixedPanel).toHaveClass('sticky');
-    expect(fixedPanel).toHaveClass('top-0');
-    expect(fixedPanel).toHaveClass('z-20');
-
-    // Dicas dentro do painel fixo
+    // Dicas compactas no topo
+    const dicasContainer = screen.getByTestId('dicas-container');
+    expect(dicasContainer).toBeInTheDocument();
+    expect(dicasContainer).toHaveClass('sticky');
+    expect(dicasContainer).toHaveClass('top-0');
     expect(screen.getByText('H(x): x é homem')).toBeInTheDocument();
     expect(screen.getByText('M(x): x é mortal')).toBeInTheDocument();
     expect(screen.getByText('s: Sócrates')).toBeInTheDocument();
 
-    // Teclado virtual dentro do painel fixo
-    expect(screen.getByText('Teclado Lógico Virtual')).toBeInTheDocument();
+    // Teclado virtual ancorado na base
+    const keyboardPanel = screen.getByTestId('virtual-keyboard-panel');
+    expect(keyboardPanel).toBeInTheDocument();
+    expect(keyboardPanel).toHaveClass('sticky');
+    expect(keyboardPanel).toHaveClass('bottom-0');
+    expect(screen.getByText('Teclado Virtual')).toBeInTheDocument();
   });
 
   it('renderiza variáveis e predicados antes dos operadores lógicos no teclado virtual', () => {
@@ -193,3 +195,4 @@ describe('FormalizacaoArgumento Component (Visão do Estudante)', () => {
     expect(prevented).toBe(true);
   });
 });
+

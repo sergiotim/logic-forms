@@ -4,18 +4,19 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
-## [2.8.2] - 2026-09-21 (Painel Fixo de Contexto e Ferramentas em Formalização de Argumentos)
+## [2.8.2] - 2026-09-21 (Ergonomia Mobile em Formalização de Argumentos: Teclado na Base & Dicas Compactas)
 
 ### Adicionado (Added)
-- **Painel Fixo de Contexto e Ferramentas no Topo (`FormalizacaoArgumento.tsx`):**
-  - Unificação de **Dicas (Léxico)** e **Teclado Virtual Global com Foco Ativo** em um painel fixo (`sticky top-0 z-20`) logo abaixo do enunciado do argumento.
-  - Eliminação do "efeito ioiô" (scroll vertical contínuo para consultar o dicionário de variáveis e alcançar os botões de conectivos lógicos).
-  - Apenas a lista dinâmica de premissas e a conclusão rolam na tela, mantendo o enunciado, as variáveis e os símbolos sempre ao alcance visual e de toque do aluno.
-- **Prevenção de Blur e Perda de Cursor no Teclado Virtual:**
-  - Adição de `onMouseDown={(e) => e.preventDefault()}` nos botões do teclado para reter a seleção de cursor e o foco do input ativo durante toques/cliques rápidos.
-  - Adição de `scroll-mt-32` nos containers de premissas e conclusão para que o foco automático e inserções mantenham o campo visível abaixo da barra fixa.
+- **Ergonomia Mobile e Otimização de Espaço Vertical (`FormalizacaoArgumento.tsx` e `page.tsx`):**
+  - **Teclado Virtual na Base (`sticky bottom-0 z-20`):** Reposicionamento do teclado virtual único para a base da tela, acoplado logo acima da barra de ações de validação. Posicionamento natural na zona dos polegares (*thumb-zone*), permitindo digitar enquanto os olhos acompanham as premissas e a conclusão no centro da tela.
+  - **Dicas em Fita Horizontal de 1 Linha (`overflow-x-auto whitespace-nowrap`):** Substituição de blocos verticais empilhados por uma fita horizontal compacta de chips com rolagem suave, reduzindo a altura de 90px para apenas 28px.
+  - **Tipografia e Espaçamento Responsivos no Quiz:** Redução da escala de fonte do enunciado no mobile para `text-sm sm:text-base md:text-2xl` e espaçamento entre parágrafos para `gap-1.5 md:gap-4`.
+  - **Dimensionamento Uniforme de Teclas:** Teclas com tamanho fixo e uniforme (`h-9 sm:h-10 min-w-[2.25rem] sm:min-w-[2.5rem]`), eliminando quebras desproporcionais de parênteses em linhas extras no mobile.
+  - **Visibilidade Integral sem Scroll:** Em telas de smartphone padrão (iPhone/Android), o enunciado, as dicas, a premissa 1, a conclusão, o teclado virtual e o botão de validação cabem simultaneamente na tela sem rolagem inicial.
+- **Prevenção de Blur e Retenção de Foco:**
+  - Adição de `onMouseDown={(e) => e.preventDefault()}` nos botões do teclado para evitar perda de foco e cursor durante toques repetidos.
 - **Suíte de Testes Automatizados TDD:**
-  - `src/components/questions/__tests__/FormalizacaoArgumento.test.tsx`: 7 novos testes automatizados cobrindo presença do painel fixo (`data-testid="fixed-context-tools-panel"`), ordenação prioritária de variáveis antes dos operadores, indicador de foco ativo, inserção de caracteres direcionada à premissa/conclusão ativa, dinamismo de premissas e retenção de foco no mousedown.
+  - `src/components/questions/__tests__/FormalizacaoArgumento.test.tsx`: 7 testes automatizados cobrindo presença da fita compacta de dicas no topo, teclado ancorado na base, ordenação prioritária de variáveis, foco ativo dinâmico e retenção de foco.
 
 ## [2.8.1] - 2026-09-21 (Gestão Automática de Variáveis no Teclado de Formalização)
 

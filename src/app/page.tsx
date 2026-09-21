@@ -499,17 +499,17 @@ export default function Home() {
                   shake ? 'animate-shake border-error' : ''
                 } ${glow ? 'success-glow border-success' : ''}`}
               >
-                <div className="p-4 md:p-0 shrink-0 mb-2 md:mb-6">
-                  <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20 uppercase">
+                <div className="p-3 sm:p-4 md:p-0 shrink-0 mb-1.5 md:mb-6">
+                  <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 sm:py-1 rounded border border-primary/20 uppercase">
                     {question.tipo.replace('_', ' ')}
                   </span>
                   <span className="text-xs font-mono text-text-muted ml-2">{question.topico}</span>
-                  <div className="text-xl md:text-2xl font-semibold text-white mt-3 font-sans leading-tight flex flex-col gap-4">
+                  <div className="text-sm sm:text-base md:text-2xl font-semibold text-white mt-2 md:mt-3 font-sans leading-snug md:leading-tight flex flex-col gap-1.5 md:gap-4">
                     <ReactMarkdown>{question.enunciado}</ReactMarkdown>
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto md:overflow-visible p-4 pt-0 md:p-0">
+                <div className="flex-1 overflow-y-auto md:overflow-visible p-3 sm:p-4 pt-0 md:p-0 flex flex-col">
                   {question.tipo === 'diagramacao' && (
                     <Diagramacao
                       question={question as DiagramacaoQuestion}

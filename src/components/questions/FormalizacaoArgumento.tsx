@@ -140,149 +140,155 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Painel Fixo de Contexto e Ferramentas (Dicas + Teclado Virtual com Foco Ativo) */}
-      <div
-        data-testid="fixed-context-tools-panel"
-        className="sticky top-0 z-20 bg-base md:bg-surface pt-1 pb-3 space-y-2.5 border-b border-border-subtle/80 backdrop-blur-md shadow-sm"
-      >
-        {/* Dicas / Léxico */}
-        {question.dicas && question.dicas.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 font-mono" data-testid="dicas-container">
-            {question.dicas.map((dica, idx) => (
-              <span
-                key={idx}
-                className="text-xs bg-surface md:bg-base border border-border-subtle text-text-muted px-2.5 py-1 rounded-md"
-              >
-                {dica}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Teclado Virtual Global com Foco Ativo */}
-        <div className="bg-surface md:bg-base p-2.5 rounded-xl border border-border-subtle space-y-2 shadow-inner">
-          <div className="flex items-center justify-between text-xs text-text-muted font-mono px-1">
-            <span className="font-semibold text-text-main">Teclado Lógico Virtual</span>
-            <span className="text-primary font-semibold flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              {activeTarget.type === 'conclusion'
-                ? 'Editando Conclusão'
-                : `Editando Premissa ${activeTarget.index + 1}`}
+    <div className="flex flex-col min-h-full">
+      {/* Dicas / Léxico (Fita Horizontal Compacta de 1 Linha no Topo) */}
+      {question.dicas && question.dicas.length > 0 && (
+        <div
+          data-testid="dicas-container"
+          className="sticky top-0 z-10 bg-base/95 md:bg-surface/95 backdrop-blur-md py-1.5 pb-2 border-b border-border-subtle/50 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap -mx-1 px-1 shrink-0"
+        >
+          <span className="text-[10px] sm:text-xs font-mono text-text-muted uppercase tracking-wider shrink-0 font-semibold">
+            Léxico:
+          </span>
+          {question.dicas.map((dica, idx) => (
+            <span
+              key={idx}
+              className="text-xs font-mono bg-surface md:bg-base border border-border-subtle text-text-muted px-2.5 py-0.5 rounded-full shrink-0 shadow-sm"
+            >
+              {dica}
             </span>
-          </div>
+          ))}
+        </div>
+      )}
 
-          <div className="flex flex-wrap gap-1.5 font-mono">
-            {keyboardKeys.map((tecla, idx) => {
-              const isLetter = /^[a-zA-Z]$/.test(tecla);
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => handleKeyPress(tecla)}
-                  className={`flex-1 min-w-[2.5rem] border rounded-lg px-2.5 py-1.5 text-base md:text-lg transition-all shadow-sm text-center active:scale-95 ${
-                    isLetter
-                      ? 'bg-primary/10 text-primary font-bold border-primary/30 hover:bg-primary hover:text-white hover:border-primary'
-                      : 'bg-base md:bg-surface hover:bg-surface text-text-main border-border-subtle hover:border-primary'
-                  }`}
-                >
-                  {tecla}
-                </button>
-              );
-            })}
+      {/* Área Central de Trabalho (Premissas + Linha de Dedução + Conclusão) */}
+      <div className="flex-1 space-y-3 pt-2 pb-4">
+        {/* Bloco de Premissas */}
+        <div className="space-y-2.5">
+          <label className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-text-muted block">
+            Premissas do Argumento
+          </label>
+
+          {premises.map((premiseText, idx) => {
+            const isActive = activeTarget.type === 'premise' && activeTarget.index === idx;
+            return (
+              <div key={idx} className="flex items-center gap-2">
+                <div className="flex-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted select-none">
+                    P{idx + 1}:
+                  </span>
+                  <input
+                    ref={(el) => {
+                      premiseRefs.current[idx] = el;
+                    }}
+                    type="text"
+                    value={premiseText}
+                    onFocus={() => setActiveTarget({ type: 'premise', index: idx })}
+                    onChange={(e) => handleUpdatePremise(idx, e.target.value)}
+                    placeholder={`Ex: D → V`}
+                    className={`w-full bg-base border text-text-main text-base sm:text-lg py-2.5 sm:py-3 pl-11 sm:pl-12 pr-4 rounded-xl font-mono focus:outline-none transition-all ${
+                      isActive
+                        ? 'border-primary ring-2 ring-primary/20 shadow-sm'
+                        : 'border-border-subtle hover:border-border-subtle/80'
+                    }`}
+                    autoComplete="off"
+                    spellCheck="false"
+                  />
+                </div>
+
+                {premises.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePremise(idx)}
+                    className="p-2.5 sm:p-3 text-text-muted hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 rounded-xl transition-colors"
+                    title="Remover esta premissa"
+                    aria-label={`Remover premissa ${idx + 1}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={handleAddPremise}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-2.5 py-1.5 rounded-lg border border-primary/20 transition-colors"
+          >
+            <Plus size={13} />
+            <span>Adicionar outra premissa</span>
+          </button>
+        </div>
+
+        {/* Linha de Dedução */}
+        <div className="relative flex py-1 items-center">
+          <div className="flex-grow border-t border-dashed border-border-subtle"></div>
+          <span className="flex-shrink mx-3 text-[11px] font-mono text-text-muted bg-surface px-2.5 py-0.5 rounded border border-border-subtle">
+            Portanto (Conclusão ∴)
+          </span>
+          <div className="flex-grow border-t border-dashed border-border-subtle"></div>
+        </div>
+
+        {/* Bloco de Conclusão */}
+        <div className="space-y-1.5">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted select-none">
+              C:
+            </span>
+            <input
+              ref={conclusionRef}
+              type="text"
+              value={conclusion}
+              onFocus={() => setActiveTarget({ type: 'conclusion' })}
+              onChange={(e) => handleUpdateConclusion(e.target.value)}
+              placeholder="Ex: V"
+              className={`w-full bg-base border text-text-main text-base sm:text-lg py-2.5 sm:py-3 pl-11 sm:pl-12 pr-4 rounded-xl font-mono focus:outline-none transition-all ${
+                activeTarget.type === 'conclusion'
+                  ? 'border-primary ring-2 ring-primary/20 shadow-sm'
+                  : 'border-border-subtle hover:border-border-subtle/80'
+              }`}
+              autoComplete="off"
+              spellCheck="false"
+            />
           </div>
         </div>
       </div>
 
-      {/* Bloco de Premissas */}
-      <div className="space-y-3 pt-2">
-        <label className="text-xs font-mono uppercase tracking-wider text-text-muted block">
-          Premissas do Argumento
-        </label>
-
-        {premises.map((premiseText, idx) => {
-          const isActive = activeTarget.type === 'premise' && activeTarget.index === idx;
-          return (
-            <div key={idx} className="flex items-center gap-2 scroll-mt-32">
-              <div className="flex-1 relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted select-none">
-                  P{idx + 1}:
-                </span>
-                <input
-                  ref={(el) => {
-                    premiseRefs.current[idx] = el;
-                  }}
-                  type="text"
-                  value={premiseText}
-                  onFocus={() => setActiveTarget({ type: 'premise', index: idx })}
-                  onChange={(e) => handleUpdatePremise(idx, e.target.value)}
-                  placeholder={`Ex: D → V`}
-                  className={`w-full bg-base border text-text-main text-lg py-3 pl-12 pr-4 rounded-xl font-mono focus:outline-none transition-all ${
-                    isActive
-                      ? 'border-primary ring-2 ring-primary/20 shadow-sm'
-                      : 'border-border-subtle hover:border-border-subtle/80'
-                  }`}
-                  autoComplete="off"
-                  spellCheck="false"
-                />
-              </div>
-
-              {premises.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemovePremise(idx)}
-                  className="p-3 text-text-muted hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 rounded-xl transition-colors"
-                  title="Remover esta premissa"
-                  aria-label={`Remover premissa ${idx + 1}`}
-                >
-                  <Trash2 size={18} />
-                </button>
-              )}
-            </div>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={handleAddPremise}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-3 py-2 rounded-lg border border-primary/20 transition-colors"
-        >
-          <Plus size={14} />
-          <span>Adicionar outra premissa</span>
-        </button>
-      </div>
-
-      {/* Linha de Dedução */}
-      <div className="relative flex py-1 items-center">
-        <div className="flex-grow border-t border-dashed border-border-subtle"></div>
-        <span className="flex-shrink mx-4 text-xs font-mono text-text-muted bg-surface px-3 py-1 rounded border border-border-subtle">
-          Portanto (Conclusão ∴)
-        </span>
-        <div className="flex-grow border-t border-dashed border-border-subtle"></div>
-      </div>
-
-      {/* Bloco de Conclusão */}
-      <div className="space-y-2 scroll-mt-32 pb-4">
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-text-muted select-none">
-            C:
+      {/* Teclado Virtual Global com Foco Ativo (Ancorado na Base da Tela) */}
+      <div
+        data-testid="virtual-keyboard-panel"
+        className="sticky bottom-0 z-20 bg-base/95 md:bg-surface/95 backdrop-blur-md pt-2 pb-1 border-t border-border-subtle shadow-[0_-8px_16px_rgba(0,0,0,0.3)] md:shadow-none shrink-0"
+      >
+        <div className="flex items-center justify-between text-xs font-mono px-1 pb-1">
+          <span className="text-[11px] text-text-muted">Teclado Virtual</span>
+          <span className="text-primary font-semibold text-xs flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            {activeTarget.type === 'conclusion'
+              ? 'Editando Conclusão'
+              : `Editando Premissa ${activeTarget.index + 1}`}
           </span>
-          <input
-            ref={conclusionRef}
-            type="text"
-            value={conclusion}
-            onFocus={() => setActiveTarget({ type: 'conclusion' })}
-            onChange={(e) => handleUpdateConclusion(e.target.value)}
-            placeholder="Ex: V"
-            className={`w-full bg-base border text-text-main text-lg py-3 pl-12 pr-4 rounded-xl font-mono focus:outline-none transition-all ${
-              activeTarget.type === 'conclusion'
-                ? 'border-primary ring-2 ring-primary/20 shadow-sm'
-                : 'border-border-subtle hover:border-border-subtle/80'
-            }`}
-            autoComplete="off"
-            spellCheck="false"
-          />
+        </div>
+
+        <div className="flex items-center gap-1.5 overflow-x-auto sm:flex-wrap no-scrollbar font-mono py-0.5">
+          {keyboardKeys.map((tecla, idx) => {
+            const isLetter = /^[a-zA-Z]$/.test(tecla);
+            return (
+              <button
+                key={idx}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handleKeyPress(tecla)}
+                className={`shrink-0 min-w-[2.25rem] sm:min-w-[2.5rem] h-9 sm:h-10 border rounded-lg px-2 sm:px-2.5 text-base sm:text-lg transition-all shadow-sm text-center active:scale-95 flex items-center justify-center ${
+                  isLetter
+                    ? 'bg-primary/15 text-primary font-bold border-primary/40 hover:bg-primary hover:text-white hover:border-primary'
+                    : 'bg-surface md:bg-base hover:bg-surface text-text-main border-border-subtle hover:border-primary'
+                }`}
+              >
+                {tecla}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
