@@ -22,6 +22,15 @@
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* Neutraliza o efeito colateral do Tailwind v4 onde --color-base gera text-base com cor preta (#0A0A0A) */
+.text-base,
+.sm\:text-base,
+.md\:text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: inherit;
+}
+
 body {
   background-color: var(--color-base);
   color: var(--color-text-main);

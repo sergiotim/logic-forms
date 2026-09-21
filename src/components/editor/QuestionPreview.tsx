@@ -47,7 +47,7 @@ export const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question }) =>
         {question.topico && (
           <span className="text-xs font-mono text-text-muted block mb-1">{question.topico}</span>
         )}
-        <div className="text-lg font-bold text-white leading-snug flex flex-col gap-3">
+        <div className="text-lg font-bold text-white leading-snug flex flex-col gap-3 [&_p]:text-white [&_strong]:text-white [&_em]:text-white [&_span]:text-white">
           {question.enunciado ? <ReactMarkdown>{question.enunciado}</ReactMarkdown> : <span className="italic text-text-muted">Sem enunciado ainda...</span>}
         </div>
       </div>

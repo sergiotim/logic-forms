@@ -543,7 +543,7 @@ export default function Home() {
                     {question.tipo.replace('_', ' ')}
                   </span>
                   <span className="text-xs font-mono text-text-muted ml-2">{question.topico}</span>
-                  <div className="text-sm sm:text-base md:text-2xl font-semibold text-white mt-2 md:mt-3 font-sans leading-snug md:leading-tight flex flex-col gap-1.5 md:gap-4">
+                  <div className="text-sm sm:text-lg md:text-2xl font-semibold text-white mt-2 md:mt-3 font-sans leading-snug md:leading-tight flex flex-col gap-1.5 md:gap-4 [&_p]:text-white [&_strong]:text-white [&_em]:text-white [&_span]:text-white">
                     <ReactMarkdown>{question.enunciado}</ReactMarkdown>
                   </div>
                 </div>

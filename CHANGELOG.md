@@ -57,10 +57,18 @@ O formato baseia-se no padrão da indústria para registros de alterações (Kee
     - O teclado virtual distribui as teclas e o botão de apagar em linhas equilibradas e simétricas (`keyboardRows`), garantindo que nenhuma tecla fique isolada em uma linha avulsa e mantendo espaçamento touch ideal sem scroll horizontal.
   - **Supressão do Teclado Nativo do Smartphone (`inputMode="none"`):** Todos os inputs de formalização foram configurados com `inputMode="none"`, impedindo que o teclado virtual do sistema operacional (iOS/Android) se abra ao tocar no campo, garantindo que o estudante utilize exclusivamente o teclado virtual da aplicação.
   - **Botão de Apagar (Backspace):** Adicionada tecla dedicada com ícone `Delete` (`⌫`) para apagar o caractere imediatamente anterior ao cursor (ou a seleção ativa) mantendo o foco e o cursor no campo ativo.
-  - **Tipografia e Espaçamento Responsivos no Quiz:** Redução da escala de fonte do enunciado no mobile para `text-sm sm:text-base md:text-2xl` e espaçamento entre parágrafos para `gap-1.5 md:gap-4`.
+  - **Tipografia e Espaçamento Responsivos no Quiz:** Escala de fonte responsiva (`text-sm sm:text-lg md:text-2xl`) com espaçamento entre parágrafos (`gap-1.5 md:gap-4`) e suporte a elementos Markdown com cor branca forçada (`[&_p]:text-white [&_strong]:text-white [&_em]:text-white`).
   - **Visibilidade Integral sem Scroll:** Em telas de smartphone padrão (iPhone/Android), o enunciado, as dicas, a premissa 1, a conclusão e o teclado virtual cabem simultaneamente na tela com máximo aproveitamento vertical.
 - **Prevenção de Blur e Retenção de Foco:**
   - Adição de `onMouseDown={(e) => e.preventDefault()}` nos botões do teclado para evitar perda de foco e cursor durante toques repetidos.
+
+### Corrigido (Fixed)
+- **Correção da Cor Preta do Enunciado no Desktop (`globals.css`, `page.tsx` e `QuestionPreview.tsx`):**
+  - **Causa Raiz:** No Tailwind CSS v4, a declaração de `--color-base: #0A0A0A` dentro de `@theme` gerava automaticamente utilitários de cor como `.text-base { color: var(--color-base) }` e `.sm:text-base { color: var(--color-base) }`. Ao aplicar `sm:text-base` para definir o tamanho de fonte em telas maiores (>= 640px), o Tailwind aplicava a cor preta (`#0A0A0A`), sobrepondo a classe `text-white` no desktop e tornando o enunciado quase invisível sobre o fundo escuro (`#171717`).
+  - **Solução:**
+    1. Neutralizado o utilitário `.text-base`, `.sm:text-base` e `.md:text-base` em `globals.css` para sempre possuir `color: inherit; font-size: 1rem; line-height: 1.5rem;`.
+    2. Substituído `sm:text-base` por `sm:text-lg` e adicionados modificadores explícitos `[&_p]:text-white [&_strong]:text-white [&_em]:text-white [&_span]:text-white` em `src/app/page.tsx` e `QuestionPreview.tsx`.
+
 - **Suíte de Testes Automatizados TDD:**
   - `src/__tests__/Lobby.test.tsx`: Teste de integração verificando a renderização do botão Validar dentro da `<nav>`, ausência do rodapé inferior e aparição do toast flutuante de feedback em questões de formalização.
   - `src/components/questions/__tests__/FormalizacaoArgumento.test.tsx`: Testes cobrindo dicas no topo, teclado ancorado na base, ausência de scroll lateral (`not.toHaveClass('overflow-x-auto')`), configuração de `inputMode="none"`, funcionalidade do botão de apagar (Backspace) e retenção de foco.
