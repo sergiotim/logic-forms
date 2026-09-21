@@ -159,7 +159,7 @@ export default function Home() {
 
   const activePhaseData = visiblePhases.find((f) => f.id === activePhase);
   const question = activePhaseData?.questoes[currentIndex];
-  const isNavbarAction = question?.tipo === 'formalizacao_argumento' || question?.tipo === 'formalizacao';
+  const isNavbarAction = question?.tipo === 'formalizacao_argumento';
 
   useEffect(() => {
     setFeedback(null);

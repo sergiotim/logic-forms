@@ -45,11 +45,18 @@ O formato baseia-se no padrão da indústria para registros de alterações (Kee
   - `src/__tests__/submissionErrorTracking.test.tsx`: Teste de integração do ciclo de vida de persistência de tentativas incorretas no banco.
   - Suíte total do projeto expandida para **291 testes** em **24 suítes** com 100% de aprovação.
 
+## [2.8.3] - 2026-09-21 (Ajuste de Escopo: Validação na Navbar Exclusiva para Argumentos)
+
+### Modificado (Changed)
+- **Escopo do Botão Validar na Navbar (`page.tsx` e `Lobby.test.tsx`):**
+  - O posicionamento do botão de validação (`Validar Resposta` / `Próxima Questão`) na Navbar superior foi restrito **exclusivamente** às questões de formalização de argumentos (`tipo: 'formalizacao_argumento'`), onde a presença de múltiplas premissas, conclusão, dicas e teclado virtual exige máxima liberação de altura vertical.
+  - Para questões de formalização simples (`tipo: 'formalizacao'`), o botão foi restaurado no rodapé inferior padrão da página, preservando o layout clássico.
+
 ## [2.8.2] - 2026-09-21 (Ergonomia Mobile em Formalização de Argumentos: Teclado na Base, Sem Scroll Lateral & Botão Apagar)
 
 ### Adicionado (Added)
 - **Ergonomia Mobile e Otimização de Espaço Vertical (`FormalizacaoArgumento.tsx`, `Formalizacao.tsx` e `page.tsx`):**
-  - **Migração do Botão Validar para a Navbar:** O botão de validação (`Validar Resposta` / `Próxima Questão`) em questões de formalização e argumento foi transferido para a **Navbar superior** à direita. A barra de rodapé inferior foi completamente removida nesses exercícios, recuperando ~70-80px de espaço vertical útil no mobile.
+  - **Migração do Botão Validar para a Navbar em Argumentos:** O botão de validação (`Validar Resposta` / `Próxima Questão`) em questões de formalização de argumento foi transferido para a **Navbar superior** à direita. A barra de rodapé inferior foi completamente removida nesse exercício, recuperando ~70-80px de espaço vertical útil no mobile.
   - **Feedback Flutuante Centralizado (Toast):** Alertas de erro, avisos de validação e confirmação de acerto agora aparecem em um toast flutuante suave (`fixed top-14 sm:top-16 z-50`) logo abaixo da navbar, evitando qualquer sobreposição ou empurrão do conteúdo.
   - **Teclado Virtual na Base (`sticky bottom-0 z-20`):** Reposicionamento do teclado virtual único para a base da tela, rente à borda inferior. Posicionamento natural na zona dos polegares (*thumb-zone*), permitindo digitar enquanto os olhos acompanham as premissas e a conclusão no centro da tela.
   - **Eliminação de Rolagens Laterais (Zero Scroll Horizontal):**

@@ -413,18 +413,51 @@ describe('[SPEC-008] Visibilidade no Modo Estudo (Visão do Aluno)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// BLOCO 7 — Ações na Navbar e Ergonomia Mobile (Formalização e Argumento)
+// BLOCO 7 — Ações na Navbar Exclusivas para Formalização de Argumentos
 // ---------------------------------------------------------------------------
 
 describe('Ações de Validação na Navbar e Feedback Flutuante', () => {
-  it('posiciona o botão Validar na navbar e oculta o rodapé para questões de formalização', async () => {
+  it('mantém o botão Validar no rodapé tradicional para questões de formalização simples', async () => {
     (useSession as jest.Mock).mockReturnValue({
       data: { user: { role: 'TEACHER', email: 'prof@test.com' } },
       status: 'authenticated',
     });
     await renderLobby();
 
-    // Inicia a Fase 3 (Formalização)
+    // Inicia a Fase 3 (Formalização Simples)
+    const formalizacaoCard = screen.getByText(/Fase 3: Formalização/i).closest('div');
+    const startBtn = within(formalizacaoCard as HTMLElement).getByRole('button', { name: /Iniciar/i });
+    fireEvent.click(startBtn);
+
+    // O botão Validar Resposta NÃO deve estar dentro da tag <nav>
+    const navElement = screen.getByRole('navigation');
+    expect(within(navElement).queryByRole('button', { name: /Validar Resposta/i })).toBeNull();
+
+    // Deve estar presente no rodapé da página
+    const validateBtn = screen.getByRole('button', { name: /Validar Resposta/i });
+    expect(validateBtn).toBeInTheDocument();
+  });
+
+  it('posiciona o botão Validar na navbar e oculta o rodapé exclusivamente para formalização de argumento', async () => {
+    (useSession as jest.Mock).mockReturnValue({
+      data: { user: { role: 'TEACHER', email: 'prof@test.com' } },
+      status: 'authenticated',
+    });
+
+    const stateArgumento = JSON.parse(JSON.stringify(MOCK_3_PHASES));
+    stateArgumento.phases[2].questoes[0] = {
+      id: 'q-arg-1',
+      tipo: 'formalizacao_argumento',
+      topico: 'Argumentos Dedutivos',
+      enunciado: 'Formalize o argumento',
+      dicas: ['P: premissa', 'Q: conclusao'],
+      teclado_virtual: ['P', 'Q', '→'],
+      resposta_esperada: { premissas: ['P'], conclusao: 'Q' },
+    };
+    (loadEditorState as jest.Mock).mockReturnValue(stateArgumento);
+
+    await renderLobby();
+
     const formalizacaoCard = screen.getByText(/Fase 3: Formalização/i).closest('div');
     const startBtn = within(formalizacaoCard as HTMLElement).getByRole('button', { name: /Iniciar/i });
     fireEvent.click(startBtn);
