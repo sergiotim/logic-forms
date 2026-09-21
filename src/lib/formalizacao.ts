@@ -180,6 +180,11 @@ export function suggestVirtualKeyboard(
     }
   }
 
+  const variablesAndPredicates = formula.match(/[a-zA-Z]/g) || [];
+  for (const sym of variablesAndPredicates) {
+    usedSymbols.add(sym);
+  }
+
   const result = Array.from(usedSymbols);
 
   if (addDistractors) {

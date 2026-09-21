@@ -86,8 +86,11 @@ export const FormalizacaoForm: React.FC<FormalizacaoFormProps> = ({ question, on
     }
 
     // Garante automaticamente que operadores presentes na fórmula estejam no teclado do aluno
+    // Garante automaticamente que operadores e variáveis presentes na fórmula estejam no teclado do aluno
     const formulaKeys = AVAILABLE_KEYS.filter((k) => newExpected.includes(k));
     const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys]));
+    const formulaVars = newExpected.match(/[a-zA-Z]/g) || [];
+    const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys, ...formulaVars]));
 
     onChange({
       ...question,
@@ -280,6 +283,11 @@ export const FormalizacaoForm: React.FC<FormalizacaoFormProps> = ({ question, on
 
         <div className="flex flex-wrap gap-2">
           {AVAILABLE_KEYS.map((sym) => {
+          {Array.from(new Set([
+            ...AVAILABLE_KEYS,
+            ...(question.resposta_esperada.match(/[a-zA-Z]/g) || []),
+            ...question.teclado_virtual
+          ])).filter(k => k !== '(' && k !== ')').map((sym) => {
             const isSelected = question.teclado_virtual.includes(sym);
             return (
               <button

@@ -41,9 +41,12 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
     nextPremissas[index] = val;
 
     // Garante automaticamente que operadores presentes na fórmula estejam no teclado do aluno
+    // Garante automaticamente que operadores e variáveis presentes na fórmula estejam no teclado do aluno
     const allFormulas = [...nextPremissas, conclusao].join(' ');
     const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
     const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys]));
+    const formulaVars = allFormulas.match(/[a-zA-Z]/g) || [];
+    const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys, ...formulaVars]));
 
     onChange({
       ...question,
@@ -85,6 +88,8 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
     const allFormulas = [...premissas, val].join(' ');
     const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
     const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys]));
+    const formulaVars = allFormulas.match(/[a-zA-Z]/g) || [];
+    const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys, ...formulaVars]));
 
     onChange({
       ...question,
@@ -433,6 +438,11 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
 
         <div className="flex flex-wrap gap-2">
           {AVAILABLE_KEYS.map((sym) => {
+          {Array.from(new Set([
+            ...AVAILABLE_KEYS,
+            ...(fullArgumentText.match(/[a-zA-Z]/g) || []),
+            ...question.teclado_virtual
+          ])).filter(k => k !== '(' && k !== ')').map((sym) => {
             const isSelected = question.teclado_virtual.includes(sym);
             return (
               <button

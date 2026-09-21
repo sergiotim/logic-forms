@@ -174,12 +174,21 @@ describe('[SPEC-004] Motor de Formalização Lógica', () => {
       expect(keys).toContain('~');
     });
 
+    it('inclui as proposições e variáveis (caracteres alfabéticos) utilizados na fórmula', () => {
+      const keys = suggestVirtualKeyboard('∀x(Px → ~Qx)');
+      expect(keys).toContain('P');
+      expect(keys).toContain('Q');
+      expect(keys).toContain('x');
+    });
+
     it('adiciona símbolos distratores quando addDistractors é verdadeiro', () => {
       const formula = 'P ∧ Q';
       const withoutDistractors = suggestVirtualKeyboard(formula, false);
       const withDistractors = suggestVirtualKeyboard(formula, true);
 
       expect(withoutDistractors).toContain('∧');
+      expect(withoutDistractors).toContain('P');
+      expect(withoutDistractors).toContain('Q');
       expect(withDistractors.length).toBeGreaterThan(withoutDistractors.length);
       // Deve conter símbolos não presentes na fórmula original como distratores
       expect(withDistractors.some((k) => k === '∨' || k === '→' || k === '~')).toBe(true);
