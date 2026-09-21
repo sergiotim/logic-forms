@@ -136,7 +136,7 @@ export interface HardestQuestionSummary {
 }
 
 export interface CommonErrorItem {
-  answer: string | Record<string, unknown>;
+  answer: unknown;
   count: number;
   percentage: number;
 }
