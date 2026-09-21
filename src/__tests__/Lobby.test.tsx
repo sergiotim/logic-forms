@@ -225,6 +225,14 @@ describe('Lobby — Renderização Inicial', () => {
     expect(editorLink).toBeInTheDocument();
     expect(editorLink).toHaveAttribute('href', '/editor');
   });
+
+  it('exibe os créditos acadêmicos de autoria e orientação no rodapé do Lobby', async () => {
+    await renderLobby();
+    expect(screen.getByText(/Desenvolvido por/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sérgio Gabriel Timoteo da Silva/i)).toBeInTheDocument();
+    expect(screen.getByText(/Orientação:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Prof.ª Dr.ª Parcilene Fernandes de Brito/i)).toBeInTheDocument();
+  });
 });
 
 // ---------------------------------------------------------------------------

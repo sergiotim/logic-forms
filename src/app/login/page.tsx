@@ -73,7 +73,15 @@ export default function LoginPage() {
         </button>
       </div>
 
-  
+      {/* Rodapé de Créditos Institucionais */}
+      <footer className="mt-8 text-center text-xs text-neutral-400">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+          <span>Desenvolvido por Sérgio Gabriel Timoteo da Silva</span>
+          <span className="hidden sm:inline text-neutral-600">·</span>
+          <span>Orientação: Prof.ª Dr.ª Parcilene Fernandes de Brito</span>
+        </div>
+      </footer>
     </main>
   );
 }
+

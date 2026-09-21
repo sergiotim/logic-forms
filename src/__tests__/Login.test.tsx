@@ -34,4 +34,12 @@ describe('Página de Login (/login)', () => {
     // Espera que chame o signIn passando 'google' como provider e callbackUrl
     expect(signIn).toHaveBeenCalledWith('google', expect.objectContaining({ callbackUrl: '/' }));
   });
+
+  it('deve renderizar os créditos institucionais (autor e orientadora)', () => {
+    render(<LoginPage />);
+    expect(screen.getByText(/Desenvolvido por/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sérgio Gabriel Timoteo da Silva/i)).toBeInTheDocument();
+    expect(screen.getByText(/Orientação:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Prof.ª Dr.ª Parcilene Fernandes de Brito/i)).toBeInTheDocument();
+  });
 });
