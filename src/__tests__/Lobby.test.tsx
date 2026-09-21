@@ -278,14 +278,14 @@ describe('Navegação Lobby -> Fase', () => {
     fireEvent.click(iniciarBtn);
 
     expect(screen.queryByText(/Fase 1: Diagramação/i)).not.toBeInTheDocument(); // saiu do lobby
-    expect(screen.getByText(/Fase 1: Questão 1\/2/i)).toBeInTheDocument();
+    expect(screen.getByText(/Fase 1:\s*1\/2/i)).toBeInTheDocument();
     expect(screen.getByText(/Analise o argumento disjuntivo/i)).toBeInTheDocument();
   });
 
   it('exibe a barra de progresso correta ao iniciar uma fase', async () => {
     await renderLobby();
     fireEvent.click(screen.getAllByRole('button', { name: /Iniciar/i })[0]);
-    expect(screen.getByText(/Questão 1\/2/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\/2/i)).toBeInTheDocument();
   });
 });
 
@@ -355,7 +355,7 @@ describe('Modal de saída durante a fase', () => {
     fireEvent.click(screen.getByRole('button', { name: /Continuar jogando/i }));
 
     expect(screen.queryByText(/Tem certeza de que deseja sair/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Questão 1\/2/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\/2/i)).toBeInTheDocument();
   });
 
   it('retorna ao Lobby ao confirmar saída', async () => {
