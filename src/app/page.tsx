@@ -23,7 +23,7 @@ import { fetchPhasesApi, fetchUserSubmissionsApi, saveUserSubmissionApi } from '
 import { ICON_MAP } from '@/lib/icons';
 import { validateFormalizacaoAnswer } from '@/lib/formalizacao';
 import { validateFormalizacaoArgumentoAnswer } from '@/lib/formalizacao-argumento';
-import { CheckCircle2, X, Lock } from 'lucide-react';
+import { CheckCircle2, X, Lock, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { ProfileMenu } from '@/components/ui/ProfileMenu';
 import { useSession } from 'next-auth/react';
@@ -159,6 +159,7 @@ export default function Home() {
 
   const activePhaseData = visiblePhases.find((f) => f.id === activePhase);
   const question = activePhaseData?.questoes[currentIndex];
+  const isNavbarAction = question?.tipo === 'formalizacao_argumento' || question?.tipo === 'formalizacao';
 
   useEffect(() => {
     setFeedback(null);
@@ -375,8 +376,8 @@ export default function Home() {
 
   return (
     <>
-      <nav className="w-full bg-surface/80 backdrop-blur-md border-b border-border-subtle py-4 px-4 md:px-6 flex justify-between items-center shrink-0 gap-4 sticky top-0 z-50 transition-all duration-300">
-        <div className="flex items-center gap-3 font-bold text-xl tracking-tight">
+      <nav className="w-full bg-surface/80 backdrop-blur-md border-b border-border-subtle py-3 sm:py-4 px-3 sm:px-4 md:px-6 flex justify-between items-center shrink-0 gap-2 sm:gap-4 sticky top-0 z-50 transition-all duration-300">
+        <div className="flex items-center gap-2 sm:gap-3 font-bold text-lg sm:text-xl tracking-tight shrink-0">
           {currentView === 'playing' ? (
             <button
               onClick={() => setShowExitModal(true)}
@@ -406,18 +407,56 @@ export default function Home() {
         </div>
 
         {currentView === 'playing' && activePhaseData && (
-          <div className="text-xs sm:text-sm font-mono text-text-muted bg-base px-3 py-1.5 rounded-full border border-border-subtle whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] sm:max-w-none">
+          <div className="text-[11px] sm:text-xs md:text-sm font-mono text-text-muted bg-base px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-border-subtle whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[220px] md:max-w-none">
             Fase {activePhaseVisualIndex}: Questão {currentIndex + 1}/{activePhaseData.questoes.length}
           </div>
         )}
 
         {/* Ações da Navbar */}
         {currentView === 'lobby' && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <ProfileMenu />
           </div>
         )}
+
+        {currentView === 'playing' && isNavbarAction && (
+          <div className="flex items-center gap-2 shrink-0">
+            {!isValidated ? (
+              <Button
+                onClick={handleValidate}
+                className="px-3 sm:px-5 py-1.5 text-xs sm:text-sm font-semibold shadow-sm"
+                aria-label="Validar Resposta"
+              >
+                <span className="hidden sm:inline">Validar Resposta</span>
+                <span className="sm:hidden">Validar</span>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={handleNext}
+                className="px-3 sm:px-5 py-1.5 text-xs sm:text-sm font-semibold border-success text-success hover:bg-success/10 flex items-center gap-1 shadow-sm"
+                aria-label="Próxima Questão"
+              >
+                <span className="hidden sm:inline">Próxima Questão</span>
+                <span className="sm:hidden">Próxima</span>
+                <ChevronRight size={16} />
+              </Button>
+            )}
+          </div>
+        )}
       </nav>
+
+      {/* Toast Flutuante de Feedback para Questões com Ação na Navbar */}
+      {currentView === 'playing' && isNavbarAction && feedback?.message && (
+        <div
+          data-testid="floating-feedback-toast"
+          className="fixed top-14 sm:top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200 max-w-[92vw] sm:max-w-md w-full px-4 flex justify-center"
+        >
+          <div className="pointer-events-auto bg-surface/95 backdrop-blur-md border border-border-subtle rounded-lg px-4 py-2 shadow-2xl flex items-center justify-center gap-2 text-center">
+            <Feedback type={feedback.type} message={feedback.message} />
+          </div>
+        </div>
+      )}
 
       <main
         className={`flex-1 flex justify-center items-start ${
@@ -553,33 +592,26 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="shrink-0 p-4 bg-surface border-t border-border-subtle md:bg-transparent md:border-none md:p-0 md:mt-6 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] md:shadow-none">
-                <div className="w-full md:w-auto text-center md:text-left">
-                  <Feedback type={feedback?.type || null} message={feedback?.message || ''} />
+              {/* Rodapé de Ações (Apenas para questões com botões no rodapé) */}
+              {!isNavbarAction && (
+                <div className="shrink-0 p-4 bg-surface border-t border-border-subtle md:bg-transparent md:border-none md:p-0 md:mt-6 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] md:shadow-none">
+                  <div className="w-full md:w-auto text-center md:text-left">
+                    <Feedback type={feedback?.type || null} message={feedback?.message || ''} />
+                  </div>
+                  <div className="w-full md:w-auto flex gap-4 ml-auto justify-end">
+                    {!isValidated ? (
+                      <Button onClick={handleValidate} className="w-full md:w-auto">
+                        Validar Resposta
+                      </Button>
+                    ) : (
+                      <Button variant="outline" onClick={handleNext} className="w-full md:w-auto">
+                        Próxima Questão
+                        <ChevronRight size={16} />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="w-full md:w-auto flex gap-4 ml-auto justify-end">
-                  {!isValidated ? (
-                    <Button onClick={handleValidate} className="w-full md:w-auto">
-                      Validar Resposta
-                    </Button>
-                  ) : (
-                    <Button variant="outline" onClick={handleNext} className="w-full md:w-auto">
-                      Próxima Questão
-                      <svg
-                        className="w-4 h-4 ml-1"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M5 12h14m-7-7l7 7-7 7"></path>
-                      </svg>
-                    </Button>
-                  )}
-                </div>
-              </div>
+              )}
             </>
           )}
         </div>

@@ -411,3 +411,36 @@ describe('[SPEC-008] Visibilidade no Modo Estudo (Visão do Aluno)', () => {
     expect(screen.getByText(/0\/1 concluídas/i)).toBeInTheDocument();
   });
 });
+
+// ---------------------------------------------------------------------------
+// BLOCO 7 — Ações na Navbar e Ergonomia Mobile (Formalização e Argumento)
+// ---------------------------------------------------------------------------
+
+describe('Ações de Validação na Navbar e Feedback Flutuante', () => {
+  it('posiciona o botão Validar na navbar e oculta o rodapé para questões de formalização', async () => {
+    (useSession as jest.Mock).mockReturnValue({
+      data: { user: { role: 'TEACHER', email: 'prof@test.com' } },
+      status: 'authenticated',
+    });
+    await renderLobby();
+
+    // Inicia a Fase 3 (Formalização)
+    const formalizacaoCard = screen.getByText(/Fase 3: Formalização/i).closest('div');
+    const startBtn = within(formalizacaoCard as HTMLElement).getByRole('button', { name: /Iniciar/i });
+    fireEvent.click(startBtn);
+
+    // O botão Validar Resposta deve estar dentro da tag <nav>
+    const navElement = screen.getByRole('navigation');
+    const validateBtnInNav = within(navElement).getByRole('button', { name: /Validar Resposta/i });
+    expect(validateBtnInNav).toBeInTheDocument();
+
+    // Clica em Validar sem preencher para disparar o feedback flutuante
+    fireEvent.click(validateBtnInNav);
+
+    // O toast flutuante deve aparecer com a mensagem de aviso
+    const toast = await screen.findByTestId('floating-feedback-toast');
+    expect(toast).toBeInTheDocument();
+    expect(within(toast).getByText(/Preencha todos os campos/i)).toBeInTheDocument();
+  });
+});
+

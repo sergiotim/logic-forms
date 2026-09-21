@@ -8,17 +8,20 @@ O formato baseia-se no padrão da indústria para registros de alterações (Kee
 
 ### Adicionado (Added)
 - **Ergonomia Mobile e Otimização de Espaço Vertical (`FormalizacaoArgumento.tsx`, `Formalizacao.tsx` e `page.tsx`):**
-  - **Teclado Virtual na Base (`sticky bottom-0 z-20`):** Reposicionamento do teclado virtual único para a base da tela, acoplado logo acima da barra de ações de validação. Posicionamento natural na zona dos polegares (*thumb-zone*), permitindo digitar enquanto os olhos acompanham as premissas e a conclusão no centro da tela.
+  - **Migração do Botão Validar para a Navbar:** O botão de validação (`Validar Resposta` / `Próxima Questão`) em questões de formalização e argumento foi transferido para a **Navbar superior** à direita. A barra de rodapé inferior foi completamente removida nesses exercícios, recuperando ~70-80px de espaço vertical útil no mobile.
+  - **Feedback Flutuante Centralizado (Toast):** Alertas de erro, avisos de validação e confirmação de acerto agora aparecem em um toast flutuante suave (`fixed top-14 sm:top-16 z-50`) logo abaixo da navbar, evitando qualquer sobreposição ou empurrão do conteúdo.
+  - **Teclado Virtual na Base (`sticky bottom-0 z-20`):** Reposicionamento do teclado virtual único para a base da tela, rente à borda inferior. Posicionamento natural na zona dos polegares (*thumb-zone*), permitindo digitar enquanto os olhos acompanham as premissas e a conclusão no centro da tela.
   - **Eliminação de Rolagens Laterais (Zero Scroll Horizontal):**
     - Dicas agora são renderizadas diretamente em chips compactos com quebra fluida (`flex-wrap gap-1.5`) sem o prefixo/título "Léxico:", reduzindo o ruído visual e eliminando qualquer necessidade de rolagem lateral.
     - O teclado virtual distribui as teclas e o botão de apagar em linhas equilibradas e simétricas (`keyboardRows`), garantindo que nenhuma tecla fique isolada em uma linha avulsa e mantendo espaçamento touch ideal sem scroll horizontal.
   - **Supressão do Teclado Nativo do Smartphone (`inputMode="none"`):** Todos os inputs de formalização foram configurados com `inputMode="none"`, impedindo que o teclado virtual do sistema operacional (iOS/Android) se abra ao tocar no campo, garantindo que o estudante utilize exclusivamente o teclado virtual da aplicação.
   - **Botão de Apagar (Backspace):** Adicionada tecla dedicada com ícone `Delete` (`⌫`) para apagar o caractere imediatamente anterior ao cursor (ou a seleção ativa) mantendo o foco e o cursor no campo ativo.
   - **Tipografia e Espaçamento Responsivos no Quiz:** Redução da escala de fonte do enunciado no mobile para `text-sm sm:text-base md:text-2xl` e espaçamento entre parágrafos para `gap-1.5 md:gap-4`.
-  - **Visibilidade Integral sem Scroll:** Em telas de smartphone padrão (iPhone/Android), o enunciado, as dicas, a premissa 1, a conclusão, o teclado virtual e o botão de validação cabem simultaneamente na tela sem rolagem inicial.
+  - **Visibilidade Integral sem Scroll:** Em telas de smartphone padrão (iPhone/Android), o enunciado, as dicas, a premissa 1, a conclusão e o teclado virtual cabem simultaneamente na tela com máximo aproveitamento vertical.
 - **Prevenção de Blur e Retenção de Foco:**
   - Adição de `onMouseDown={(e) => e.preventDefault()}` nos botões do teclado para evitar perda de foco e cursor durante toques repetidos.
 - **Suíte de Testes Automatizados TDD:**
+  - `src/__tests__/Lobby.test.tsx`: Teste de integração verificando a renderização do botão Validar dentro da `<nav>`, ausência do rodapé inferior e aparição do toast flutuante de feedback em questões de formalização.
   - `src/components/questions/__tests__/FormalizacaoArgumento.test.tsx`: Testes cobrindo dicas no topo, teclado ancorado na base, ausência de scroll lateral (`not.toHaveClass('overflow-x-auto')`), configuração de `inputMode="none"`, funcionalidade do botão de apagar (Backspace) e retenção de foco.
   - `src/components/questions/__tests__/Formalizacao.test.tsx`: Testes de Backspace e `inputMode="none"` na formalização simples.
 

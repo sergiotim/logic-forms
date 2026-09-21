@@ -90,13 +90,16 @@ Para elevar o desafio cognitivo e não "dar a resposta", a interface do estudant
   - A lista dinâmica de premissas e a conclusão ocupam o centro da visualização.
   - **Exclusividade do Teclado Virtual (`inputMode="none"`):** Todos os campos de texto utilizam `inputMode="none"`, impedindo que o teclado nativo do celular (iOS/Android) se abra e cubra a interface, permitindo que a digitação ocorra 100% pelo teclado virtual acoplado.
 - **Teclado Virtual Global Ancorado na Base (Thumb-Zone Ergonomics & Zero Rolagem Lateral):**
-  - O teclado virtual único é ancorado na base da tela (`sticky bottom-0 z-20`), imediatamente acima do botão de validação, na zona ergonômica natural dos polegares em smartphones.
-  - **Disposição sem Rolagem Lateral:** Teclas organizadas com quebra natural (`flex-wrap gap-1 sm:gap-1.5 justify-center`) e largura máxima delimitada (`max-w-[3.5rem]`), visíveis integralmente sem qualquer scroll lateral.
-  - **Botão de Apagar (Backspace):** Inclui tecla dedicada de deleção (`Delete` icon) que apaga o caractere imediatamente anterior ao cursor (ou a seleção ativa) mantendo o foco no campo ativo.
+  - O teclado virtual único é ancorado na base da tela (`sticky bottom-0 z-20`), rente à borda inferior sem a barra de rodapé tradicional, maximizando a área visível do exercício.
+  - **Disposição sem Rolagem Lateral:** Teclas organizadas em linhas simétricas e balanceadas (`keyboardRows`) com largura máxima delimitada (`max-w-[4rem] flex-1`), visíveis integralmente sem qualquer scroll lateral.
+  - **Botão de Apagar (Backspace):** Inclui tecla dedicada de deleção (`Delete` icon) integrada organicamente na segunda linha do teclado, apagando o caractere anterior mantendo o foco ativo.
   - **Foco Ativo Inteligente:** O teclado exibe um indicador dinâmico pulsante (`Editando Premissa X` ou `Editando Conclusão`). Cliques nas teclas inserem símbolos unicamente no input ativo.
-  - **Retenção de Foco:** Teclas virtuais utilizam `onMouseDown={(e) => e.preventDefault()}` para evitar que o clique tire o foco do campo de texto ativo.
+  - **Retenção de Foco:** Teclas virtuais utilizam `onMouseDown={(e) => e.preventDefault()}` para evitar perda de foco durante a digitação contínua.
   - **Origem Estrita do Gabarito:** As variáveis disponíveis no teclado são extraídas estritamente das premissas e da conclusão esperadas. Letras exclusivas de `dicas` não entram no teclado.
   - **Prioridade Posicional:** As variáveis/predicados são renderizados obrigatoriamente no início da barra de teclas, antes dos operadores lógicos e parênteses.
+- **Validação na Navbar e Feedback Flutuante (Ganho de Altura Mobile):**
+  - O botão de ação primária (`Validar Resposta` / `Próxima Questão`) foi migrado para o canto direito da **Navbar superior**, eliminando a barra de rodapé e recuperando ~70-80px de altura útil na tela.
+  - As mensagens de validação (sucesso, aviso de campos vazios ou erro semântico) são apresentadas em um **toast flutuante centralizado** (`fixed top-14 sm:top-16 z-50`) logo abaixo da Navbar, sem empurrar ou distorcer a rolagem do exercício.
 
 ---
 
