@@ -179,14 +179,11 @@ flowchart TD
 | `dicas` | Lista dinâmica de inputs | ✅ (mín. 1) | Dicionário de variáveis (ex: `"P: é peculatário"`) |
 | `teclado_virtual` | Chips / multi-select | ✅ (mín. 1) | Símbolos disponíveis no teclado virtual do aluno |
 | `resposta_esperada` | `<input text>` com teclado lógico | ✅ | Fórmula esperada (validação ignora espaços) |
-| `enunciado` | `<textarea>` | Sim | Sentença em linguagem natural |
-| `topico` | `<input text>` | Sim | Tag informativa |
-| `dicas` | Lista dinâmica de inputs | Sim (mín. 1) | Dicionário de variáveis (ex: `"P: é peculatário"`) |
-| `teclado_virtual` | Chips / multi-select | Sim (mín. 1) | Símbolos disponíveis no teclado virtual do aluno |
-| `resposta_esperada` | `<input text>` com teclado lógico | Sim | Fórmula esperada (validação ignora espaços) |
+**Símbolos padrão disponíveis para seleção do teclado virtual no Modo Editor:**
+`~`, `∧`, `∨`, `→`, `↔`, `∀`, `∃`.
 
-**Símbolos padrão disponíveis para seleção do teclado virtual:**
-`~`, `∧`, `∨`, `→`, `↔`, `∀`, `∃`, `(`, `)`.
+> [!NOTE]
+> **Gestão Automática de Variáveis:** No Modo Editor (`FormalizacaoForm.tsx` e `FormalizacaoArgumentoForm.tsx`), os botões de seleção manual exibem apenas os conectivos lógicos acima. As variáveis e predicados (`[A-Za-z]`) presentes nas fórmulas da resposta esperada são detectados e injetados de forma automática no teclado do aluno, posicionando-se sempre no início da barra de teclas. Variáveis órfãs decorrentes de correções ou exclusão de premissas são removidas automaticamente. Teclas presentes apenas em `dicas` não poluem o teclado.
 
 ### 2.7 Preview ao Vivo
 ### 2.7 Sistema de Guias Estilo Navegador (Editor vs. Visão do Aluno)
