@@ -11,8 +11,26 @@ export const Formalizacao: React.FC<FormalizacaoProps> = ({ question, userAnswer
   const inputRef = useRef<HTMLInputElement>(null);
 
   const keyboardKeys = useMemo(() => {
+    const vars = new Set<string>();
+
+    const extractLetters = (formula: string) => {
+      const quantMatches = Array.from((formula || '').matchAll(/[∀∃]\s*([a-z])/g));
+      for (const m of quantMatches) vars.add(m[1]);
+      const matches = Array.from((formula || '').matchAll(/[A-Za-z]/g));
+      for (const m of matches) vars.add(m[0]);
+    };
+
+    extractLetters(question.resposta_esperada || '');
+    (question.dicas || []).forEach((d) => {
+      const m = d.match(/^([a-zA-Z])\s*:/);
+      if (m) vars.add(m[1]);
+    });
+
     const configured = question.teclado_virtual || [];
-    const letters = configured.filter((k) => /^[a-zA-Z]$/.test(k)).sort((a, b) => {
+    const configuredLetters = configured.filter((k) => /^[a-zA-Z]$/.test(k));
+    const symbols = configured.filter((k) => !/^[a-zA-Z]$/.test(k) && k !== '(' && k !== ')');
+
+    const allLetters = Array.from(new Set([...Array.from(vars), ...configuredLetters])).sort((a, b) => {
       const aUpper = a === a.toUpperCase();
       const bUpper = b === b.toUpperCase();
       if (aUpper && !bUpper) return -1;
@@ -20,9 +38,8 @@ export const Formalizacao: React.FC<FormalizacaoProps> = ({ question, userAnswer
       return a.localeCompare(b);
     });
 
-    const symbols = configured.filter((k) => !/^[a-zA-Z]$/.test(k) && k !== '(' && k !== ')');
-    return [...letters, ...symbols, '(', ')'];
-  }, [question.teclado_virtual]);
+    return [...allLetters, ...symbols, '(', ')'];
+  }, [question.resposta_esperada, question.dicas, question.teclado_virtual]);
 
   const handleKeyPress = (char: string) => {
     const input = inputRef.current;
