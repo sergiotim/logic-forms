@@ -192,7 +192,8 @@ Classificação de sentenças de um argumento como Premissa (`"P"`) ou Conclusã
 
 > [!IMPORTANT]
 > **Teclado Virtual e Respostas Alternativas Automáticos:** 
-> - A IA **NÃO precisa fornecer `teclado_virtual`**: os símbolos correspondentes (conectivos proposicionais ou quantificadores) são acoplados automaticamente pela plataforma na tela do aluno.
+> - A IA **NÃO precisa fornecer `teclado_virtual`**: os operadores conectivos e quantificadores são acoplados automaticamente pela plataforma. Além disso, as **variáveis e predicados presentes na fórmula esperada são extraídos e posicionados obrigatoriamente no início do teclado virtual** do aluno.
+> - O teclado virtual do estudante é alimentado **estritamente pela fórmula da resposta esperada**, e **NÃO** pelas `dicas`. O campo `dicas` serve exclusivamente como consulta textual explicativa para o aluno.
 > - A IA **NÃO precisa de `respostas_alternativas`**: o motor de validação semântica verifica equivalência lógica por tautologia proposicional ($A \leftrightarrow B$) e $\alpha$-conversão de quantificadores de primeira ordem.
 
 #### Campos da Questão:
@@ -224,7 +225,43 @@ Classificação de sentenças de um argumento como Premissa (`"P"`) ou Conclusã
 
 ---
 
-### 5.4 Tipo 4: Múltipla Escolha (`"tipo": "multipla_escolha"`)
+### 5.4 Tipo 4: Formalização de Argumentos (`"tipo": "formalizacao_argumento"`)
+
+Permite criar exercícios avançados de dedução nos quais o estudante segmenta premissas e formaliza a conclusão.
+
+> [!IMPORTANT]
+> **Teclado Virtual de Argumentos:**
+> Assim como na formalização simples, as variáveis do teclado virtual são extraídas automaticamente de todas as premissas e da conclusão esperadas, posicionando-se sempre no início do teclado.
+
+#### Campos da Questão:
+| Campo | Tipo | Obrigatório | Descrição |
+| :--- | :--- | :---: | :--- |
+| `resposta_esperada` | `object` | **Sim** | Objeto contendo `premissas` (array de strings) e `conclusao` (string). A ordem das premissas é indiferente na validação do aluno. |
+| `dicas` | `string[]` | **Sim** | Dicionário de proposições, predicados ou constantes. |
+| `modo_validacao` | `'semantico' \| 'estrito'` | *Opcional* | Padrão: `'semantico'`. |
+
+#### Exemplo JSON Mínimo e Suficiente:
+```json
+{
+  "originalId": "q_arg_1",
+  "tipo": "formalizacao_argumento",
+  "topico": "Argumentos Dedutivos",
+  "enunciado": "Identifique as premissas e a conclusão do argumento e formalize-os:\n\n'Se chove, a rua molha. Choveu. Portanto, a rua molhou.'",
+  "dicas": [
+    "C: Chove",
+    "M: A rua molha"
+  ],
+  "resposta_esperada": {
+    "premissas": ["C → M", "C"],
+    "conclusao": "M"
+  },
+  "modo_validacao": "semantico"
+}
+```
+
+---
+
+### 5.5 Tipo 5: Múltipla Escolha (`"tipo": "multipla_escolha"`)
 
 Permite criar questões teóricas ou desafios com alternativas fechadas, suportando formatação Markdown (negrito, símbolos) nas opções.
 
@@ -352,6 +389,6 @@ Abaixo está um exemplo de pacote completo contendo **3 fases pedagógicas indep
 - [ ] `metadata.version` é o número `1`.
 - [ ] O array `phases` contém os módulos desejados, com `titulo`, `icone` da lista oficial e os `originalQuestionIds`.
 - [ ] Em `tabela_verdade`, forneceu apenas `expressao` (com parênteses balanceados) e opcionalmente `celulas_reveladas`. Não enviou arrays manuais de linhas ou valores.
-- [ ] Em `formalizacao`, forneceu apenas `resposta_esperada` e `dicas`. Não incluiu `teclado_virtual` nem `respostas_alternativas`.
+- [ ] Em `formalizacao` e `formalizacao_argumento`, forneceu apenas `resposta_esperada` e `dicas`. Não incluiu `teclado_virtual` nem `respostas_alternativas`.
 - [ ] Todos os IDs listados em `originalQuestionIds` existem como `originalId` em `questions`.
 - [ ] O JSON gerado é puro e estritamente válido (sem comentários `//` no interior do código).
