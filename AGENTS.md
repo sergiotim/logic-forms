@@ -69,7 +69,8 @@ forms/
 │   ├── __tests__/               # Testes automatizados de componentes e integração (Jest / RTL)
 │   │   ├── Lobby.test.tsx       # Testes de integração do Lobby e fluxo de resolução de fases
 │   │   ├── Editor.test.tsx      # Testes de integração do Modo Editor (CRUD, DnD, preview, abas, validação)
-│   │   ├── Analytics.test.tsx   # Testes de integração do Dashboard de Análises
+│   │   ├── StudentAnalytics.test.tsx # Testes de integração do Dashboard de Estudantes e Raio-X (SPEC-007)
+│   │   ├── submissionErrorTracking.test.tsx # Testes de integração de rastreio de erros e tentativas
 │   │   ├── Login.test.tsx       # Testes da página de login e redirecionamento NextAuth
 │   │   ├── apiPhases.test.ts    # Testes dos endpoints de API de fases (GET/POST)
 │   │   ├── apiSubmissions.test.ts # Testes dos endpoints de API de submissões (GET/POST)
@@ -81,14 +82,16 @@ forms/
 │   │   ├── editor/
 │   │   │   ├── page.tsx         # Modo Editor (Gerenciamento de fases e questões)
 │   │   │   └── analytics/
-│   │   │       └── page.tsx     # Dashboard de Análises (RSC)
+│   │   │       └── page.tsx     # Dashboard de Análises dos Estudantes (RSC)
 │   │   ├── api/                 # Rotas de API do App Router (NextAuth, Phases, Submissions)
 │   │   ├── layout.tsx           # Wrapper principal da aplicação com SessionProvider
 │   │   └── globals.css          # Estilos globais e animações customizadas
 │   ├── components/              # Componentes React
 │   │   ├── editor/              # Componentes exclusivos do Modo Editor
 │   │   │   ├── analytics/
-│   │   │   │   └── AnalyticsDashboard.tsx # Painel com gráficos Recharts e diagnósticos
+│   │   │   │   ├── StudentAnalyticsDashboard.tsx # Painel centrado no estudante (KPIs, tabela, filtros)
+│   │   │   │   ├── StudentDetailModal.tsx        # Modal Raio-X individual com histórico detalhado e acordeões
+│   │   │   │   └── legacy/                       # Componentes analíticos legados arquivados
 │   │   │   ├── EditorLayout.tsx       # Shell com Navbar e layout responsivo
 │   │   │   ├── PhaseSidebar.tsx       # Sidebar de fases com DnD e botões de exportar/importar
 │   │   │   ├── PhaseEditor.tsx        # Edição de fase e botão de exportação em lote

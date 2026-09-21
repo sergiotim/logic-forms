@@ -1,10 +1,10 @@
 # [SPEC-007] Dashboard de Análises do Professor (Analytics Centrado no Aluno)
 
 - **Autor(es):** Equipe Lógica Dinâmica
-- **Status:** Em Especificação / Desenvolvimento (v2.8.0)
+- **Status:** Implementado e Validado (v2.9.0)
 - **Data de Criação:** 2026-09-14
 - **Última Atualização:** 2026-09-21
-- **Target Release / Milestone:** v2.8.0
+- **Target Release / Milestone:** v2.9.0
 
 ---
 
@@ -127,19 +127,21 @@ Estrutura hierárquica por fases e questões para exibição no modal:
      - `100% Concluído`
      - `Não Iniciados` (0%)
 4. **Tabela de Alunos:**
-   - Cabeçalhos clicáveis para ordenação ascendente/descendente:
-     - **Estudante** (Nome e E-mail com avatar)
-     - **Progresso** (Barra visual com cor dinâmica + labels: ex: `75% concluído • 25% restante`)
-     - **Questões** (ex: `15/20`)
-     - **Erros / Repetições** (Badge numérico indicando total de erros)
-     - **Acertos de 1ª** (Badge com taxa de acerto sem re-tentativa)
-     - **Última Atividade** (Data relativa ou absoluta: ex: "há 2 horas" ou "18/09/2026")
-     - **Ação** (Botão interativo "Ver Raio-X" com ícone de lupa/chevron).
+    - Cabeçalhos clicáveis para ordenação ascendente/descendente:
+      - **Estudante** (Nome e E-mail com avatar)
+      - **Progresso** (Barra visual com cor dinâmica + labels: ex: `75% concluído • 25% restante`, largura mínima de `210px` e `gap-2` para respiro perfeito)
+      - **Questões** (ex: `15/20`)
+      - **Erros / Repetições** (Badge numérico indicando total de erros)
+      - **Acertos de 1ª** (Badge com taxa de acerto sem re-tentativa)
+      - **Última Atividade** (Data relativa ou absoluta: ex: "há 2 horas" ou "18/09/2026")
+      - **Ação** (Botão interativo "Ver Raio-X" com ícone de lupa/chevron).
 
 ### 5.2 Modal de Detalhamento ("Raio-X do Estudante")
 - Ao clicar em uma linha da tabela ou no botão "Ver Raio-X", abre-se um modal responsivo em tela cheia/diálogo amplo:
   - **Header do Modal:** Foto, Nome e E-mail do aluno, progresso geral e total de erros acumulados.
-  - **Corpo:** Lista de fases em formato de acordeão (expandir/recolher).
+  - **Corpo:** Lista de fases em formato de acordeão (expandir/recolher):
+    - **Recolhidas por Padrão:** Todas as fases iniciam fechadas para navegação executiva e panorâmica, exibindo o contador parcial (ex: `1/10 concluídas`).
+    - **Acessibilidade:** Botão de acordeão com atributo `aria-expanded` dinâmico e alternância de ícones `ChevronDown`/`ChevronUp`.
   - **Dentro de cada fase:** Cada questão é apresentada com:
     - Enunciado e tópico formatados.
     - Tag/Badge com cores semânticas:

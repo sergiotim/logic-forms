@@ -49,7 +49,18 @@ A aplicação divide-se em duas rotas principais:
 - **Persistência & Migração Automática:**
   - Armazenamento em `localStorage` sob a chave `"logica-dinamica:editor-state"`, com seed inicial automático a partir do banco de dados estático e controle de versão do schema.
 
-### 4 Tipos de Exercícios Interativos
+### Dashboard Analítico dos Estudantes (`/editor/analytics`)
+- **Acompanhamento de Desempenho Individual:**
+  - Tabela completa de alunos matriculados com KPIs gerais da turma (média de conclusão, alunos 100% e não iniciados).
+  - Métricas transparentes de progresso duplo (`% concluído` e `% restante`), total de erros/repetições acumulados, acertos de 1ª tentativa e timestamp da última atividade.
+  - Ordenação por qualquer coluna, busca em tempo real por nome/e-mail e filtros rápidos de status (`Todos`, `Em Andamento`, `100% Concluído`, `Não Iniciados`).
+- **Modal de Diagnóstico "Raio-X Acadêmico":**
+  - Auditoria minuciosa das resoluções por fase e exercício com acordeões recolhidos por padrão para visualização limpa e executiva.
+  - Classificação pedagógica por questão: *Acertou de primeira* (verde), *Concluída após N erros* (amarelo), *Pendente com N erros* (vermelho) e *Não iniciada* (cinza).
+  - Exibição literal da **última resposta submetida** pelo estudante em sua tentativa.
+- **Soberania Pedagógica:** Ausência deliberada de notas arbitrárias geradas pelo sistema, assegurando que o professor avalie o percurso do aluno de forma justa e lance as notas no sistema acadêmico conforme seus próprios critérios.
+
+### 5 Tipos de Exercícios Interativos
 1. **Diagramação de Argumentos:** Classificação de frases entre Premissa ($P$) e Conclusão ($C$) com botões seletores ergonômicos e suporte a markdown.
 2. **Tabela-Verdade:** Matrizes de valoração onde o aluno preenche os valores lógicos ($V$ / $F$) para expressões proposicionais com conectivos intermediários e andaime pedagógico. O editor inclui auto-geração das $2^n$ combinações de linhas a partir das variáveis declaradas.
 3. **Formalização Lógica (Sentenças):** Transcrição de sentenças em linguagem simbólica com apoio de um **teclado virtual customizado** ($\sim, \land, \lor, \rightarrow, \leftrightarrow, \forall, \exists$), suporte a equivalência semântica e $\alpha$-conversão de predicados.
@@ -106,13 +117,14 @@ A aplicação divide-se em duas rotas principais:
 
 4. **Acesse a aplicação:**
    - Modo Estudo: [http://localhost:3000](http://localhost:3000)
-   - Modo Editor: [http://localhost:3000/editor](http://localhost:3000/editor)
+    - Modo Editor: [http://localhost:3000/editor](http://localhost:3000/editor)
+    - Modo Analytics: [http://localhost:3000/editor/analytics](http://localhost:3000/editor/analytics)
 
 ---
 
 ## Suíte de Testes (TDD)
 
-O projeto adota Test-Driven Development (TDD) rigoroso, com 246 testes automatizados cobrindo todas as camadas da aplicação:
+O projeto adota Test-Driven Development (TDD) rigoroso, com 291 testes automatizados cobrindo todas as camadas da aplicação:
 
 ```bash
 npm test
@@ -120,7 +132,10 @@ npm test
 
 #### Estrutura de Testes
 - `src/lib/__tests__/parser.test.ts`: Tokenização, parsing de AST, precedência de operadores, extração topológica de subexpressões e autogeração de matrizes da tabela-verdade.
+- `src/lib/__tests__/studentAnalytics.test.ts`: Agregação de métricas por aluno, contagem de erros/repetições, acertos de 1ª e percentuais de conclusão.
 - `src/lib/__tests__/storage.test.ts`: Operações CRUD, seed, reordenação de fases/questões e migrações de schema no `localStorage`.
+- `src/__tests__/StudentAnalytics.test.tsx`: Fluxo completo do Dashboard de Estudantes (KPIs, tabela, ordenação, busca, filtros de status e modal Raio-X com acordeões).
+- `src/__tests__/submissionErrorTracking.test.tsx`: Ciclo de vida e persistência atômica de tentativas incorretas na camada de banco Neon.
 - `src/__tests__/Lobby.test.tsx`: Fluxo completo do Modo Estudo (Lobby, Quiz, Exit Modal, conclusão de fases, badges, visibilidade e numeração contínua).
 - `src/__tests__/Editor.test.tsx`: Fluxo completo do Modo Editor (criação/edição/remoção de fases e questões, navegação por guias estilo navegador, preview ao vivo, visibilidade com opacidade e DnD).
 
@@ -143,17 +158,18 @@ forms/
 │       ├── editor-spec.md       # [SPEC-002] Especificação do Editor de Conteúdo
 │       ├── parser-spec.md       # [SPEC-003] Especificação do Parser Lógico e Tabela-Verdade
 │       ├── formalizacao-spec.md # [SPEC-004] Motor de Validação e Criação de Formalização
+│       ├── analytics-spec.md    # [SPEC-007] Dashboard de Análises do Professor (Centrado no Aluno)
 │       └── visibility-spec.md   # [SPEC-008] Visibilidade de Fases e Questões
 ├── src/
-│   ├── __tests__/               # Testes de integração (Lobby.test.tsx, Editor.test.tsx)
-│   ├── app/                     # Next.js App Router (page.tsx, editor/page.tsx, layout.tsx)
+│   ├── __tests__/               # Testes de integração (Lobby, Editor, StudentAnalytics)
+│   ├── app/                     # Next.js App Router (page.tsx, editor/page.tsx, editor/analytics/page.tsx)
 │   ├── components/              # Componentes React
-│   │   ├── editor/              # Componentes do Modo Editor (Sidebar, forms, preview, abas)
-│   │   ├── questions/           # Componentes de exercícios (Diagramacao, TabelaVerdade, Formalizacao)
+│   │   ├── editor/              # Componentes do Modo Editor e Analytics (StudentAnalyticsDashboard, StudentDetailModal)
+│   │   ├── questions/           # Componentes de exercícios (Diagramacao, TabelaVerdade, Formalizacao, etc.)
 │   │   └── ui/                  # Componentes reutilizáveis (Button, Feedback)
 │   ├── data/                    # Banco estático de fallback (questions.ts)
-│   ├── lib/                     # Camada lógica e serviços (parser.ts, storage.ts, icons.ts)
-│   └── types/                   # Tipos TypeScript (Question, Phase, EditorState, etc.)
+│   ├── lib/                     # Camada lógica e serviços (analytics.ts, parser.ts, storage.ts, db.ts)
+│   └── types/                   # Tipos TypeScript (Question, Phase, StudentAnalyticsOverviewData, etc.)
 ├── AGENTS.md                    # Diretrizes e regras para Agentes de IA
 ├── CHANGELOG.md                 # Histórico detalhado de mudanças
 └── README.md                    # Documentação principal do projeto
@@ -168,6 +184,7 @@ forms/
 - [[SPEC-002] Especificação do Editor de Conteúdo](docs/specs/editor-spec.md)
 - [[SPEC-003] Especificação do Parser Lógico e Tabela-Verdade](docs/specs/parser-spec.md)
 - [[SPEC-004] Motor de Validação e Criação de Formalização](docs/specs/formalizacao-spec.md)
+- [[SPEC-007] Dashboard de Análises do Professor](docs/specs/analytics-spec.md)
 - [[SPEC-008] Visibilidade de Fases e Questões](docs/specs/visibility-spec.md)
 - [Estrutura de Dados das Questões (JSON)](docs/Estrutura%20das%20Quest%C3%B5es%20(JSON).md)
 - [Diretrizes de Agentes (AGENTS.md)](AGENTS.md)
