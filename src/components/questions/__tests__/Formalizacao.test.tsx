@@ -36,5 +36,22 @@ describe('Formalizacao Component (Visão do Aluno)', () => {
     expect(lIdx).toBeLessThan(andIdx);
     expect(andIdx).toBeLessThan(openParenIdx);
   });
+
+  it('NÃO inclui variáveis presentes apenas nas dicas se elas não existirem na fórmula esperada', () => {
+    const questionComDicaExtra: FormalizacaoQuestion = {
+      ...mockQuestion,
+      dicas: ['G: Ganha o jogo', 'L: Leva o troféu', 'Z: Distrator apenas na dica'],
+      resposta_esperada: 'G ∧ L',
+    };
+
+    render(<Formalizacao question={questionComDicaExtra} userAnswer="" onChange={jest.fn()} />);
+
+    const buttons = screen.getAllByRole('button');
+    const buttonLabels = buttons.map((b) => b.textContent?.trim());
+
+    expect(buttonLabels).toContain('G');
+    expect(buttonLabels).toContain('L');
+    expect(buttonLabels).not.toContain('Z');
+  });
 });
 

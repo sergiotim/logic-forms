@@ -21,16 +21,11 @@ export const Formalizacao: React.FC<FormalizacaoProps> = ({ question, userAnswer
     };
 
     extractLetters(question.resposta_esperada || '');
-    (question.dicas || []).forEach((d) => {
-      const m = d.match(/^([a-zA-Z])\s*:/);
-      if (m) vars.add(m[1]);
-    });
 
     const configured = question.teclado_virtual || [];
-    const configuredLetters = configured.filter((k) => /^[a-zA-Z]$/.test(k));
     const symbols = configured.filter((k) => !/^[a-zA-Z]$/.test(k) && k !== '(' && k !== ')');
 
-    const allLetters = Array.from(new Set([...Array.from(vars), ...configuredLetters])).sort((a, b) => {
+    const allLetters = Array.from(vars).sort((a, b) => {
       const aUpper = a === a.toUpperCase();
       const bUpper = b === b.toUpperCase();
       if (aUpper && !bUpper) return -1;
@@ -39,7 +34,7 @@ export const Formalizacao: React.FC<FormalizacaoProps> = ({ question, userAnswer
     });
 
     return [...allLetters, ...symbols, '(', ')'];
-  }, [question.resposta_esperada, question.dicas, question.teclado_virtual]);
+  }, [question.resposta_esperada, question.teclado_virtual]);
 
   const handleKeyPress = (char: string) => {
     const input = inputRef.current;

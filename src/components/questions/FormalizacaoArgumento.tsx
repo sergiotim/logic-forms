@@ -48,31 +48,19 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
     // Extrai da conclusão esperada do gabarito
     extractLetters(question.resposta_esperada?.conclusao || '');
 
-    // Extrai das dicas (ex: "A: Avião caiu" -> "A", "x: variável" -> "x")
-    (question.dicas || []).forEach((d) => {
-      const m = d.match(/^([a-zA-Z])\s*:/);
-      if (m) vars.add(m[1]);
-    });
-
     const configuredKeys = question.teclado_virtual || [];
-    const configuredLetters = configuredKeys.filter((k) => /^[a-zA-Z]$/.test(k));
-    const configuredSymbols = configuredKeys.filter((k) => !/^[a-zA-Z]$/.test(k));
-
-    // Garante que delimitadores '(' e ')' estejam sempre presentes para agrupamento lógico
-    const symbolsWithParens = [...configuredSymbols];
-    if (!symbolsWithParens.includes('(')) symbolsWithParens.push('(');
-    if (!symbolsWithParens.includes(')')) symbolsWithParens.push(')');
+    const configuredSymbols = configuredKeys.filter((k) => !/^[a-zA-Z]$/.test(k) && k !== '(' && k !== ')');
 
     // Letras (variáveis/predicados) ordenadas aparecem primeiro (maiúsculas e depois minúsculas), seguidas pelos conectivos lógicos e parênteses
-    const allLetters = Array.from(new Set([...Array.from(vars), ...configuredLetters])).sort((a, b) => {
+    const allLetters = Array.from(vars).sort((a, b) => {
       const aUpper = a === a.toUpperCase();
       const bUpper = b === b.toUpperCase();
       if (aUpper && !bUpper) return -1;
       if (!aUpper && bUpper) return 1;
       return a.localeCompare(b);
     });
-    return [...allLetters, ...symbolsWithParens];
-  }, [question.resposta_esperada, question.dicas, question.teclado_virtual]);
+    return [...allLetters, ...configuredSymbols, '(', ')'];
+  }, [question.resposta_esperada, question.teclado_virtual]);
 
   const premiseRefs = useRef<(HTMLInputElement | null)[]>([]);
   const conclusionRef = useRef<HTMLInputElement | null>(null);
