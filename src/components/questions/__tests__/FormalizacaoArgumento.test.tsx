@@ -194,5 +194,84 @@ describe('FormalizacaoArgumento Component (Visão do Estudante)', () => {
 
     expect(prevented).toBe(true);
   });
+
+  it('configura inputMode="none" em todos os inputs para suprimir o teclado nativo do celular', () => {
+    render(
+      <FormalizacaoArgumento
+        question={mockQuestion}
+        userAnswer={{ premissas: ['P1', 'P2'], conclusao: 'C' }}
+        onChange={jest.fn()}
+      />
+    );
+
+    const inputs = screen.getAllByRole('textbox');
+    expect(inputs).toHaveLength(3);
+    inputs.forEach((input) => {
+      expect(input).toHaveAttribute('inputMode', 'none');
+    });
+  });
+
+  it('apaga o caractere anterior ao clicar no botão de apagar (Backspace)', () => {
+    const handleChange = jest.fn();
+    render(
+      <FormalizacaoArgumento
+        question={mockQuestion}
+        userAnswer={{ premissas: ['H(s)'], conclusao: '' }}
+        onChange={handleChange}
+      />
+    );
+
+    // Botão de backspace
+    const backspaceBtn = screen.getByTestId('backspace-button');
+    expect(backspaceBtn).toBeInTheDocument();
+
+    fireEvent.click(backspaceBtn);
+
+    expect(handleChange).toHaveBeenCalledWith({
+      premissas: ['H(s'],
+      conclusao: '',
+    });
+  });
+
+  it('apaga o caractere da conclusão quando a conclusão está em foco', () => {
+    const handleChange = jest.fn();
+    render(
+      <FormalizacaoArgumento
+        question={mockQuestion}
+        userAnswer={{ premissas: ['H(s)'], conclusao: 'M(s)' }}
+        onChange={handleChange}
+      />
+    );
+
+    const conclusionInput = screen.getByPlaceholderText('Ex: V');
+    fireEvent.focus(conclusionInput);
+
+    const backspaceBtn = screen.getByTestId('backspace-button');
+    fireEvent.click(backspaceBtn);
+
+    expect(handleChange).toHaveBeenCalledWith({
+      premissas: ['H(s)'],
+      conclusao: 'M(s',
+    });
+  });
+
+  it('renderiza dicas e teclado virtual com flex-wrap sem barras de rolagem lateral', () => {
+    render(
+      <FormalizacaoArgumento
+        question={mockQuestion}
+        userAnswer={{ premissas: [''], conclusao: '' }}
+        onChange={jest.fn()}
+      />
+    );
+
+    const dicasContainer = screen.getByTestId('dicas-container');
+    expect(dicasContainer).toHaveClass('flex-wrap');
+    expect(dicasContainer).not.toHaveClass('overflow-x-auto');
+
+    const keyboardPanel = screen.getByTestId('virtual-keyboard-panel');
+    const keysContainer = keyboardPanel.querySelector('.flex-wrap');
+    expect(keysContainer).toBeInTheDocument();
+    expect(keysContainer).not.toHaveClass('overflow-x-auto');
+  });
 });
 

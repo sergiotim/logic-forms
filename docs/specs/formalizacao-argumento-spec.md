@@ -84,14 +84,15 @@ Para elevar o desafio cognitivo e não "dar a resposta", a interface do estudant
 - **Estado Inicial:** Exibe 1 campo vazio de Premissa e 1 campo vazio de Conclusão separados por uma linha horizontal, e um botão `[ + Adicionar outra premissa ]`.
 - **Ação:** O aluno deve segmentar o texto mentalmente. Se identificar mais de uma premissa, ele clica em "Adicionar", revelando novos inputs (que podem ser deletados via ícone de lixeira/X se adicionados acidentalmente).
 - **Tipografia Responsiva do Enunciado:** Escala de fonte e espaçamento adaptados para telas pequenas (`text-sm sm:text-base md:text-2xl` e `gap-1.5 md:gap-4`), evitando que o enunciado consuma todo o espaço vertical visível no mobile.
-- **Dicas em Fita Horizontal Compacta de 1 Linha (Topo):**
-  - O dicionário de variáveis/predicados (`Léxico:`) é renderizado como uma fita horizontal compacta de chips com rolagem suave (`overflow-x-auto whitespace-nowrap no-scrollbar`).
-  - Ocupa apenas ~28px de altura (em contraste com os ~90px de blocos empilhados), permitindo consultar o significado das letras sem roubar espaço dos campos de digitação.
-- **Área Central de Trabalho (Workspace):**
-  - A lista dinâmica de premissas e a conclusão ocupam o centro da visualização, com rolagem suave caso o argumento contenha múltiplas premissas.
-- **Teclado Virtual Global Ancorado na Base (Thumb-Zone Ergonomics):**
+- **Dicas sem Rolagem Lateral (Topo):**
+  - O dicionário de variáveis/predicados (`Léxico:`) é renderizado em chips compactos com quebra fluida (`flex-wrap gap-1.5`), eliminando qualquer necessidade de rolagem horizontal para visualizar todas as variáveis.
+- **Área Central de Trabalho (Workspace) com Supressão de Teclado Nativo:**
+  - A lista dinâmica de premissas e a conclusão ocupam o centro da visualização.
+  - **Exclusividade do Teclado Virtual (`inputMode="none"`):** Todos os campos de texto utilizam `inputMode="none"`, impedindo que o teclado nativo do celular (iOS/Android) se abra e cubra a interface, permitindo que a digitação ocorra 100% pelo teclado virtual acoplado.
+- **Teclado Virtual Global Ancorado na Base (Thumb-Zone Ergonomics & Zero Rolagem Lateral):**
   - O teclado virtual único é ancorado na base da tela (`sticky bottom-0 z-20`), imediatamente acima do botão de validação, na zona ergonômica natural dos polegares em smartphones.
-  - **Dimensionamento Uniforme das Teclas:** Teclas compactas (`h-9 sm:h-10 min-w-[2.25rem] sm:min-w-[2.5rem]`) dispostas em linha com rolagem horizontal suave no mobile, eliminando a quebra desproporcional de parênteses em linhas extras.
+  - **Disposição sem Rolagem Lateral:** Teclas organizadas com quebra natural (`flex-wrap gap-1 sm:gap-1.5 justify-center`) e largura máxima delimitada (`max-w-[3.5rem]`), visíveis integralmente sem qualquer scroll lateral.
+  - **Botão de Apagar (Backspace):** Inclui tecla dedicada de deleção (`Delete` icon) que apaga o caractere imediatamente anterior ao cursor (ou a seleção ativa) mantendo o foco no campo ativo.
   - **Foco Ativo Inteligente:** O teclado exibe um indicador dinâmico pulsante (`Editando Premissa X` ou `Editando Conclusão`). Cliques nas teclas inserem símbolos unicamente no input ativo.
   - **Retenção de Foco:** Teclas virtuais utilizam `onMouseDown={(e) => e.preventDefault()}` para evitar que o clique tire o foco do campo de texto ativo.
   - **Origem Estrita do Gabarito:** As variáveis disponíveis no teclado são extraídas estritamente das premissas e da conclusão esperadas. Letras exclusivas de `dicas` não entram no teclado.

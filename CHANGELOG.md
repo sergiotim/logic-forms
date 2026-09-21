@@ -4,19 +4,23 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
-## [2.8.2] - 2026-09-21 (Ergonomia Mobile em Formalização de Argumentos: Teclado na Base & Dicas Compactas)
+## [2.8.2] - 2026-09-21 (Ergonomia Mobile em Formalização de Argumentos: Teclado na Base, Sem Scroll Lateral & Botão Apagar)
 
 ### Adicionado (Added)
-- **Ergonomia Mobile e Otimização de Espaço Vertical (`FormalizacaoArgumento.tsx` e `page.tsx`):**
+- **Ergonomia Mobile e Otimização de Espaço Vertical (`FormalizacaoArgumento.tsx`, `Formalizacao.tsx` e `page.tsx`):**
   - **Teclado Virtual na Base (`sticky bottom-0 z-20`):** Reposicionamento do teclado virtual único para a base da tela, acoplado logo acima da barra de ações de validação. Posicionamento natural na zona dos polegares (*thumb-zone*), permitindo digitar enquanto os olhos acompanham as premissas e a conclusão no centro da tela.
-  - **Dicas em Fita Horizontal de 1 Linha (`overflow-x-auto whitespace-nowrap`):** Substituição de blocos verticais empilhados por uma fita horizontal compacta de chips com rolagem suave, reduzindo a altura de 90px para apenas 28px.
+  - **Eliminação de Rolagens Laterais (Zero Scroll Horizontal):**
+    - Dicas/Léxico agora utilizam quebra fluida (`flex-wrap gap-1.5`) em chips compactos, eliminando qualquer necessidade de rolagem lateral para visualizar todas as variáveis do argumento.
+    - O teclado virtual distribui as teclas com `flex-wrap gap-1 sm:gap-1.5 justify-center` e largura máxima controlada (`max-w-[3.5rem]`), visíveis integralmente em qualquer smartphone.
+  - **Supressão do Teclado Nativo do Smartphone (`inputMode="none"`):** Todos os inputs de formalização foram configurados com `inputMode="none"`, impedindo que o teclado virtual do sistema operacional (iOS/Android) se abra ao tocar no campo, garantindo que o estudante utilize exclusivamente o teclado virtual da aplicação.
+  - **Botão de Apagar (Backspace):** Adicionada tecla dedicada com ícone `Delete` (`⌫`) para apagar o caractere imediatamente anterior ao cursor (ou a seleção ativa) mantendo o foco e o cursor no campo ativo.
   - **Tipografia e Espaçamento Responsivos no Quiz:** Redução da escala de fonte do enunciado no mobile para `text-sm sm:text-base md:text-2xl` e espaçamento entre parágrafos para `gap-1.5 md:gap-4`.
-  - **Dimensionamento Uniforme de Teclas:** Teclas com tamanho fixo e uniforme (`h-9 sm:h-10 min-w-[2.25rem] sm:min-w-[2.5rem]`), eliminando quebras desproporcionais de parênteses em linhas extras no mobile.
   - **Visibilidade Integral sem Scroll:** Em telas de smartphone padrão (iPhone/Android), o enunciado, as dicas, a premissa 1, a conclusão, o teclado virtual e o botão de validação cabem simultaneamente na tela sem rolagem inicial.
 - **Prevenção de Blur e Retenção de Foco:**
   - Adição de `onMouseDown={(e) => e.preventDefault()}` nos botões do teclado para evitar perda de foco e cursor durante toques repetidos.
 - **Suíte de Testes Automatizados TDD:**
-  - `src/components/questions/__tests__/FormalizacaoArgumento.test.tsx`: 7 testes automatizados cobrindo presença da fita compacta de dicas no topo, teclado ancorado na base, ordenação prioritária de variáveis, foco ativo dinâmico e retenção de foco.
+  - `src/components/questions/__tests__/FormalizacaoArgumento.test.tsx`: Testes cobrindo dicas no topo, teclado ancorado na base, ausência de scroll lateral (`not.toHaveClass('overflow-x-auto')`), configuração de `inputMode="none"`, funcionalidade do botão de apagar (Backspace) e retenção de foco.
+  - `src/components/questions/__tests__/Formalizacao.test.tsx`: Testes de Backspace e `inputMode="none"` na formalização simples.
 
 ## [2.8.1] - 2026-09-21 (Gestão Automática de Variáveis no Teclado de Formalização)
 

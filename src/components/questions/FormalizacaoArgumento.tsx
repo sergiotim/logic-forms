@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { FormalizacaoArgumentoQuestion } from '@/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Delete } from 'lucide-react';
 
 interface FormalizacaoArgumentoProps {
   question: FormalizacaoArgumentoQuestion;
@@ -139,21 +139,76 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
     }
   };
 
+  const handleBackspace = () => {
+    if (activeTarget.type === 'conclusion') {
+      const input = conclusionRef.current;
+      const currentText = conclusion;
+      if (!input) {
+        handleUpdateConclusion(currentText.slice(0, -1));
+        return;
+      }
+      const start = input.selectionStart ?? currentText.length;
+      const end = input.selectionEnd ?? currentText.length;
+      if (start === end) {
+        if (start === 0) return;
+        const nextVal = currentText.substring(0, start - 1) + currentText.substring(end);
+        handleUpdateConclusion(nextVal);
+        setTimeout(() => {
+          input.focus();
+          input.setSelectionRange(start - 1, start - 1);
+        }, 0);
+      } else {
+        const nextVal = currentText.substring(0, start) + currentText.substring(end);
+        handleUpdateConclusion(nextVal);
+        setTimeout(() => {
+          input.focus();
+          input.setSelectionRange(start, start);
+        }, 0);
+      }
+    } else {
+      const idx = activeTarget.index;
+      const input = premiseRefs.current[idx];
+      const currentText = premises[idx] || '';
+      if (!input) {
+        handleUpdatePremise(idx, currentText.slice(0, -1));
+        return;
+      }
+      const start = input.selectionStart ?? currentText.length;
+      const end = input.selectionEnd ?? currentText.length;
+      if (start === end) {
+        if (start === 0) return;
+        const nextVal = currentText.substring(0, start - 1) + currentText.substring(end);
+        handleUpdatePremise(idx, nextVal);
+        setTimeout(() => {
+          input.focus();
+          input.setSelectionRange(start - 1, start - 1);
+        }, 0);
+      } else {
+        const nextVal = currentText.substring(0, start) + currentText.substring(end);
+        handleUpdatePremise(idx, nextVal);
+        setTimeout(() => {
+          input.focus();
+          input.setSelectionRange(start, start);
+        }, 0);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-full">
-      {/* Dicas / Léxico (Fita Horizontal Compacta de 1 Linha no Topo) */}
+      {/* Dicas / Léxico (Quebra Natural em Chips - Sem Rolagem Lateral) */}
       {question.dicas && question.dicas.length > 0 && (
         <div
           data-testid="dicas-container"
-          className="sticky top-0 z-10 bg-base/95 md:bg-surface/95 backdrop-blur-md py-1.5 pb-2 border-b border-border-subtle/50 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap -mx-1 px-1 shrink-0"
+          className="sticky top-0 z-10 bg-base/95 md:bg-surface/95 backdrop-blur-md py-1.5 pb-2 border-b border-border-subtle/50 flex flex-wrap items-center gap-1.5 shrink-0"
         >
-          <span className="text-[10px] sm:text-xs font-mono text-text-muted uppercase tracking-wider shrink-0 font-semibold">
+          <span className="text-[10px] sm:text-xs font-mono text-text-muted uppercase tracking-wider shrink-0 font-semibold mr-1">
             Léxico:
           </span>
           {question.dicas.map((dica, idx) => (
             <span
               key={idx}
-              className="text-xs font-mono bg-surface md:bg-base border border-border-subtle text-text-muted px-2.5 py-0.5 rounded-full shrink-0 shadow-sm"
+              className="text-xs font-mono bg-surface md:bg-base border border-border-subtle text-text-muted px-2.5 py-0.5 rounded-md shadow-sm"
             >
               {dica}
             </span>
@@ -182,6 +237,7 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
                       premiseRefs.current[idx] = el;
                     }}
                     type="text"
+                    inputMode="none"
                     value={premiseText}
                     onFocus={() => setActiveTarget({ type: 'premise', index: idx })}
                     onChange={(e) => handleUpdatePremise(idx, e.target.value)}
@@ -192,6 +248,8 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
                         : 'border-border-subtle hover:border-border-subtle/80'
                     }`}
                     autoComplete="off"
+                    autoCapitalize="none"
+                    autoCorrect="off"
                     spellCheck="false"
                   />
                 </div>
@@ -239,6 +297,7 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
             <input
               ref={conclusionRef}
               type="text"
+              inputMode="none"
               value={conclusion}
               onFocus={() => setActiveTarget({ type: 'conclusion' })}
               onChange={(e) => handleUpdateConclusion(e.target.value)}
@@ -249,13 +308,15 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
                   : 'border-border-subtle hover:border-border-subtle/80'
               }`}
               autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
               spellCheck="false"
             />
           </div>
         </div>
       </div>
 
-      {/* Teclado Virtual Global com Foco Ativo (Ancorado na Base da Tela) */}
+      {/* Teclado Virtual Global com Foco Ativo (Ancorado na Base - Sem Scroll Lateral) */}
       <div
         data-testid="virtual-keyboard-panel"
         className="sticky bottom-0 z-20 bg-base/95 md:bg-surface/95 backdrop-blur-md pt-2 pb-1 border-t border-border-subtle shadow-[0_-8px_16px_rgba(0,0,0,0.3)] md:shadow-none shrink-0"
@@ -270,7 +331,7 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto sm:flex-wrap no-scrollbar font-mono py-0.5">
+        <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 font-mono py-0.5">
           {keyboardKeys.map((tecla, idx) => {
             const isLetter = /^[a-zA-Z]$/.test(tecla);
             return (
@@ -279,7 +340,7 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleKeyPress(tecla)}
-                className={`shrink-0 min-w-[2.25rem] sm:min-w-[2.5rem] h-9 sm:h-10 border rounded-lg px-2 sm:px-2.5 text-base sm:text-lg transition-all shadow-sm text-center active:scale-95 flex items-center justify-center ${
+                className={`flex-1 min-w-[2.2rem] max-w-[3.5rem] h-9 sm:h-10 border rounded-lg px-2 text-base sm:text-lg transition-all shadow-sm text-center active:scale-95 flex items-center justify-center ${
                   isLetter
                     ? 'bg-primary/15 text-primary font-bold border-primary/40 hover:bg-primary hover:text-white hover:border-primary'
                     : 'bg-surface md:bg-base hover:bg-surface text-text-main border-border-subtle hover:border-primary'
@@ -289,6 +350,19 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
               </button>
             );
           })}
+
+          {/* Botão de Apagar (Backspace) */}
+          <button
+            type="button"
+            data-testid="backspace-button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={handleBackspace}
+            className="flex-1 min-w-[2.6rem] max-w-[4rem] h-9 sm:h-10 border rounded-lg px-2 text-text-muted hover:text-error hover:bg-error/10 border-border-subtle hover:border-error/40 transition-all shadow-sm flex items-center justify-center active:scale-95"
+            title="Apagar caractere anterior"
+            aria-label="Apagar"
+          >
+            <Delete size={18} />
+          </button>
         </div>
       </div>
     </div>

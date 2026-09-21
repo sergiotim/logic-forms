@@ -53,5 +53,21 @@ describe('Formalizacao Component (Visão do Aluno)', () => {
     expect(buttonLabels).toContain('L');
     expect(buttonLabels).not.toContain('Z');
   });
+
+  it('configura inputMode="none" e permite apagar com o botão de Backspace', () => {
+    const handleChange = jest.fn();
+    render(<Formalizacao question={mockQuestion} userAnswer="G ∧ L" onChange={handleChange} />);
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('inputMode', 'none');
+
+    const backspaceBtn = screen.getByTestId('backspace-button');
+    expect(backspaceBtn).toBeInTheDocument();
+
+    const { fireEvent } = require('@testing-library/react');
+    fireEvent.click(backspaceBtn);
+
+    expect(handleChange).toHaveBeenCalledWith('G ∧ ');
+  });
 });
 
