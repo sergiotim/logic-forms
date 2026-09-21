@@ -91,11 +91,17 @@ export const FormalizacaoForm: React.FC<FormalizacaoFormProps> = ({ question, on
     }
 
     // Garante que operadores e variáveis presentes na fórmula estejam no teclado,
-    // removendo automaticamente variáveis que não existem mais na resposta esperada
+    // colocando as variáveis sempre em primeiro lugar e removendo variáveis que deixaram de existir
     const formulaKeys = AVAILABLE_KEYS.filter((k) => newExpected.includes(k));
-    const formulaVars = Array.from(new Set(newExpected.match(/[a-zA-Z]/g) || []));
+    const formulaVars = Array.from(new Set(newExpected.match(/[a-zA-Z]/g) || [])).sort((a, b) => {
+      const aUpper = a === a.toUpperCase();
+      const bUpper = b === b.toUpperCase();
+      if (aUpper && !bUpper) return -1;
+      if (!aUpper && bUpper) return 1;
+      return a.localeCompare(b);
+    });
     const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
-    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
+    const mergedKeys = Array.from(new Set([...formulaVars, ...nonVariableKeys, ...formulaKeys]));
 
     onChange({
       ...question,
@@ -288,8 +294,14 @@ export const FormalizacaoForm: React.FC<FormalizacaoFormProps> = ({ question, on
 
         <div className="flex flex-wrap gap-2">
           {Array.from(new Set([
+            ...Array.from(new Set(question.resposta_esperada.match(/[a-zA-Z]/g) || [])).sort((a, b) => {
+              const aUpper = a === a.toUpperCase();
+              const bUpper = b === b.toUpperCase();
+              if (aUpper && !bUpper) return -1;
+              if (!aUpper && bUpper) return 1;
+              return a.localeCompare(b);
+            }),
             ...AVAILABLE_KEYS,
-            ...(question.resposta_esperada.match(/[a-zA-Z]/g) || []),
             ...question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k))
           ])).filter(k => k !== '(' && k !== ')').map((sym) => {
             const isSelected = question.teclado_virtual.includes(sym);

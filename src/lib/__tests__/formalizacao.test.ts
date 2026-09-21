@@ -193,6 +193,20 @@ describe('[SPEC-004] Motor de Formalização Lógica', () => {
       // Deve conter símbolos não presentes na fórmula original como distratores
       expect(withDistractors.some((k) => k === '∨' || k === '→' || k === '~')).toBe(true);
     });
+
+    it('posiciona variáveis e predicados antes dos operadores lógicos', () => {
+      const keys = suggestVirtualKeyboard('P ∧ Q → R');
+      const pIdx = keys.indexOf('P');
+      const qIdx = keys.indexOf('Q');
+      const rIdx = keys.indexOf('R');
+      const andIdx = keys.indexOf('∧');
+      const arrowIdx = keys.indexOf('→');
+
+      expect(pIdx).toBeLessThan(andIdx);
+      expect(qIdx).toBeLessThan(andIdx);
+      expect(rIdx).toBeLessThan(andIdx);
+      expect(pIdx).toBeLessThan(arrowIdx);
+    });
   });
 
   // -------------------------------------------------------------------------

@@ -12,10 +12,16 @@ export const Formalizacao: React.FC<FormalizacaoProps> = ({ question, userAnswer
 
   const keyboardKeys = useMemo(() => {
     const configured = question.teclado_virtual || [];
-    const symbolsWithParens = [...configured];
-    if (!symbolsWithParens.includes('(')) symbolsWithParens.push('(');
-    if (!symbolsWithParens.includes(')')) symbolsWithParens.push(')');
-    return symbolsWithParens;
+    const letters = configured.filter((k) => /^[a-zA-Z]$/.test(k)).sort((a, b) => {
+      const aUpper = a === a.toUpperCase();
+      const bUpper = b === b.toUpperCase();
+      if (aUpper && !bUpper) return -1;
+      if (!aUpper && bUpper) return 1;
+      return a.localeCompare(b);
+    });
+
+    const symbols = configured.filter((k) => !/^[a-zA-Z]$/.test(k) && k !== '(' && k !== ')');
+    return [...letters, ...symbols, '(', ')'];
   }, [question.teclado_virtual]);
 
   const handleKeyPress = (char: string) => {

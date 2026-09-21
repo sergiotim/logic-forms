@@ -172,33 +172,38 @@ export function suggestVirtualKeyboard(
   formula: string,
   addDistractors: boolean = false
 ): string[] {
-  const usedSymbols = new Set<string>();
-
-  for (const sym of ALL_LOGICAL_SYMBOLS) {
-    if (formula.includes(sym)) {
-      usedSymbols.add(sym);
-    }
-  }
+  const variables = new Set<string>();
+  const operators = new Set<string>();
 
   const variablesAndPredicates = formula.match(/[a-zA-Z]/g) || [];
   for (const sym of variablesAndPredicates) {
-    usedSymbols.add(sym);
+    variables.add(sym);
   }
 
-  const result = Array.from(usedSymbols);
-
-  if (addDistractors) {
-    const unused = ALL_LOGICAL_SYMBOLS.filter((s) => !usedSymbols.has(s));
-    // Inclui até 3 símbolos distratores não presentes na fórmula
-    const distractorsToAdd = unused.slice(0, 3);
-    for (const d of distractorsToAdd) {
-      if (!result.includes(d)) {
-        result.push(d);
-      }
+  for (const sym of ALL_LOGICAL_SYMBOLS) {
+    if (formula.includes(sym)) {
+      operators.add(sym);
     }
   }
 
-  return result;
+  if (addDistractors) {
+    const unused = ALL_LOGICAL_SYMBOLS.filter((s) => !operators.has(s));
+    // Inclui até 3 símbolos distratores não presentes na fórmula
+    const distractorsToAdd = unused.slice(0, 3);
+    for (const d of distractorsToAdd) {
+      operators.add(d);
+    }
+  }
+
+  const sortedVariables = Array.from(variables).sort((a, b) => {
+    const aUpper = a === a.toUpperCase();
+    const bUpper = b === b.toUpperCase();
+    if (aUpper && !bUpper) return -1;
+    if (!aUpper && bUpper) return 1;
+    return a.localeCompare(b);
+  });
+
+  return [...sortedVariables, ...Array.from(operators)];
 }
 
 /**
