@@ -4,6 +4,47 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.9.0] - 2026-09-21 (Analytics Centrado no Estudante e Rastreio de Repetições/Erros - SPEC-007)
+
+### Adicionado (Added)
+- **Dashboard Analítico Centrado no Estudante (`/editor/analytics`):**
+  - Painel dedicado ao professor para acompanhar o progresso individual de cada aluno da turma e subsidiar a atribuição de notas acadêmicas.
+  - **KPIs da Turma:** Indicadores superiores com Total de Estudantes matriculados, Média Geral de Conclusão da Turma, Alunos que concluíram 100% e Alunos não iniciados (0%).
+  - **Tabela Dinâmica de Estudantes:**
+    - Exibição de Nome, E-mail, Avatar, Progresso duplo (`% concluído` e `% restante`), Questões concluídas/ativas, Total de Erros/Repetições, Acertos de 1ª tentativa e Data da Última Atividade.
+    - Ordenação bidirecional por qualquer coluna da tabela.
+    - Filtros de status rápidos em abas: `Todos`, `Em Andamento`, `100% Concluído` e `Não Iniciados`.
+    - Busca textual em tempo real por nome ou e-mail.
+- **Modal de Diagnóstico "Raio-X Acadêmico do Estudante" (`StudentDetailModal.tsx`):**
+  - Visão detalhada do histórico de tentativas do estudante por fase e por exercício.
+  - **Acordeões de Fases Recolhidos por Padrão:** Navegação limpa e executiva com contadores parciais de conclusão por fase (ex: `1/10 concluídas`), acessível via teclado e leitor de tela (`aria-expanded`).
+  - **Classificação Pedagógica por Questão:**
+    - 🟢 *Acertou de primeira* (resolvida na 1ª tentativa com 0 erros prévios).
+    - 🟡 *Concluída após N erros* (resolvida com sucesso após repetições incorretas).
+    - 🔴 *Pendente com N erros* (tentada pelo aluno com erros, mas ainda não resolvida).
+    - ⚪ *Não iniciada* (nenhuma submissão realizada).
+  - **Auditoria da Última Resposta Submetida:** Exibição do valor bruto enviado pelo aluno em sua última tentativa (tabela-verdade, premissas/conclusão, alternativa ou fórmula lógica).
+- **Persistência Auditável de Tentativas e Erros (`prisma/schema.prisma` e `db.ts`):**
+  - Registro de histórico completo no Neon PostgreSQL: cada clique em "Validar Resposta" no modo estudo (`src/app/page.tsx`), seja acerto ou erro (`isCorrect: false`), é gravado atomicamente como uma linha na tabela `Submission`.
+  - Remoção da restrição `@@unique([userId, questionId])` e adoção de índice performático `@@index([userId, questionId])`.
+  - Suporte total ao tipo de dado JSON do Prisma sem incompatibilidades TypeScript em `src/types/index.ts`.
+- **Soberania Pedagógica do Professor:**
+  - O sistema deliberadamente não gera notas arbitrárias ou fictícias (0 a 10), fornecendo fatos objetivos e auditáveis para que o professor lance as notas no sistema institucional conforme seus próprios critérios.
+
+### Modificado (Changed)
+- **Refinamento Visual da Coluna de Progresso:**
+  - Largura mínima da coluna ajustada para `min-w-[210px]` no cabeçalho e nas células.
+  - Adicionado espaçamento com `gap-2` e `shrink-0` nas legendas `% concluído` e `% restante`, garantindo respiração visual mesmo para alunos com `0% concluído` e `100% restante`.
+- **Arquivamento do Painel Agregado Antigo:**
+  - O componente anterior baseado em gráficos Recharts globais foi preservado e arquivado em `src/components/editor/analytics/legacy/LegacyAnalyticsDashboard.tsx`, sem rotas ativas ou links públicos na interface.
+
+### Testes (Tests)
+- **Expansão da Suíte de Testes Automatizados TDD:**
+  - `src/lib/__tests__/studentAnalytics.test.ts`: 7 testes unitários cobrindo agregação individual, acertos de primeira, contagem de erros, ordenação e cálculo de percentuais.
+  - `src/__tests__/StudentAnalytics.test.tsx`: 8 testes de integração validando renderização de KPIs, tabela, ausência de notas inventadas, busca, filtros de status, acordeões fechados por padrão e abertura do Raio-X.
+  - `src/__tests__/submissionErrorTracking.test.tsx`: Teste de integração do ciclo de vida de persistência de tentativas incorretas no banco.
+  - Suíte total do projeto expandida para **291 testes** em **24 suítes** com 100% de aprovação.
+
 ## [2.8.2] - 2026-09-21 (Ergonomia Mobile em Formalização de Argumentos: Teclado na Base, Sem Scroll Lateral & Botão Apagar)
 
 ### Adicionado (Added)
