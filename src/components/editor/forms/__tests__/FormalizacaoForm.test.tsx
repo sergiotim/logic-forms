@@ -96,6 +96,28 @@ describe('FormalizacaoForm - Gestão automática de variáveis no teclado virtua
     expect(lIdx).toBe(1);
     expect(andIdx).toBeGreaterThan(lIdx);
   });
+
+  it('não exibe botões de variáveis na área de edição do teclado virtual (apenas operadores)', () => {
+    const currentQuestion: FormalizacaoQuestion = {
+      ...baseQuestion,
+      resposta_esperada: 'G ∧ L',
+      teclado_virtual: ['G', 'L', '∧'],
+    };
+
+    render(
+      <FormalizacaoForm question={currentQuestion} onChange={jest.fn()} />
+    );
+
+    const buttons = screen.getAllByRole('button');
+    const singleCharButtons = buttons
+      .map((b) => b.textContent?.trim())
+      .filter((text) => text && text.length === 1);
+
+    expect(singleCharButtons).not.toContain('G');
+    expect(singleCharButtons).not.toContain('L');
+    expect(singleCharButtons).toContain('∧');
+    expect(singleCharButtons).toContain('∨');
+  });
 });
 
 describe('FormalizacaoArgumentoForm - Gestão automática de variáveis no argumento', () => {

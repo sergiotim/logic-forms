@@ -37,3 +37,4 @@ describe('Formalizacao Component (Visão do Aluno)', () => {
     expect(andIdx).toBeLessThan(openParenIdx);
   });
 });
+

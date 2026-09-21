@@ -467,17 +467,7 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {Array.from(new Set([
-            ...Array.from(new Set(fullArgumentText.match(/[a-zA-Z]/g) || [])).sort((a, b) => {
-              const aUpper = a === a.toUpperCase();
-              const bUpper = b === b.toUpperCase();
-              if (aUpper && !bUpper) return -1;
-              if (!aUpper && bUpper) return 1;
-              return a.localeCompare(b);
-            }),
-            ...AVAILABLE_KEYS,
-            ...question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k))
-          ])).filter(k => k !== '(' && k !== ')').map((sym) => {
+          {AVAILABLE_KEYS.map((sym) => {
             const isSelected = question.teclado_virtual.includes(sym);
             return (
               <button
