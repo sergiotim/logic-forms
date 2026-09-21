@@ -41,12 +41,18 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
     nextPremissas[index] = val;
 
     // Garante que operadores e variáveis presentes na fórmula estejam no teclado,
-    // removendo automaticamente variáveis que não existem mais no argumento
+    // colocando as variáveis sempre em primeiro lugar e removendo variáveis que deixaram de existir
     const allFormulas = [...nextPremissas, conclusao].join(' ');
     const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
-    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || []));
+    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || [])).sort((a, b) => {
+      const aUpper = a === a.toUpperCase();
+      const bUpper = b === b.toUpperCase();
+      if (aUpper && !bUpper) return -1;
+      if (!aUpper && bUpper) return 1;
+      return a.localeCompare(b);
+    });
     const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
-    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
+    const mergedKeys = Array.from(new Set([...formulaVars, ...nonVariableKeys, ...formulaKeys]));
 
     onChange({
       ...question,
@@ -73,9 +79,15 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
     const nextPremissas = premissas.filter((_, i) => i !== index);
     const allFormulas = [...nextPremissas, conclusao].join(' ');
     const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
-    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || []));
+    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || [])).sort((a, b) => {
+      const aUpper = a === a.toUpperCase();
+      const bUpper = b === b.toUpperCase();
+      if (aUpper && !bUpper) return -1;
+      if (!aUpper && bUpper) return 1;
+      return a.localeCompare(b);
+    });
     const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
-    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
+    const mergedKeys = Array.from(new Set([...formulaVars, ...nonVariableKeys, ...formulaKeys]));
 
     onChange({
       ...question,
@@ -94,9 +106,15 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
   const handleUpdateConclusao = (val: string) => {
     const allFormulas = [...premissas, val].join(' ');
     const formulaKeys = AVAILABLE_KEYS.filter((k) => allFormulas.includes(k));
-    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || []));
+    const formulaVars = Array.from(new Set(allFormulas.match(/[a-zA-Z]/g) || [])).sort((a, b) => {
+      const aUpper = a === a.toUpperCase();
+      const bUpper = b === b.toUpperCase();
+      if (aUpper && !bUpper) return -1;
+      if (!aUpper && bUpper) return 1;
+      return a.localeCompare(b);
+    });
     const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
-    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
+    const mergedKeys = Array.from(new Set([...formulaVars, ...nonVariableKeys, ...formulaKeys]));
 
     onChange({
       ...question,
@@ -450,8 +468,14 @@ export const FormalizacaoArgumentoForm: React.FC<FormalizacaoArgumentoFormProps>
 
         <div className="flex flex-wrap gap-2">
           {Array.from(new Set([
+            ...Array.from(new Set(fullArgumentText.match(/[a-zA-Z]/g) || [])).sort((a, b) => {
+              const aUpper = a === a.toUpperCase();
+              const bUpper = b === b.toUpperCase();
+              if (aUpper && !bUpper) return -1;
+              if (!aUpper && bUpper) return 1;
+              return a.localeCompare(b);
+            }),
             ...AVAILABLE_KEYS,
-            ...(fullArgumentText.match(/[a-zA-Z]/g) || []),
             ...question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k))
           ])).filter(k => k !== '(' && k !== ')').map((sym) => {
             const isSelected = question.teclado_virtual.includes(sym);

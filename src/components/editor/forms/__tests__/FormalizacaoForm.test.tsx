@@ -65,6 +65,37 @@ describe('FormalizacaoForm - Gestão automática de variáveis no teclado virtua
     // Operador mantido
     expect(lastCall.teclado_virtual).toContain('∧');
   });
+
+  it('posiciona as variáveis sempre no início do teclado virtual', () => {
+    let currentQuestion: FormalizacaoQuestion = {
+      ...baseQuestion,
+      teclado_virtual: ['~', '∧', '∨', '→'],
+      resposta_esperada: '',
+    };
+
+    const handleChange = jest.fn((updated) => {
+      currentQuestion = updated;
+    });
+
+    render(
+      <FormalizacaoForm question={currentQuestion} onChange={handleChange} />
+    );
+
+    const input = screen.getByPlaceholderText(/Ex: P → Q/i);
+    fireEvent.change(input, { target: { value: 'G ∧ L' } });
+
+    expect(handleChange).toHaveBeenCalled();
+    const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    const keys: string[] = lastCall.teclado_virtual;
+
+    const gIdx = keys.indexOf('G');
+    const lIdx = keys.indexOf('L');
+    const andIdx = keys.indexOf('∧');
+
+    expect(gIdx).toBe(0);
+    expect(lIdx).toBe(1);
+    expect(andIdx).toBeGreaterThan(lIdx);
+  });
 });
 
 describe('FormalizacaoArgumentoForm - Gestão automática de variáveis no argumento', () => {
