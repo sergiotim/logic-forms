@@ -59,9 +59,14 @@ export const FormalizacaoForm: React.FC<FormalizacaoFormProps> = ({ question, on
       ? question.teclado_virtual.filter((k) => k !== key)
       : [...question.teclado_virtual, key];
 
+    const currentVars: string[] = question.resposta_esperada.match(/[a-zA-Z]/g) || [];
+    const sanitizedTeclado = novoTeclado.filter(
+      (k) => !/^[a-zA-Z]$/.test(k) || currentVars.includes(k)
+    );
+
     onChange({
       ...question,
-      teclado_virtual: novoTeclado,
+      teclado_virtual: sanitizedTeclado,
     });
   };
 
@@ -85,10 +90,12 @@ export const FormalizacaoForm: React.FC<FormalizacaoFormProps> = ({ question, on
       setSyntaxError(null);
     }
 
-    // Garante automaticamente que operadores e variáveis presentes na fórmula estejam no teclado do aluno
+    // Garante que operadores e variáveis presentes na fórmula estejam no teclado,
+    // removendo automaticamente variáveis que não existem mais na resposta esperada
     const formulaKeys = AVAILABLE_KEYS.filter((k) => newExpected.includes(k));
-    const formulaVars = newExpected.match(/[a-zA-Z]/g) || [];
-    const mergedKeys = Array.from(new Set([...question.teclado_virtual, ...formulaKeys, ...formulaVars]));
+    const formulaVars = Array.from(new Set(newExpected.match(/[a-zA-Z]/g) || []));
+    const nonVariableKeys = question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k));
+    const mergedKeys = Array.from(new Set([...nonVariableKeys, ...formulaKeys, ...formulaVars]));
 
     onChange({
       ...question,
@@ -283,7 +290,7 @@ export const FormalizacaoForm: React.FC<FormalizacaoFormProps> = ({ question, on
           {Array.from(new Set([
             ...AVAILABLE_KEYS,
             ...(question.resposta_esperada.match(/[a-zA-Z]/g) || []),
-            ...question.teclado_virtual
+            ...question.teclado_virtual.filter((k) => !/^[a-zA-Z]$/.test(k))
           ])).filter(k => k !== '(' && k !== ')').map((sym) => {
             const isSelected = question.teclado_virtual.includes(sym);
             return (
