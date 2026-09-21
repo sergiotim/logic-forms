@@ -123,6 +123,5 @@ model Submission {
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   createdAt  DateTime @default(now())
-  @@unique([userId, questionId]) 
   @@index([userId, questionId]) 
 }
