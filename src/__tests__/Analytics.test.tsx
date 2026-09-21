@@ -7,7 +7,7 @@
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import EditorPage from '@/app/editor/page';
-import { AnalyticsDashboard } from '@/components/editor/analytics/AnalyticsDashboard';
+import { LegacyAnalyticsDashboard as AnalyticsDashboard } from '@/components/editor/analytics/legacy/LegacyAnalyticsDashboard';
 import type { GlobalAnalyticsData } from '@/types';
 
 // Mock do storage e API para renderização segura do EditorPage

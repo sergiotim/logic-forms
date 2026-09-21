@@ -165,4 +165,54 @@ export interface GlobalAnalyticsData {
   phases: PhaseAnalytics[];
 }
 
+// --- Analytics Centrado no Aluno (SPEC-007 v2.8.0) ---
+
+export type QuestionStudentStatus =
+  | 'de_primeira'
+  | 'com_dificuldade'
+  | 'pendente_com_erros'
+  | 'nao_iniciada';
+
+export interface StudentQuestionDetail {
+  questionId: string;
+  enunciado: string;
+  topico: string;
+  tipo: QuestionType | string;
+  status: QuestionStudentStatus;
+  errosCount: number;
+  tentativasTotal: number;
+  ultimaResposta: unknown;
+}
+
+export interface StudentPhaseDetail {
+  phaseId: string;
+  titulo: string;
+  totalQuestoes: number;
+  questoesConcluidas: number;
+  questoes: StudentQuestionDetail[];
+}
+
+export interface StudentMetricItem {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  questoesConcluidas: number;
+  totalQuestoesAtivas: number;
+  porcentagemConcluida: number;
+  porcentagemRestante: number;
+  totalErros: number;
+  acertosDePrimeira: number;
+  ultimaAtividade: string | null;
+  fases: StudentPhaseDetail[];
+}
+
+export interface StudentAnalyticsOverviewData {
+  totalStudents: number;
+  mediaConclusaoTurma: number;
+  concluidosTotal: number;
+  naoIniciadosTotal: number;
+  students: StudentMetricItem[];
+}
+
 

@@ -10,6 +10,7 @@ jest.mock('@/lib/prisma', () => ({
     submission: {
       findMany: jest.fn(),
       upsert: jest.fn(),
+      create: jest.fn(),
     },
     $transaction: jest.fn(),
   },
@@ -341,8 +342,8 @@ describe('db.ts (Neon PostgreSQL Service)', () => {
   });
 
   describe('saveUserSubmission()', () => {
-    it('executa upsert atômico da submissão com userId e questionId', async () => {
-      (prisma.submission.upsert as jest.Mock).mockResolvedValue({});
+    it('executa criação atômica da submissão com userId e questionId', async () => {
+      (prisma.submission.create as jest.Mock).mockResolvedValue({});
 
       await saveUserSubmission({
         userId: 'user-1',
@@ -351,18 +352,8 @@ describe('db.ts (Neon PostgreSQL Service)', () => {
         answer: { f1: 'P' },
       });
 
-      expect(prisma.submission.upsert).toHaveBeenCalledWith({
-        where: {
-          userId_questionId: {
-            userId: 'user-1',
-            questionId: 'q-1',
-          },
-        },
-        update: {
-          isCorrect: true,
-          answer: { f1: 'P' },
-        },
-        create: {
+      expect(prisma.submission.create).toHaveBeenCalledWith({
+        data: {
           userId: 'user-1',
           questionId: 'q-1',
           isCorrect: true,

@@ -6,6 +6,11 @@ import type {
   HardestQuestionSummary,
   QuestionErrorAnalysis,
   CommonErrorItem,
+  QuestionStudentStatus,
+  StudentQuestionDetail,
+  StudentPhaseDetail,
+  StudentMetricItem,
+  StudentAnalyticsOverviewData,
 } from '@/types';
 import type { QuestionType } from '@prisma/client';
 
@@ -45,7 +50,7 @@ export async function getPhaseAnalytics(phaseId: string): Promise<PhaseAnalytics
       questionId: q.id,
       enunciado: q.enunciado,
       topic: q.topic,
-      type: q.type.toLowerCase() as any,
+      type: q.type.toLowerCase() as unknown as QuestionType,
       failureCount,
       totalAttempts,
       failureRate,
@@ -69,7 +74,7 @@ export async function getPhaseAnalytics(phaseId: string): Promise<PhaseAnalytics
       };
     }
 
-    const errorCountMap = new Map<string, { answer: any; count: number }>();
+    const errorCountMap = new Map<string, { answer: unknown; count: number }>();
 
     for (const sub of wrongSubs) {
       const key = typeof sub.answer === 'string' ? sub.answer : JSON.stringify(sub.answer);
@@ -190,6 +195,198 @@ export async function getAnalyticsOverview(): Promise<GlobalAnalyticsData> {
     globalCompletionRate,
     performanceByType,
     phases: phasesAnalytics,
+  };
+}
+
+/**
+ * Agregação de métricas centrada no estudante (SPEC-007 v2.8.0)
+ * [NÃO IMPLEMENTADO - FASE VERMELHA TDD]
+ */
+export async function getStudentAnalyticsOverview(): Promise<StudentAnalyticsOverviewData> {
+  const students = await prisma.user.findMany({
+    where: { role: 'STUDENT' },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+    },
+    orderBy: { name: 'asc' },
+  });
+
+  const studentIds = students.map((s) => s.id);
+
+  const rawPhases = await prisma.phase.findMany({
+    orderBy: { order: 'asc' },
+    include: {
+      questions: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  // Filtra fases ativas (não marcadas com :oculta)
+  const activePhases = rawPhases.filter((p) => {
+    const [, flag] = (p.icon || '').split(':');
+    return flag !== 'oculta';
+  });
+
+  // Mapeia questões ativas de cada fase
+  const phasesWithActiveQuestions = activePhases.map((phase) => {
+    const activeQuestions = phase.questions.filter((q) => {
+      const content =
+        typeof q.content === 'object' && q.content !== null
+          ? (q.content as Record<string, unknown>)
+          : {};
+      return content.oculta !== true;
+    });
+    return {
+      ...phase,
+      questions: activeQuestions,
+    };
+  });
+
+  const allActiveQuestions = phasesWithActiveQuestions.flatMap((p) => p.questions);
+  const totalQuestoesAtivas = allActiveQuestions.length;
+
+  // Busca todas as submissões dos alunos cadastrados ordenadas por data crescente
+  const submissions = studentIds.length > 0
+    ? await prisma.submission.findMany({
+        where: { userId: { in: studentIds } },
+        orderBy: { createdAt: 'asc' },
+      })
+    : [];
+
+  const studentMetricItems: StudentMetricItem[] = students.map((student) => {
+    const studentSubs = submissions.filter((s) => s.userId === student.id);
+
+    // Mapeamento de submissões por questão
+    const subsByQuestion = new Map<string, typeof studentSubs>();
+    for (const sub of studentSubs) {
+      const existing = subsByQuestion.get(sub.questionId) || [];
+      existing.push(sub);
+      subsByQuestion.set(sub.questionId, existing);
+    }
+
+    // Questões ativas concluídas com pelo menos 1 acerto
+    const completedQuestionIds = new Set<string>();
+    let acertosDePrimeira = 0;
+
+    for (const q of allActiveQuestions) {
+      const qSubs = subsByQuestion.get(q.id) || [];
+      const hasCorrect = qSubs.some((s) => s.isCorrect);
+      if (hasCorrect) {
+        completedQuestionIds.add(q.id);
+        // Foi de primeira se a primeira tentativa já foi correta (0 erros antes)
+        if (qSubs[0]?.isCorrect) {
+          acertosDePrimeira++;
+        }
+      }
+    }
+
+    const questoesConcluidas = completedQuestionIds.size;
+    const porcentagemConcluida =
+      totalQuestoesAtivas > 0
+        ? Number(((questoesConcluidas / totalQuestoesAtivas) * 100).toFixed(1))
+        : 0;
+    const porcentagemRestante =
+      totalQuestoesAtivas > 0
+        ? Number((100 - porcentagemConcluida).toFixed(1))
+        : 100;
+
+    const totalErros = studentSubs.filter((s) => !s.isCorrect).length;
+
+    let ultimaAtividade: string | null = null;
+    if (studentSubs.length > 0) {
+      const lastSub = studentSubs[studentSubs.length - 1];
+      ultimaAtividade =
+        lastSub.createdAt instanceof Date
+          ? lastSub.createdAt.toISOString()
+          : String(lastSub.createdAt);
+    }
+
+    // Detalhamento do Raio-X por fase
+    const fases: StudentPhaseDetail[] = phasesWithActiveQuestions.map((phase) => {
+      let phaseCompletedCount = 0;
+      const questoes: StudentQuestionDetail[] = phase.questions.map((q) => {
+        const qSubs = subsByQuestion.get(q.id) || [];
+        const tentativasTotal = qSubs.length;
+        const errosCount = qSubs.filter((s) => !s.isCorrect).length;
+        const isResolved = qSubs.some((s) => s.isCorrect);
+        const ultimaResposta = qSubs.length > 0 ? qSubs[qSubs.length - 1].answer : null;
+
+        let status: QuestionStudentStatus = 'nao_iniciada';
+        if (isResolved && errosCount === 0) {
+          status = 'de_primeira';
+          phaseCompletedCount++;
+        } else if (isResolved && errosCount > 0) {
+          status = 'com_dificuldade';
+          phaseCompletedCount++;
+        } else if (!isResolved && errosCount > 0) {
+          status = 'pendente_com_erros';
+        }
+
+        return {
+          questionId: q.id,
+          enunciado: q.enunciado,
+          topico: q.topic,
+          tipo: q.type.toLowerCase(),
+          status,
+          errosCount,
+          tentativasTotal,
+          ultimaResposta,
+        };
+      });
+
+      return {
+        phaseId: phase.id,
+        titulo: phase.title,
+        totalQuestoes: phase.questions.length,
+        questoesConcluidas: phaseCompletedCount,
+        questoes,
+      };
+    });
+
+    return {
+      id: student.id,
+      name: student.name || 'Estudante sem nome',
+      email: student.email || '',
+      image: student.image,
+      questoesConcluidas,
+      totalQuestoesAtivas,
+      porcentagemConcluida,
+      porcentagemRestante,
+      totalErros,
+      acertosDePrimeira,
+      ultimaAtividade,
+      fases,
+    };
+  });
+
+  const totalStudents = students.length;
+  let sumRates = 0;
+  let concluidosTotal = 0;
+  let naoIniciadosTotal = 0;
+
+  for (const s of studentMetricItems) {
+    sumRates += s.porcentagemConcluida;
+    if (s.porcentagemConcluida === 100) {
+      concluidosTotal++;
+    }
+    if (s.questoesConcluidas === 0 && s.totalErros === 0) {
+      naoIniciadosTotal++;
+    }
+  }
+
+  const mediaConclusaoTurma =
+    totalStudents > 0 ? Number((sumRates / totalStudents).toFixed(1)) : 0;
+
+  return {
+    totalStudents,
+    mediaConclusaoTurma,
+    concluidosTotal,
+    naoIniciadosTotal,
+    students: studentMetricItems,
   };
 }
 

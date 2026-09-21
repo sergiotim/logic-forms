@@ -281,6 +281,13 @@ export default function Home() {
       }
     }
 
+    let rawAnswer: unknown = null;
+    if (question.tipo === 'formalizacao') rawAnswer = formalizacaoAnswer;
+    else if (question.tipo === 'formalizacao_argumento') rawAnswer = argumentoAnswer;
+    else if (question.tipo === 'diagramacao') rawAnswer = diagramacaoAnswer;
+    else if (question.tipo === 'tabela_verdade') rawAnswer = tabelaAnswer;
+    else if (question.tipo === 'multipla_escolha') rawAnswer = multiplaAnswer;
+
     if (missingData) {
       setFeedback({ type: 'warning', message: 'Preencha todos os campos antes de validar.' });
       triggerShake();
@@ -313,6 +320,12 @@ export default function Home() {
         message: customErrorMessage || 'Resposta incorreta. Tente novamente.',
       });
       triggerShake();
+
+      if (question) {
+        saveUserSubmissionApi(question.id, false, rawAnswer).catch((err: unknown) => {
+          console.warn('Erro ao salvar tentativa incorreta no banco:', err instanceof Error ? err.message : err);
+        });
+      }
     }
   };
 

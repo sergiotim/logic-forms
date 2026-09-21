@@ -296,6 +296,7 @@ export async function getUserSubmissions(
 
 /**
  * Registra ou atualiza a resolução de uma questão por um aluno (upsert atômico).
+ * Registra a tentativa de resolução de uma questão por um aluno (gravação de histórico atômica).
  */
 export async function saveUserSubmission(data: {
   userId: string;
@@ -304,18 +305,8 @@ export async function saveUserSubmission(data: {
   answer: unknown;
 }): Promise<void> {
   const { userId, questionId, isCorrect, answer } = data;
-  await prisma.submission.upsert({
-    where: {
-      userId_questionId: {
-        userId,
-        questionId,
-      },
-    },
-    update: {
-      isCorrect,
-      answer: (answer ?? null) as Prisma.InputJsonValue,
-    },
-    create: {
+  await prisma.submission.create({
+    data: {
       userId,
       questionId,
       isCorrect,

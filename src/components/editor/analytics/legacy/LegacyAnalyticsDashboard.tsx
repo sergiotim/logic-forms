@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * @file LegacyAnalyticsDashboard.tsx
+ * @description Painel analítico de visão geral e KPIs globais da turma (arquivado da SPEC-007 v1).
+ * Preservado para consulta técnica interna, sem rota ativa no site.
+ */
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -23,10 +29,9 @@ import {
 } from 'recharts';
 import type { GlobalAnalyticsData } from '@/types';
 
-interface AnalyticsDashboardProps {
+interface LegacyAnalyticsDashboardProps {
   initialData?: GlobalAnalyticsData;
 }
-
 
 const TYPE_NAMES: Record<string, string> = {
   DIAGRAMACAO: 'Diagramação',
@@ -46,7 +51,7 @@ const TYPE_COLORS: Record<string, string> = {
   formalizacao: '#8B5CF6',
 };
 
-export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialData }) => {
+export const LegacyAnalyticsDashboard: React.FC<LegacyAnalyticsDashboardProps> = ({ initialData }) => {
   const data = initialData || {
     totalActiveStudents: 0,
     totalStudents: 0,
@@ -65,7 +70,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
 
   const selectedPhase = data.phases.find((p) => p.phaseId === selectedPhaseId) || data.phases[0];
 
-  // Dados formatados para o gráfico do Recharts
   const chartData = data.performanceByType.map((p) => {
     const label = TYPE_NAMES[p.type] || p.type;
     return {
@@ -80,7 +84,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
 
   return (
     <div className="min-h-screen flex flex-col bg-base text-text-main font-sans">
-      {/* Top Header */}
       <header className="h-16 bg-surface/80 backdrop-blur-md border-b border-border-subtle px-4 md:px-8 flex items-center justify-between shrink-0 sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 text-primary rounded-lg">
@@ -88,10 +91,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
           </div>
           <div>
             <h1 className="font-bold text-lg text-white leading-tight">
-              Dashboard de Análise
+              Dashboard de Análise (Legado)
             </h1>
             <span className="text-xs text-text-muted hidden sm:inline">
-              Métricas de engajamento, desempenho e diagnóstico qualitativo da turma
+              Visão geral de desempenho e diagnósticos da turma
             </span>
           </div>
         </div>
@@ -104,11 +107,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
         </Link>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl mx-auto w-full space-y-8">
-        {/* KPI Cards Globais */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Card: Alunos Ativos */}
           <div className="bg-surface border border-border-subtle rounded-xl p-5 shadow-sm hover:border-primary/40 transition-colors flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs font-medium text-text-muted uppercase tracking-wider">
@@ -126,7 +126,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
             </div>
           </div>
 
-          {/* Card: Taxa Global de Conclusão */}
           <div className="bg-surface border border-border-subtle rounded-xl p-5 shadow-sm hover:border-success/40 transition-colors flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs font-medium text-text-muted uppercase tracking-wider">
@@ -144,7 +143,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
             </div>
           </div>
 
-          {/* Card: Fases Monitoradas */}
           <div className="bg-surface border border-border-subtle rounded-xl p-5 shadow-sm hover:border-primary/40 transition-colors flex items-center justify-between sm:col-span-2 lg:col-span-1">
             <div className="space-y-1">
               <span className="text-xs font-medium text-text-muted uppercase tracking-wider">
@@ -163,7 +161,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
           </div>
         </section>
 
-        {/* Desempenho por Tipo de Questão (Gráficos + Detalhes) */}
         <section className="bg-surface border border-border-subtle rounded-xl p-6 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-subtle/50 pb-4">
             <div>
@@ -178,7 +175,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            {/* Gráfico de Barras com Recharts */}
             <div className="lg:col-span-2 h-64 w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 20 }}>
@@ -220,7 +216,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
               </ResponsiveContainer>
             </div>
 
-            {/* Cards de Resumo dos Tipos */}
             <div className="space-y-3">
               {data.performanceByType.map((item) => {
                 const label = TYPE_NAMES[item.type] || item.type;
@@ -251,7 +246,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
           </div>
         </section>
 
-        {/* Seção Específica da Fase (Filtro + Dificuldade + Erros Comuns) */}
         <section className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface border border-border-subtle p-4 rounded-xl">
             <div>
@@ -266,7 +260,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
               </p>
             </div>
 
-            {/* Seletor de Fases */}
             <div className="flex items-center gap-2">
               <label
                 htmlFor="phase-select"
@@ -292,7 +285,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
 
           {selectedPhase && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Ranking das Questões Mais Difíceis */}
               <div
                 data-testid="hardest-questions-ranking"
                 className="bg-surface border border-border-subtle rounded-xl p-5 shadow-sm space-y-4"
@@ -349,7 +341,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ initialD
                 )}
               </div>
 
-              {/* Análise Qualitativa de Erros Mais Comuns */}
               <div
                 data-testid="common-errors-analysis"
                 className="bg-surface border border-border-subtle rounded-xl p-5 shadow-sm space-y-4"
