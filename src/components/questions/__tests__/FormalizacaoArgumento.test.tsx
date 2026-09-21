@@ -255,7 +255,7 @@ describe('FormalizacaoArgumento Component (Visão do Estudante)', () => {
     });
   });
 
-  it('renderiza dicas e teclado virtual com flex-wrap sem barras de rolagem lateral', () => {
+  it('renderiza dicas e teclado virtual em linhas equilibradas sem barras de rolagem lateral', () => {
     render(
       <FormalizacaoArgumento
         question={mockQuestion}
@@ -269,9 +269,8 @@ describe('FormalizacaoArgumento Component (Visão do Estudante)', () => {
     expect(dicasContainer).not.toHaveClass('overflow-x-auto');
 
     const keyboardPanel = screen.getByTestId('virtual-keyboard-panel');
-    const keysContainer = keyboardPanel.querySelector('.flex-wrap');
-    expect(keysContainer).toBeInTheDocument();
-    expect(keysContainer).not.toHaveClass('overflow-x-auto');
+    expect(keyboardPanel).not.toHaveClass('overflow-x-auto');
+    expect(keyboardPanel.querySelector('.overflow-x-auto')).toBeNull();
   });
 });
 

@@ -194,6 +194,15 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
     }
   };
 
+  const keyboardRows = useMemo(() => {
+    const all = [...keyboardKeys, '__BACKSPACE__'];
+    if (all.length <= 6) {
+      return [all];
+    }
+    const mid = Math.ceil(all.length / 2);
+    return [all.slice(0, mid), all.slice(mid)];
+  }, [keyboardKeys]);
+
   return (
     <div className="flex flex-col min-h-full">
       {/* Dicas / Léxico (Quebra Natural em Chips - Sem Rolagem Lateral) */}
@@ -316,12 +325,12 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
         </div>
       </div>
 
-      {/* Teclado Virtual Global com Foco Ativo (Ancorado na Base - Sem Scroll Lateral) */}
+      {/* Teclado Virtual Global com Foco Ativo (Ancorado na Base - Linhas Equilibradas) */}
       <div
         data-testid="virtual-keyboard-panel"
-        className="sticky bottom-0 z-20 bg-base/95 md:bg-surface/95 backdrop-blur-md pt-2 pb-1 border-t border-border-subtle shadow-[0_-8px_16px_rgba(0,0,0,0.3)] md:shadow-none shrink-0"
+        className="sticky bottom-0 z-20 bg-base/95 md:bg-surface/95 backdrop-blur-md pt-2 pb-1.5 border-t border-border-subtle shadow-[0_-8px_16px_rgba(0,0,0,0.3)] md:shadow-none shrink-0 space-y-1 sm:space-y-1.5"
       >
-        <div className="flex items-center justify-between text-xs font-mono px-1 pb-1">
+        <div className="flex items-center justify-between text-xs font-mono px-1 pb-0.5">
           <span className="text-[11px] text-text-muted">Teclado Virtual</span>
           <span className="text-primary font-semibold text-xs flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -331,38 +340,46 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 font-mono py-0.5">
-          {keyboardKeys.map((tecla, idx) => {
-            const isLetter = /^[a-zA-Z]$/.test(tecla);
-            return (
-              <button
-                key={idx}
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleKeyPress(tecla)}
-                className={`flex-1 min-w-[2.2rem] max-w-[3.5rem] h-9 sm:h-10 border rounded-lg px-2 text-base sm:text-lg transition-all shadow-sm text-center active:scale-95 flex items-center justify-center ${
-                  isLetter
-                    ? 'bg-primary/15 text-primary font-bold border-primary/40 hover:bg-primary hover:text-white hover:border-primary'
-                    : 'bg-surface md:bg-base hover:bg-surface text-text-main border-border-subtle hover:border-primary'
-                }`}
-              >
-                {tecla}
-              </button>
-            );
-          })}
+        <div className="space-y-1 sm:space-y-1.5 font-mono">
+          {keyboardRows.map((row, rIdx) => (
+            <div key={rIdx} className="flex items-center justify-center gap-1 sm:gap-1.5">
+              {row.map((item, idx) => {
+                if (item === '__BACKSPACE__') {
+                  return (
+                    <button
+                      key="backspace"
+                      type="button"
+                      data-testid="backspace-button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={handleBackspace}
+                      className="flex-1 min-w-[2.2rem] max-w-[4rem] h-9 sm:h-10 border rounded-lg px-2 text-text-muted hover:text-error hover:bg-error/10 border-border-subtle hover:border-error/40 transition-all shadow-sm flex items-center justify-center active:scale-95"
+                      title="Apagar caractere anterior"
+                      aria-label="Apagar"
+                    >
+                      <Delete size={18} />
+                    </button>
+                  );
+                }
 
-          {/* Botão de Apagar (Backspace) */}
-          <button
-            type="button"
-            data-testid="backspace-button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={handleBackspace}
-            className="flex-1 min-w-[2.6rem] max-w-[4rem] h-9 sm:h-10 border rounded-lg px-2 text-text-muted hover:text-error hover:bg-error/10 border-border-subtle hover:border-error/40 transition-all shadow-sm flex items-center justify-center active:scale-95"
-            title="Apagar caractere anterior"
-            aria-label="Apagar"
-          >
-            <Delete size={18} />
-          </button>
+                const isLetter = /^[a-zA-Z]$/.test(item);
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleKeyPress(item)}
+                    className={`flex-1 min-w-[2.2rem] max-w-[4rem] h-9 sm:h-10 border rounded-lg px-2 text-base sm:text-lg transition-all shadow-sm text-center active:scale-95 flex items-center justify-center ${
+                      isLetter
+                        ? 'bg-primary/15 text-primary font-bold border-primary/40 hover:bg-primary hover:text-white hover:border-primary'
+                        : 'bg-surface md:bg-base hover:bg-surface text-text-main border-border-subtle hover:border-primary'
+                    }`}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
     </div>
