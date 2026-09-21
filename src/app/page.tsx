@@ -418,7 +418,7 @@ export default function Home() {
             <div className="animate-in fade-in zoom-in-95 duration-300">
               <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-white mb-2">Treinamento Dinâmico</h2>
-                <p className="text-text-muted">Escolha uma fase para treinar suas habilidades.</p>
+                <p className="text-text-muted">Complete cada fase para desbloquear a próxima.</p>
               </div>
 
               {visiblePhases.length === 0 ? (
