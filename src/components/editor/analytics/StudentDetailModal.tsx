@@ -75,11 +75,11 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
   const togglePhase = (phaseId: string) => {
     setExpandedPhases((prev) => ({
       ...prev,
-      [phaseId]: prev[phaseId] === false ? true : false,
+      [phaseId]: !prev[phaseId],
     }));
   };
 
-  const isPhaseExpanded = (phaseId: string) => expandedPhases[phaseId] !== false;
+  const isPhaseExpanded = (phaseId: string) => !!expandedPhases[phaseId];
 
   return (
     <div
@@ -185,6 +185,7 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
                   <button
                     type="button"
                     onClick={() => togglePhase(fase.phaseId)}
+                    aria-expanded={expanded}
                     className="w-full p-4 flex items-center justify-between hover:bg-surface/50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-3">
