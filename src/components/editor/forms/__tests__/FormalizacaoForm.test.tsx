@@ -21,7 +21,7 @@ describe('FormalizacaoForm - Gestão automática de variáveis no teclado virtua
       currentQuestion = updated;
     });
 
-    const { rerender } = render(
+    render(
       <FormalizacaoForm question={currentQuestion} onChange={handleChange} />
     );
 
@@ -47,7 +47,7 @@ describe('FormalizacaoForm - Gestão automática de variáveis no teclado virtua
       currentQuestion = updated;
     });
 
-    const { rerender } = render(
+    render(
       <FormalizacaoForm question={currentQuestion} onChange={handleChange} />
     );
 
@@ -157,7 +157,7 @@ describe('FormalizacaoArgumentoForm - Gestão automática de variáveis no argum
     fireEvent.change(inputs[0], { target: { value: 'F → T' } });
 
     expect(handleChange).toHaveBeenCalled();
-    let lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
     // R ainda existe na premissa 2 ('R')
     expect(lastCall.teclado_virtual).toContain('R');
     expect(lastCall.teclado_virtual).toContain('F');
