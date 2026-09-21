@@ -205,15 +205,12 @@ export const FormalizacaoArgumento: React.FC<FormalizacaoArgumentoProps> = ({
 
   return (
     <div className="flex flex-col min-h-full">
-      {/* Dicas / Léxico (Quebra Natural em Chips - Sem Rolagem Lateral) */}
+      {/* Dicas (Quebra Natural em Chips - Sem Rolagem Lateral) */}
       {question.dicas && question.dicas.length > 0 && (
         <div
           data-testid="dicas-container"
           className="sticky top-0 z-10 bg-base/95 md:bg-surface/95 backdrop-blur-md py-1.5 pb-2 border-b border-border-subtle/50 flex flex-wrap items-center gap-1.5 shrink-0"
         >
-          <span className="text-[10px] sm:text-xs font-mono text-text-muted uppercase tracking-wider shrink-0 font-semibold mr-1">
-            Léxico:
-          </span>
           {question.dicas.map((dica, idx) => (
             <span
               key={idx}

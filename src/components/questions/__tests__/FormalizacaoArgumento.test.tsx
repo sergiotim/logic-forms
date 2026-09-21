@@ -34,6 +34,7 @@ describe('FormalizacaoArgumento Component (Visão do Estudante)', () => {
     expect(screen.getByText('H(x): x é homem')).toBeInTheDocument();
     expect(screen.getByText('M(x): x é mortal')).toBeInTheDocument();
     expect(screen.getByText('s: Sócrates')).toBeInTheDocument();
+    expect(screen.queryByText(/léxico/i)).not.toBeInTheDocument();
 
     // Teclado virtual ancorado na base
     const keyboardPanel = screen.getByTestId('virtual-keyboard-panel');

@@ -10,7 +10,7 @@ O formato baseia-se no padrão da indústria para registros de alterações (Kee
 - **Ergonomia Mobile e Otimização de Espaço Vertical (`FormalizacaoArgumento.tsx`, `Formalizacao.tsx` e `page.tsx`):**
   - **Teclado Virtual na Base (`sticky bottom-0 z-20`):** Reposicionamento do teclado virtual único para a base da tela, acoplado logo acima da barra de ações de validação. Posicionamento natural na zona dos polegares (*thumb-zone*), permitindo digitar enquanto os olhos acompanham as premissas e a conclusão no centro da tela.
   - **Eliminação de Rolagens Laterais (Zero Scroll Horizontal):**
-    - Dicas/Léxico agora utilizam quebra fluida (`flex-wrap gap-1.5`) em chips compactos, eliminando qualquer necessidade de rolagem lateral para visualizar todas as variáveis do argumento.
+    - Dicas agora são renderizadas diretamente em chips compactos com quebra fluida (`flex-wrap gap-1.5`) sem o prefixo/título "Léxico:", reduzindo o ruído visual e eliminando qualquer necessidade de rolagem lateral.
     - O teclado virtual distribui as teclas e o botão de apagar em linhas equilibradas e simétricas (`keyboardRows`), garantindo que nenhuma tecla fique isolada em uma linha avulsa e mantendo espaçamento touch ideal sem scroll horizontal.
   - **Supressão do Teclado Nativo do Smartphone (`inputMode="none"`):** Todos os inputs de formalização foram configurados com `inputMode="none"`, impedindo que o teclado virtual do sistema operacional (iOS/Android) se abra ao tocar no campo, garantindo que o estudante utilize exclusivamente o teclado virtual da aplicação.
   - **Botão de Apagar (Backspace):** Adicionada tecla dedicada com ícone `Delete` (`⌫`) para apagar o caractere imediatamente anterior ao cursor (ou a seleção ativa) mantendo o foco e o cursor no campo ativo.

@@ -85,7 +85,7 @@ Para elevar o desafio cognitivo e não "dar a resposta", a interface do estudant
 - **Ação:** O aluno deve segmentar o texto mentalmente. Se identificar mais de uma premissa, ele clica em "Adicionar", revelando novos inputs (que podem ser deletados via ícone de lixeira/X se adicionados acidentalmente).
 - **Tipografia Responsiva do Enunciado:** Escala de fonte e espaçamento adaptados para telas pequenas (`text-sm sm:text-base md:text-2xl` e `gap-1.5 md:gap-4`), evitando que o enunciado consuma todo o espaço vertical visível no mobile.
 - **Dicas sem Rolagem Lateral (Topo):**
-  - O dicionário de variáveis/predicados (`Léxico:`) é renderizado em chips compactos com quebra fluida (`flex-wrap gap-1.5`), eliminando qualquer necessidade de rolagem horizontal para visualizar todas as variáveis.
+  - O dicionário de variáveis/predicados é renderizado diretamente em chips compactos com quebra fluida (`flex-wrap gap-1.5`) sem prefixo ou título ("Léxico"), eliminando qualquer rolagem horizontal ou ruído visual.
 - **Área Central de Trabalho (Workspace) com Supressão de Teclado Nativo:**
   - A lista dinâmica de premissas e a conclusão ocupam o centro da visualização.
   - **Exclusividade do Teclado Virtual (`inputMode="none"`):** Todos os campos de texto utilizam `inputMode="none"`, impedindo que o teclado nativo do celular (iOS/Android) se abra e cubra a interface, permitindo que a digitação ocorra 100% pelo teclado virtual acoplado.
