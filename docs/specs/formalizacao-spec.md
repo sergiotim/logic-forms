@@ -149,10 +149,12 @@ O componente `FormalizacaoForm.tsx` receberá as seguintes modernizações:
     - `"x: variável individual"`
 - Um botão de atalho `"Sincronizar Dicas com a Fórmula"` permite regenerar ou ajustar a lista com 1 clique.
 
-### 4.3 Teclado Virtual Sincronizado com Distratores
-- Todos os operadores presentes na `resposta_esperada` são marcados automaticamente para compor o teclado do aluno.
-- Adição de um botão de ação rápida:
-  - **"Adicionar Distratores (+2 símbolos)":** Inclui símbolos que não fazem parte da resposta para elevar o desafio pedagógico (ex: adiciona `∨` e `∃` se a questão só usa `∧` e `→`).
+### 4.3 Teclado Virtual Sincronizado com Distratores e Gestão Automática de Variáveis
+- **Extração Estrita da Fórmula Esperada:** O teclado virtual do estudante é alimentado exclusivamente a partir da `resposta_esperada`. Letras presentes apenas no dicionário de `dicas` não são inseridas como teclas no teclado do quiz.
+- **Prioridade Posicional das Variáveis:** Na interface do estudante (`Formalizacao.tsx`), variáveis e predicados atômicos (`[A-Za-z]`) são posicionados obrigatoriamente no início da barra de teclas, antes dos operadores lógicos e parênteses.
+- **Sincronização Reativa & Expurgamento de Órfãs:** Ao editar ou apagar caracteres da fórmula no Modo Editor, variáveis removidas são expurgadas automaticamente do array `teclado_virtual`, eliminando acúmulo residual.
+- **Interface Focada no Modo Editor (`FormalizacaoForm.tsx`):** A seção "Teclado Virtual do Aluno" exibe apenas os operadores e conectivos lógicos (`AVAILABLE_KEYS`) para controle manual de ativados e distratores. As teclas de variáveis não são exibidas nesta área para evitar poluição visual, sendo gerenciadas de forma transparente.
+- **Botão "Auto-sugerir" (Distratores):** Inclui operadores da fórmula e até 3 símbolos conectivos distratores não presentes no gabarito para elevar o desafio pedagógico.
 
 ### 4.4 Validação Sintática em Tempo Real (Feedback Visual)
 - Checagem dinâmica durante a digitação:

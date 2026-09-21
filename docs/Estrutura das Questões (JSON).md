@@ -102,7 +102,7 @@ Toda questão, independentemente do tipo, estende `BaseQuestion` e possui os seg
 
 **Campos Específicos:**
 - **dicas** (Array de Strings): Dicionário contextual mapeando letras e predicados (ex: `"P: é peculatário"`).
-- **teclado_virtual** (Array de Strings): Lista de caracteres lógicos exibidos como botões de atalho no quiz (ex: `["∀", "∃", "~", "∧", "∨", "→"]`).
+- **teclado_virtual** (Array de Strings): Lista de caracteres lógicos exibidos como botões de atalho no quiz (ex: `["~", "∧", "∨", "→"]`). *(Nota: No Modo Estudo, as variáveis da fórmula esperada são injetadas automaticamente no início do teclado virtual, mesmo que o array armazene prioritariamente os conectivos e operadores selecionados no Modo Editor. Letras exclusivas de `dicas` não poluem o teclado.)*
 - **resposta_esperada** (String): A fórmula lógica exata esperada. *A validação ignora espaços em branco.*
 
 **Exemplo Completo:**
@@ -130,7 +130,7 @@ Toda questão, independentemente do tipo, estende `BaseQuestion` e possui os seg
 
 **Campos Específicos:**
 - **dicas** (Array de Strings): Dicionário de proposições, predicados e variáveis (ex: `"D: Deus existe"`, `"x: variável individual"`).
-- **teclado_virtual** (Array de Strings): Símbolos lógicos ativos no teclado virtual (ex: `["∀", "∃", "~", "∧", "∨", "→", "↔"]`).
+- **teclado_virtual** (Array de Strings): Símbolos lógicos ativos no teclado virtual (ex: `["~", "∧", "∨", "→", "↔"]`). *(Nota: No Modo Estudo, as variáveis das premissas e conclusão são injetadas automaticamente no início do teclado virtual, sem necessidade de configuração manual no Modo Editor.)*
 - **resposta_esperada** (Objeto):
   - **premissas** (Array de Strings): Lista de fórmulas correspondentes às premissas do argumento (a ordem de preenchimento pelo aluno é indiferente).
   - **conclusao** (String): Fórmula correspondente à conclusão dedutiva do argumento.

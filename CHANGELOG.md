@@ -4,6 +4,26 @@ Este arquivo documenta todas as alterações notáveis, implementações de feat
 
 O formato baseia-se no padrão da indústria para registros de alterações (Keep a Changelog).
 
+## [2.8.1] - 2026-09-21 (Gestão Automática de Variáveis no Teclado de Formalização)
+
+### Corrigido (Fixed)
+- **Inserção e Remoção Reativa de Variáveis no Teclado Virtual (`FormalizacaoForm` e `FormalizacaoArgumentoForm`):**
+  - Variáveis e predicados atômicos (`[A-Za-z]`) agora são extraídos e atualizados de forma totalmente automática no teclado virtual a partir da resposta esperada digitada pelo professor.
+  - Ao apagar ou corrigir uma variável (ex: substituindo `R` por `F`), as variáveis órfãs são automaticamente expurgadas do teclado virtual em tempo real, sem necessidade de acionar a auto-sugestão.
+  - No formulário de argumentos, a remoção de premissas inteiras (`handleRemovePremissa`) sincroniza o teclado excluindo variáveis que deixaram de existir no argumento.
+- **Desacoplamento Estrito do Teclado em Relação às Dicas (`Formalizacao.tsx` e `FormalizacaoArgumento.tsx`):**
+  - O teclado virtual do estudante é alimentado **estritamente pela fórmula da resposta esperada** (e premissas/conclusão em argumentos). Variáveis presentes unicamente no campo `dicas` que não componham o gabarito não são inseridas como teclas no teclado virtual.
+- **Prioridade Posicional das Variáveis no Teclado do Aluno:**
+  - As variáveis e predicados agora são renderizados **obrigatoriamente no início do teclado virtual** (ex: `G`, `L`, seguidos pelos operadores conectivos `~`, `∧`, `∨`, `→` e parênteses `(`, `)`).
+- **Limpeza Visual do Modo Editor:**
+  - A seção "Teclado Virtual do Aluno" nos formulários de edição (`FormalizacaoForm.tsx` e `FormalizacaoArgumentoForm.tsx`) agora exibe exclusivamente os conectivos lógicos (`AVAILABLE_KEYS`) para controle manual de atalhos e distratores pelo professor, ocultando os botões de variáveis para evitar poluição visual, já que seu ciclo de vida é gerido de forma automática e transparente.
+
+### Adicionado (Added)
+- **Cobertura de Testes Automatizados TDD:**
+  - `src/components/editor/forms/__tests__/FormalizacaoForm.test.tsx`: Testes de adição/remoção reativa de variáveis, ordenação inicial das variáveis no array do teclado e ocultação de botões de variáveis no modo de edição.
+  - `src/components/questions/__tests__/Formalizacao.test.tsx`: Teste garantindo que variáveis são renderizadas no início do teclado na visão do aluno e que dicas não poluem o teclado com variáveis inexistentes na fórmula.
+  - `src/lib/__tests__/formalizacao.test.ts`: Teste garantindo que `suggestVirtualKeyboard` posiciona variáveis antes dos operadores conectivos.
+
 ## [2.8.0] - 2026-09-19 (Questões de Múltipla Escolha e Refatoração do Banco)
 
 ### Adicionado (Added)

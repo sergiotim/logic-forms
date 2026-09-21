@@ -77,6 +77,7 @@ No componente `FormalizacaoArgumentoForm.tsx` (nova aba no modal de criação):
   - O professor cria campos dinâmicos e digita a fórmula de cada premissa (ex: `D -> V` no primeiro, `D` no segundo).
   - Existe um campo isolado e fixo para a "Conclusão Esperada" (ex: `V`).
 - O professor pode definir as regras de `modo_validacao` (Estrito vs Semântico) herdadas da SPEC-004.
+- **Teclado Virtual do Aluno no Editor:** Exibe exclusivamente os conectivos lógicos (`AVAILABLE_KEYS`) para controle de atalhos e distratores. As teclas de variáveis não poluem o formulário, pois são extraídas e sincronizadas automaticamente das fórmulas do gabarito (incluindo exclusão automática caso uma premissa seja apagada).
 
 ### 4.2 Visão do Aluno (Modo Estudo)
 Para elevar o desafio cognitivo e não "dar a resposta", a interface do estudante não revela a quantidade inicial de premissas.
@@ -86,6 +87,8 @@ Para elevar o desafio cognitivo e não "dar a resposta", a interface do estudant
   - Para evitar poluição visual, apenas **um** teclado virtual é renderizado na base do container do exercício (ou "sticky" no mobile).
   - O campo em foco no momento recebe um destaque visual claro (ex: `ring-primary`, brilho azul).
   - Cliques no teclado global inserem símbolos unicamente no input ativo.
+  - **Origem Estrita do Gabarito:** As variáveis disponíveis no teclado são extraídas estritamente das premissas e da conclusão esperadas. Letras exclusivas de `dicas` não entram no teclado.
+  - **Prioridade Posicional:** As variáveis/predicados são renderizados obrigatoriamente no início da barra de teclas, antes dos operadores lógicos e parênteses.
 
 ---
 
