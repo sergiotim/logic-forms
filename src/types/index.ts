@@ -213,6 +213,85 @@ export interface StudentAnalyticsOverviewData {
   concluidosTotal: number;
   naoIniciadosTotal: number;
   students: StudentMetricItem[];
+  contentAnalytics?: ContentAnalyticsOverviewData;
+}
+
+// --- Analytics de Conteúdo e Dificuldade (SPEC-009) ---
+
+export type DifficultyLevel = 'facil' | 'moderada' | 'dificil' | 'critica';
+
+export interface QuestionStudentBreakdownItem {
+  studentId: string;
+  name: string;
+  email: string;
+  status: QuestionStudentStatus;
+  errosCount: number;
+  tentativasTotal: number;
+  ultimaResposta: unknown;
+  hasRapidGuess: boolean;
+}
+
+export interface QuestionAnalyticsItem {
+  questionId: string;
+  phaseId: string;
+  phaseTitle: string;
+  phaseOrder: number;
+  questionOrder: number;
+  enunciado: string;
+  topico: string;
+  tipo: QuestionType | string;
+  totalStudents: number;
+  attemptedCount: number;
+  resolvedCount: number;
+  firstTryCount: number;
+  completedWithErrorsCount: number;
+  stuckCount: number;
+  notStartedCount: number;
+  completionRate: number;
+  firstTryRate: number;
+  failureRate: number;
+  stuckRate: number;
+  avgAttemptsToSuccess: number;
+  totalAttempts: number;
+  totalErrors: number;
+  rapidGuessCount: number;
+  difficultyScore: number;
+  difficultyLevel: DifficultyLevel;
+  topErrors: CommonErrorItem[];
+  studentBreakdown: QuestionStudentBreakdownItem[];
+}
+
+export interface PhaseAnalyticsSummaryItem {
+  phaseId: string;
+  titulo: string;
+  ordem: number;
+  totalQuestions: number;
+  attemptedQuestionsCount: number;
+  completionRate: number;
+  firstTryRate: number;
+  failureRate: number;
+  totalErrors: number;
+  totalAttempts: number;
+  stuckStudentsCount: number;
+  avgAttemptsToSuccess: number;
+  difficultyScore: number;
+  difficultyLevel: DifficultyLevel;
+  distribution: {
+    firstTryPct: number;
+    completedWithErrorsPct: number;
+    stuckPct: number;
+    notStartedPct: number;
+  };
+}
+
+export interface ContentAnalyticsOverviewData {
+  globalFirstTryRate: number;
+  totalQuestionsActive: number;
+  hardestPhase: PhaseAnalyticsSummaryItem | null;
+  easiestPhase: PhaseAnalyticsSummaryItem | null;
+  criticalQuestion: QuestionAnalyticsItem | null;
+  phases: PhaseAnalyticsSummaryItem[];
+  questions: QuestionAnalyticsItem[];
 }
 
 

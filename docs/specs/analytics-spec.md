@@ -5,6 +5,7 @@
 - **Data de Criação:** 2026-09-14
 - **Última Atualização:** 2026-09-21
 - **Target Release / Milestone:** v2.9.0
+- **Extensão / Evolução:** `[SPEC-009]` (`docs/specs/content-analytics-spec.md`) — Analytics de Conteúdo, Dificuldade e Diagnóstico Pedagógico
 
 ---
 

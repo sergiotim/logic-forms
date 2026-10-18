@@ -15,17 +15,23 @@ import {
   User,
   Eye,
   GraduationCap,
+  Layers,
 } from 'lucide-react';
 import type {
   StudentAnalyticsOverviewData,
   StudentMetricItem,
 } from '@/types';
 import { StudentDetailModal } from './StudentDetailModal';
+import {
+  ContentAnalyticsView,
+  deriveFallbackContentAnalytics,
+} from './ContentAnalyticsView';
 
 export interface StudentAnalyticsDashboardProps {
   initialData: StudentAnalyticsOverviewData;
 }
 
+type AnalyticsPerspective = 'estudantes' | 'conteudo';
 type FilterStatus = 'todos' | 'em_andamento' | 'concluidos' | 'nao_iniciados';
 type SortField = 'name' | 'porcentagemConcluida' | 'totalErros' | 'acertosDePrimeira' | 'ultimaAtividade';
 type SortDirection = 'asc' | 'desc';
@@ -49,13 +55,22 @@ function formatDate(dateStr: string | null): string {
 export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps> = ({
   initialData,
 }) => {
+  const [activePerspective, setActivePerspective] =
+    useState<AnalyticsPerspective>('estudantes');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('todos');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedStudent, setSelectedStudent] = useState<StudentMetricItem | null>(null);
 
-  const students = initialData.students || [];
+  const students = useMemo(() => initialData.students || [], [initialData.students]);
+
+  const contentData = useMemo(() => {
+    if (initialData.contentAnalytics) {
+      return initialData.contentAnalytics;
+    }
+    return deriveFallbackContentAnalytics(students);
+  }, [initialData.contentAnalytics, students]);
 
   // Filtragem e Busca
   const filteredStudents = useMemo(() => {
@@ -126,7 +141,7 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
   return (
     <div className="min-h-screen flex flex-col bg-base text-text-main font-sans">
       {/* Top Header */}
-      <header className="h-16 bg-surface/80 backdrop-blur-md border-b border-border-subtle px-4 md:px-8 flex items-center justify-between shrink-0 sticky top-0 z-40">
+      <header className="min-h-16 py-2 bg-surface/80 backdrop-blur-md border-b border-border-subtle px-4 md:px-8 flex flex-wrap items-center justify-between gap-3 shrink-0 sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 text-primary rounded-lg">
             <GraduationCap size={20} />
@@ -136,23 +151,62 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
               Analytics dos Estudantes
             </h1>
             <span className="text-xs text-text-muted hidden sm:inline">
-              Acompanhe o progresso individual e o histórico de tentativas para avaliação acadêmica
+              Acompanhe o progresso individual, dificuldade das fases e diagnóstico pedagógico
             </span>
           </div>
         </div>
 
-        <Link
-          href="/editor"
-          className="text-sm font-medium text-text-muted hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface transition-colors border border-border-subtle"
-        >
-          <ArrowLeft size={16} /> Voltar ao Editor
-        </Link>
+        <div className="flex items-center gap-3">
+          {/* Seletor Segmentado de Perspectiva (SPEC-009) */}
+          <div
+            role="tablist"
+            aria-label="Perspectiva do Analytics"
+            className="flex items-center gap-1 bg-base p-1 rounded-xl border border-border-subtle"
+          >
+            <button
+              type="button"
+              onClick={() => setActivePerspective('estudantes')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                activePerspective === 'estudantes'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-text-muted hover:text-white'
+              }`}
+            >
+              <Users size={14} />
+              <span>Estudantes</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActivePerspective('conteudo')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                activePerspective === 'conteudo'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-text-muted hover:text-white'
+              }`}
+            >
+              <Layers size={14} />
+              <span>Conteúdo &amp; Dificuldade</span>
+            </button>
+          </div>
+
+          <Link
+            href="/editor"
+            className="text-sm font-medium text-text-muted hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface transition-colors border border-border-subtle"
+          >
+            <ArrowLeft size={16} /> <span className="hidden sm:inline">Voltar ao Editor</span>
+          </Link>
+        </div>
       </header>
 
       {/* Main Container */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
-        {/* KPI Cards da Turma */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {activePerspective === 'conteudo' ? (
+          <ContentAnalyticsView data={contentData} />
+        ) : (
+          <>
+            {/* KPI Cards da Turma */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-surface border border-border-subtle rounded-xl p-5 shadow-sm flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs font-medium text-text-muted uppercase tracking-wider">
@@ -478,6 +532,8 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
             </table>
           </div>
         </section>
+          </>
+        )}
       </main>
 
       {/* Modal de Raio-X do Aluno */}

@@ -62,7 +62,8 @@ forms/
 │       ├── auth-db-spec.md      # [SPEC-005] Autenticação Google NextAuth, RBAC e Neon Postgres
 │       ├── import-export-spec.md # [SPEC-006] Importação/Exportação em Lote e Sincronização
 │       ├── analytics-spec.md    # [SPEC-007] Dashboard de Análises do Professor (Analytics)
-│       └── visibility-spec.md   # [SPEC-008] Visibilidade de Fases e Questões
+│       ├── visibility-spec.md   # [SPEC-008] Visibilidade de Fases e Questões
+│       └── content-analytics-spec.md # [SPEC-009] Analytics de Conteúdo, Dificuldade e Diagnóstico Pedagógico
 ├── prisma/                      # Schema do Prisma ORM e migrações do PostgreSQL Neon
 │   └── schema.prisma            # Modelos User, Account, Session, Phase, Question, Submission
 ├── src/
