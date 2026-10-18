@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   User,
@@ -10,9 +10,11 @@ import {
   ChevronDown,
   ChevronUp,
   HelpCircle,
+  Loader2,
 } from 'lucide-react';
 import type {
   StudentMetricItem,
+  StudentPhaseDetail,
   StudentQuestionDetail,
   QuestionStudentStatus,
 } from '@/types';
@@ -69,6 +71,53 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
   onClose,
 }) => {
   const [expandedPhases, setExpandedPhases] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lazyFases, setLazyFases] = useState<StudentPhaseDetail[] | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || !student) {
+      setLazyFases(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    // Se o estudante já veio com as fases populadas, utiliza diretamente
+    if (student.fases) {
+      setLazyFases(student.fases);
+      return;
+    }
+
+    // Caso contrário, busca sob demanda via API (SPEC-009)
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+
+    fetch(`/api/analytics/students/${student.id}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`Erro ao carregar detalhes: ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted) {
+          setLazyFases(data.fases || []);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err.message || 'Falha na comunicação com o servidor');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, student]);
 
   if (!isOpen || !student) return null;
 
@@ -80,6 +129,7 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
   };
 
   const isPhaseExpanded = (phaseId: string) => !!expandedPhases[phaseId];
+  const activeFases = student.fases || lazyFases || [];
 
   return (
     <div
@@ -169,12 +219,22 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
 
         {/* Conteúdo com Acordeão por Fases */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {student.fases.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 text-text-muted space-y-3">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <p className="text-sm">Carregando Raio-X do estudante...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-error text-sm bg-base border border-error/20 rounded-xl p-6 space-y-2">
+              <AlertCircle className="w-8 h-8 mx-auto text-error" />
+              <p>{error}</p>
+            </div>
+          ) : activeFases.length === 0 ? (
             <div className="text-center py-12 text-text-muted text-sm bg-base border border-border-subtle rounded-xl p-6">
               Nenhuma fase disponível ou o estudante ainda não possui histórico de tentativas registradas.
             </div>
           ) : (
-            student.fases.map((fase) => {
+            activeFases.map((fase) => {
               const expanded = isPhaseExpanded(fase.phaseId);
               return (
                 <div

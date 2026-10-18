@@ -15,6 +15,8 @@ import {
   User,
   Eye,
   GraduationCap,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import type {
   StudentAnalyticsOverviewData,
@@ -54,6 +56,10 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedStudent, setSelectedStudent] = useState<StudentMetricItem | null>(null);
+
+  // Estados de Paginação (SPEC-009)
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const students = initialData.students || [];
 
@@ -111,6 +117,34 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
       setSortDirection('asc');
     }
   };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (status: FilterStatus) => {
+    setFilterStatus(status);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
+  // Pipeline de Paginação (SPEC-009)
+  const totalFilteredCount = sortedStudents.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedStudents = useMemo(() => {
+    const startIndex = (safeCurrentPage - 1) * pageSize;
+    return sortedStudents.slice(startIndex, startIndex + pageSize);
+  }, [sortedStudents, safeCurrentPage, pageSize]);
+
+  const startRecord = totalFilteredCount === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1;
+  const endRecord = Math.min(safeCurrentPage * pageSize, totalFilteredCount);
 
   const renderSortIcon = (field: SortField) => {
     if (sortField !== field) {
@@ -226,7 +260,7 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
               type="text"
               placeholder="Buscar por nome ou e-mail..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-base border border-border-subtle rounded-lg text-sm text-white placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
             />
           </div>
@@ -235,7 +269,7 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
           <div className="flex items-center gap-1 bg-base p-1 rounded-lg border border-border-subtle overflow-x-auto">
             <button
               type="button"
-              onClick={() => setFilterStatus('todos')}
+              onClick={() => handleFilterChange('todos')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 filterStatus === 'todos'
                   ? 'bg-primary text-white shadow-sm'
@@ -247,7 +281,7 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
 
             <button
               type="button"
-              onClick={() => setFilterStatus('em_andamento')}
+              onClick={() => handleFilterChange('em_andamento')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 filterStatus === 'em_andamento'
                   ? 'bg-primary text-white shadow-sm'
@@ -259,7 +293,7 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
 
             <button
               type="button"
-              onClick={() => setFilterStatus('concluidos')}
+              onClick={() => handleFilterChange('concluidos')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 filterStatus === 'concluidos'
                   ? 'bg-primary text-white shadow-sm'
@@ -271,7 +305,7 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
 
             <button
               type="button"
-              onClick={() => setFilterStatus('nao_iniciados')}
+              onClick={() => handleFilterChange('nao_iniciados')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 filterStatus === 'nao_iniciados'
                   ? 'bg-primary text-white shadow-sm'
@@ -359,14 +393,14 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
               </thead>
 
               <tbody className="divide-y divide-border-subtle/50 text-text-main">
-                {sortedStudents.length === 0 ? (
+                {paginatedStudents.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="p-8 text-center text-text-muted text-sm">
                       Nenhum estudante encontrado para os filtros selecionados.
                     </td>
                   </tr>
                 ) : (
-                  sortedStudents.map((student) => {
+                  paginatedStudents.map((student) => {
                     return (
                       <tr
                         key={student.id}
@@ -476,6 +510,75 @@ export const StudentAnalyticsDashboard: React.FC<StudentAnalyticsDashboardProps>
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Barra de Paginação (SPEC-009) */}
+          <div className="p-4 border-t border-border-subtle bg-base/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <div className="flex items-center gap-3 text-text-muted">
+              <div className="flex items-center gap-1.5">
+                <span>Exibir:</span>
+                <select
+                  aria-label="Itens por página"
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="bg-base border border-border-subtle text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+                <span>por página</span>
+              </div>
+              <span className="text-border-subtle">|</span>
+              <span>
+                Mostrando {startRecord}–{endRecord} de {totalFilteredCount} estudantes
+              </span>
+            </div>
+
+            {/* Controles de Navegação */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={safeCurrentPage === 1}
+                aria-label="Anterior"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border-subtle bg-base text-text-muted hover:text-white hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-border-subtle disabled:hover:text-text-muted transition-colors"
+              >
+                <ChevronLeft size={14} />
+                <span>Anterior</span>
+              </button>
+
+              {/* Pílulas de Páginas */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => setCurrentPage(pageNum)}
+                    aria-current={pageNum === safeCurrentPage ? 'page' : undefined}
+                    aria-label={`Página ${pageNum}`}
+                    className={`w-8 h-8 rounded-lg text-xs font-mono font-medium transition-colors ${
+                      pageNum === safeCurrentPage
+                        ? 'bg-primary text-white shadow-sm font-bold'
+                        : 'bg-base text-text-muted hover:text-white border border-border-subtle'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={safeCurrentPage >= totalPages}
+                aria-label="Próximo"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border-subtle bg-base text-text-muted hover:text-white hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-border-subtle disabled:hover:text-text-muted transition-colors"
+              >
+                <span>Próximo</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
         </section>
       </main>
