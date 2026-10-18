@@ -72,7 +72,7 @@ export function deriveFallbackContentAnalytics(
   >();
 
   students.forEach((st) => {
-    st.fases.forEach((f, fIdx) => {
+    (st.fases || []).forEach((f, fIdx) => {
       if (!phaseMap.has(f.phaseId)) {
         phaseMap.set(f.phaseId, {
           phaseId: f.phaseId,

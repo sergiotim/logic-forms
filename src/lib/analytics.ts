@@ -10,6 +10,7 @@ import type {
   StudentQuestionDetail,
   StudentPhaseDetail,
   StudentMetricItem,
+  StudentDetailData,
   StudentAnalyticsOverviewData,
   DifficultyLevel,
   QuestionStudentBreakdownItem,
@@ -770,4 +771,161 @@ function buildContentAnalyticsOverview(
   };
 }
 
+/**
+ * Busca os detalhes de Raio-X de um estudante específico sob demanda (SPEC-009 / SPEC-010)
+ */
+export async function getStudentDetailAnalytics(studentId: string): Promise<StudentDetailData> {
+  const student = await prisma.user.findUnique({
+    where: { id: studentId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      role: true,
+    },
+  });
 
+  if (!student) {
+    throw new Error(`Estudante não encontrado para o id: ${studentId}`);
+  }
+
+  const rawPhases = await prisma.phase.findMany({
+    orderBy: { order: 'asc' },
+    include: {
+      questions: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  const activePhases = rawPhases.filter((p) => {
+    const [, flag] = (p.icon || '').split(':');
+    return flag !== 'oculta';
+  });
+
+  const phasesWithActiveQuestions = activePhases.map((phase) => {
+    const activeQuestions = phase.questions.filter((q) => {
+      const content =
+        typeof q.content === 'object' && q.content !== null
+          ? (q.content as Record<string, unknown>)
+          : {};
+      return content.oculta !== true;
+    });
+    return {
+      ...phase,
+      questions: activeQuestions,
+    };
+  });
+
+  const allActiveQuestions = phasesWithActiveQuestions.flatMap((p) => p.questions);
+  const totalQuestoesAtivas = allActiveQuestions.length;
+
+  const studentSubs = await prisma.submission.findMany({
+    where: { userId: studentId },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  const subsByQuestion = new Map<string, typeof studentSubs>();
+  for (const sub of studentSubs) {
+    const existing = subsByQuestion.get(sub.questionId) || [];
+    existing.push(sub);
+    subsByQuestion.set(sub.questionId, existing);
+  }
+
+  const completedQuestionIds = new Set<string>();
+  let acertosDePrimeira = 0;
+
+  for (const q of allActiveQuestions) {
+    const qSubs = subsByQuestion.get(q.id) || [];
+    const hasCorrect = qSubs.some((s) => s.isCorrect);
+    if (hasCorrect) {
+      completedQuestionIds.add(q.id);
+      if (qSubs[0]?.isCorrect) {
+        acertosDePrimeira++;
+      }
+    }
+  }
+
+  const questoesConcluidas = completedQuestionIds.size;
+  const porcentagemConcluida =
+    totalQuestoesAtivas > 0
+      ? Number(((questoesConcluidas / totalQuestoesAtivas) * 100).toFixed(1))
+      : 0;
+  const porcentagemRestante =
+    totalQuestoesAtivas > 0
+      ? Number((100 - porcentagemConcluida).toFixed(1))
+      : 100;
+
+  const totalErros = studentSubs.filter((s) => !s.isCorrect).length;
+
+  let ultimaAtividade: string | null = null;
+  if (studentSubs.length > 0) {
+    const lastSub = studentSubs[studentSubs.length - 1];
+    ultimaAtividade =
+      lastSub.createdAt instanceof Date
+        ? lastSub.createdAt.toISOString()
+        : String(lastSub.createdAt);
+  }
+
+  const fases: StudentPhaseDetail[] = phasesWithActiveQuestions.map((phase) => {
+    let phaseCompletedCount = 0;
+    const questoes: StudentQuestionDetail[] = phase.questions.map((q) => {
+      const qSubs = subsByQuestion.get(q.id) || [];
+      const tentativasTotal = qSubs.length;
+      const errosCount = qSubs.filter((s) => !s.isCorrect).length;
+      const isResolved = qSubs.some((s) => s.isCorrect);
+      const ultimaResposta = qSubs.length > 0 ? qSubs[qSubs.length - 1].answer : null;
+
+      let status: QuestionStudentStatus = 'nao_iniciada';
+      if (isResolved && errosCount === 0) {
+        status = 'de_primeira';
+        phaseCompletedCount++;
+      } else if (isResolved && errosCount > 0) {
+        status = 'com_dificuldade';
+        phaseCompletedCount++;
+      } else if (!isResolved && errosCount > 0) {
+        status = 'pendente_com_erros';
+      }
+
+      return {
+        questionId: q.id,
+        enunciado: q.enunciado,
+        topico: q.topic,
+        tipo: q.type.toLowerCase(),
+        status,
+        errosCount,
+        tentativasTotal,
+        ultimaResposta,
+      };
+    });
+
+    return {
+      phaseId: phase.id,
+      titulo: phase.title,
+      totalQuestoes: phase.questions.length,
+      questoesConcluidas: phaseCompletedCount,
+      questoes,
+    };
+  });
+
+  const studentMetric: StudentMetricItem = {
+    id: student.id,
+    name: student.name || 'Estudante sem nome',
+    email: student.email || '',
+    image: student.image,
+    questoesConcluidas,
+    totalQuestoesAtivas,
+    porcentagemConcluida,
+    porcentagemRestante,
+    totalErros,
+    acertosDePrimeira,
+    ultimaAtividade,
+    fases,
+  };
+
+  return {
+    student: studentMetric,
+    fases,
+  };
+}

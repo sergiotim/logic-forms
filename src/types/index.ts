@@ -204,6 +204,11 @@ export interface StudentMetricItem {
   totalErros: number;
   acertosDePrimeira: number;
   ultimaAtividade: string | null;
+  fases?: StudentPhaseDetail[];
+}
+
+export interface StudentDetailData {
+  student: StudentMetricItem;
   fases: StudentPhaseDetail[];
 }
 
