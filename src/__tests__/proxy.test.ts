@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { middleware } from '@/middleware';
+import { proxy } from '@/proxy';
 import { getToken } from 'next-auth/jwt';
 
 // Mock do next-auth/jwt
@@ -17,7 +17,7 @@ jest.mock('next/server', () => ({
   userAgent: jest.fn(() => ({ device: { type: undefined } })),
 }));
 
-describe('Middleware de Autenticação e Controle de Acesso', () => {
+describe('Proxy de Autenticação e Controle de Acesso', () => {
   const mockGetToken = getToken as jest.MockedFunction<typeof getToken>;
   const mockNextResponseRedirect = NextResponse.redirect as jest.MockedFunction<typeof NextResponse.redirect>;
   const mockNextResponseNext = NextResponse.next as jest.MockedFunction<typeof NextResponse.next>;
@@ -48,14 +48,14 @@ describe('Middleware de Autenticação e Controle de Acesso', () => {
 
     it('deve redirecionar para /login ao tentar acessar a raiz (/)', async () => {
       const req = createMockRequest('/');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseRedirect).toHaveBeenCalledWith(new URL('/login', req.url));
     });
 
     it('deve redirecionar para /login ao tentar acessar o /editor', async () => {
       const req = createMockRequest('/editor');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseRedirect).toHaveBeenCalledWith(new URL('/login', req.url));
     });
@@ -68,21 +68,21 @@ describe('Middleware de Autenticação e Controle de Acesso', () => {
 
     it('deve permitir acesso à raiz (/)', async () => {
       const req = createMockRequest('/');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseNext).toHaveBeenCalled();
     });
 
     it('deve redirecionar para a raiz (/) ao tentar acessar o /editor', async () => {
       const req = createMockRequest('/editor');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseRedirect).toHaveBeenCalledWith(new URL('/', req.url));
     });
 
     it('deve redirecionar para a raiz (/) ao tentar acessar o /editor/analytics', async () => {
       const req = createMockRequest('/editor/analytics');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseRedirect).toHaveBeenCalledWith(new URL('/', req.url));
     });
@@ -95,21 +95,21 @@ describe('Middleware de Autenticação e Controle de Acesso', () => {
 
     it('deve permitir acesso ao /editor', async () => {
       const req = createMockRequest('/editor');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseNext).toHaveBeenCalled();
     });
 
     it('deve permitir acesso ao /editor/analytics', async () => {
       const req = createMockRequest('/editor/analytics');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseNext).toHaveBeenCalled();
     });
 
     it('deve permitir acesso à raiz (/)', async () => {
       const req = createMockRequest('/');
-      await middleware(req);
+      await proxy(req);
       
       expect(mockNextResponseNext).toHaveBeenCalled();
     });

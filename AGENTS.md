@@ -76,7 +76,7 @@ forms/
 │   │   ├── Login.test.tsx       # Testes da página de login e redirecionamento NextAuth
 │   │   ├── apiPhases.test.ts    # Testes dos endpoints de API de fases (GET/POST)
 │   │   ├── apiSubmissions.test.ts # Testes dos endpoints de API de submissões (GET/POST)
-│   │   └── middleware.test.ts   # Testes do middleware de proteção de rotas
+│   │   └── proxy.test.ts        # Testes do proxy de proteção de rotas
 │   ├── app/                     # Next.js App Router
 │   │   ├── page.tsx             # Modo Estudo (Lobby, Quiz, Conclusão de Fase, Exit Modal)
 │   │   ├── login/
@@ -122,7 +122,7 @@ forms/
 │   │   ├── storage.ts           # CRUD do localStorage, migrações de versão e seed inicial
 │   │   ├── icons.ts             # Mapeamento e opções de LucideIconName serializáveis
 │   │   └── __tests__/           # Testes unitários da camada lógica e de dados
-│   ├── middleware.ts            # Proteção de rotas do Next.js baseada em sessão e RBAC
+│   ├── proxy.ts                 # Proteção de rotas do Next.js baseada em sessão e RBAC
 │   └── types/
 │       ├── index.ts             # Interfaces TypeScript (BaseQuestion, Phase, EditorState, etc.)
 │       └── next-auth.d.ts       # Extensão de tipagem do NextAuth para Session e JWT
