@@ -213,7 +213,7 @@ describe('studentAnalytics.ts (SPEC-007 v2.8.0 - TDD Fase Vermelha)', () => {
 
       const result = await getStudentAnalyticsOverview();
       const aluno = result.students[0];
-      const fase = aluno.fases[0];
+      const fase = aluno.fases![0];
 
       expect(fase.phaseId).toBe('fase-1');
       expect(fase.questoesConcluidas).toBe(2);
